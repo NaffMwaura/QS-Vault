@@ -14,4 +14,30 @@ qs-app/ (or frontend/)
 ├── index.html
 └── package.json
 
-Client ID == 536613529305-ivcck7cj0nknrdskqrhqga147egevb2t.apps.googleusercontent.com
+src/
+├── assets/             # Global static assets (logos, icons, fonts)
+├── components/         # Shared UI components (Atomic Design)
+│   ├── ui/             # Reusable primitives (Buttons, Inputs, Modals)
+│   ├── layout/         # AppShell, Navbar, Sidebar
+│   └── shared/         # Common QS elements (UnitDisplay, CurrencyFormatter)
+├── config/             # App configuration
+│   ├── supabase.ts     # Supabase client init
+│   └── constants.ts    # SMM constants, VAT rates, etc.
+├── features/           # Modular business logic
+│   ├── auth/           # Login, Session management, Google OAuth
+│   ├── projects/       # Project list, creation, dashboard
+│   ├── boq/            # Bill of Quantities logic, grid views
+│   ├── takeoff/        # Drawing canvas, measurement logic, PDF processing
+│   └── sync/           # SyncEngine, Network listener, Conflict resolution
+├── hooks/              # Global reusable hooks
+│   ├── useNetwork.ts   # Online/Offline status
+│   └── useSync.ts      # Manual sync triggers
+├── lib/                # Third-party library wrappers
+│   ├── database/       # Dexie.js (IndexedDB) schemas
+│   └── utils.ts        # Formatting logic (KES formatting, area calcs)
+├── services/           # Data access layer
+│   ├── api.ts          # Supabase direct calls
+│   └── repository.ts   # The "Brain" (Orchestrates Dexie vs Supabase)
+├── store/              # Global state management (Zustand or Context)
+├── styles/             # Global CSS (Tailwind imports)
+└── types/              # Global TypeScript interfaces (from schema.sql)
