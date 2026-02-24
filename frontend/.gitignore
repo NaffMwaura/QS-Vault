@@ -1,24 +1,46 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
+Dependencies
+
+This covers node_modules in the root, /frontend, and /backend
+
+node_modules/
+/node_modules/
+.pnpm-store/
+pnpm-lock.yaml
+package-lock.json
+npm-debug.log
+yarn-debug.log
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+Environment Variables (CRITICAL)
+
+This prevents your Supabase and Google keys from ever being pushed
+
+.env
+.env.local
+.env.*.local
+**/ .env
+
+Build outputs
+
+dist/
+dist-ssr/
+build/
 *.local
 
-# Editor directories and files
-.vscode/*
+IDE and System files
+
+.vscode/
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
 *.suo
-*.ntvs*
+.ntvs
 *.njsproj
 *.sln
 *.sw?
+
+Logs
+
+logs
+*.log
