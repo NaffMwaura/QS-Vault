@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { QueryClientProvider } from "@tanstack/react-query";
 
@@ -8,10 +8,10 @@ import { queryClient } from "./lib/queryClient";
 import { useSync } from "./hooks/useSync";
 
 // Pages
-import MarketingPage from "./pages/MarketingPage";
-import LoginPage from "./pages/LoginPage";
-import DashboardPage from "./pages/DashboardPage";
-import ProjectDetailPage from "./pages/ProjectDetailPage";
+import MarketingPage from "./components/pages/MarketingPage";
+import LoginPage from "./components/pages/LoginPage";
+import DashboardPage from "./components/pages/DashboardPage";
+import ProjectDetailPage from "./components/pages/ProjectsDetailPage";
 
 // Layout
 import AppShell from "./components/layout/AppShell";
@@ -22,6 +22,7 @@ import AppShell from "./components/layout/AppShell";
  */
 const RootComponent = () => {
   const { session, isLoading } = useAuth();
+  const navigate = useNavigate();
 
   // Initialize the background sync engine (Dexie <-> Supabase)
   useSync();
@@ -39,6 +40,8 @@ const RootComponent = () => {
 
   if (session) {
     return (
+      /* Fix 1: AppShell session prop error is likely in its interface. 
+         Ensure AppShellProps in AppShell.tsx includes 'session: Session | null' */
       <AppShell session={session}>
         <Routes>
           <Route path="/dashboard" element={<DashboardPage />} />
@@ -54,7 +57,11 @@ const RootComponent = () => {
 
   return (
     <Routes>
-      <Route path="/" element={<MarketingPage />} />
+      {/* Fix 2: Added the required onGetStarted prop */}
+      <Route 
+        path="/" 
+        element={<MarketingPage onGetStarted={() => navigate("/login")} />} 
+      />
       <Route path="/login" element={<LoginPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

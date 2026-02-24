@@ -2,24 +2,29 @@ import Dexie, { type Table } from "dexie";
 import { createClient } from "@supabase/supabase-js";
 
 // --- 1. CLOUD CONFIGURATION ---
-// Fixes "Unexpected any" (Error 3) by using a structured interface
-interface GlobalWithEnv {
-  process?: {
-    env?: Record<string, string>;
-  };
-}
 
 const getSupabaseConfig = () => {
-  const globalObj = (typeof window !== 'undefined' ? window : globalThis) as unknown as GlobalWithEnv;
-  const env = globalObj.process?.env || {};
+  // Fix: Vite uses import.meta.env to access .env variables
   return {
-    url: env.VITE_SUPABASE_URL || "",
-    key: env.VITE_SUPABASE_ANON_KEY || ""
+    url: import.meta.env.VITE_SUPABASE_URL || "",
+    key: import.meta.env.VITE_SUPABASE_ANON_KEY || ""
   };
 };
 
 const config = getSupabaseConfig();
-export const supabase = createClient(config.url, config.key);
+
+// Professional Guard: Ensure the app doesn't crash if env vars are missing
+if (!config.url || !config.key) {
+  console.error(
+    "Sync Engine Error: Supabase URL or Key is missing. " +
+    "Check your .env file and ensure variables start with VITE_"
+  );
+}
+
+export const supabase = createClient(
+  config.url || "https://placeholder.supabase.co",
+  config.key || "placeholder"
+);
 
 // --- 2. DATABASE INTERFACES ---
 export interface Project {
@@ -32,7 +37,6 @@ export interface Project {
   updated_at: string;
 }
 
-// Fixes "Unexpected any" (Error 4) - Defining coordinate points for canvas
 export interface CanvasPoint {
   x: number;
   y: number;
@@ -44,11 +48,10 @@ export interface Measurement {
   boq_item_id: string;
   value: number;
   label?: string;
-  points?: CanvasPoint[]; // Replaced 'any' with specific coordinate structure
+  points?: CanvasPoint[]; 
   updated_at: string;
 }
 
-// Fixes "Unexpected any" (Error 5) - Payload can be a Project or Measurement
 export interface SyncQueueItem {
   id?: number;
   table: 'projects' | 'measurements';
@@ -94,7 +97,6 @@ export const syncEngine = {
             .upsert(item.payload);
           error = upsertError;
         } else if (item.operation === 'DELETE') {
-          // Type safety for delete operation
           const payloadId = (item.payload as { id?: string }).id;
           if (payloadId) {
             const { error: deleteError } = await supabase
