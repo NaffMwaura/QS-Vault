@@ -1,0 +1,17 @@
+qs-app/ (or frontend/)
+├── public/              # PWA Icons & Manifest
+├── src/
+│   ├── assets/          # Logo & SMM Templates
+│   ├── components/      # UI components (Buttons, Inputs)
+│   ├── hooks/           # useAuth.ts, useOffline.ts
+│   ├── lib/
+│   │   ├── database.ts  # THE BRAIN: Supabase + Dexie init
+│   │   └── utils.ts     # Tailwind helpers
+│   ├── pages/           # Login.tsx, Dashboard.tsx, ProjectDetail.tsx
+│   ├── App.tsx          # THE SWITCH: Handles routing & auth state
+│   └── main.tsx         # Entry point
+├── .env                 # CRITICAL: Keep in ROOT, not in src/
+├── index.html
+└── package.json
+
+Client ID == 536613529305-ivcck7cj0nknrdskqrhqga147egevb2t.apps.googleusercontent.com
