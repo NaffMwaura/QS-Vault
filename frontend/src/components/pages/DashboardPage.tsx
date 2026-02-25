@@ -230,7 +230,7 @@ const DashboardPage: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-white/[0.02] border-b border-zinc-800/50">
+                <tr className="bg-white/2 border-b border-zinc-800/50">
                   {["Project Identity", "Stakeholder", "Last Modified", "Actions"].map((h) => (
                     <th key={h} className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600">{h}</th>
                   ))}
@@ -238,7 +238,7 @@ const DashboardPage: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-zinc-800/30">
                 {projects.length > 0 ? projects.map((p) => (
-                  <tr key={p.id} className="group hover:bg-white/[0.02] transition-colors">
+                  <tr key={p.id} className="group hover:bg-white/2 transition-colors">
                     <td className="px-10 py-8">
                       <div className="flex flex-col">
                         <span className="font-black text-xl uppercase tracking-tighter text-zinc-200 group-hover:text-amber-500 transition-colors">
@@ -264,7 +264,7 @@ const DashboardPage: React.FC = () => {
                         <button
                           onClick={() => handleOpenProject(p.id)}
                           disabled={openingId === p.id}
-                          className="flex items-center gap-2 bg-zinc-950 text-amber-500 font-black uppercase text-[10px] tracking-[0.2em] px-6 py-3 rounded-xl border border-amber-500/20 hover:bg-amber-500 hover:text-black transition-all min-w-[140px] justify-center shadow-lg group-hover:shadow-amber-500/5"
+                          className="flex items-center gap-2 bg-zinc-950 text-amber-500 font-black uppercase text-[10px] tracking-[0.2em] px-6 py-3 rounded-xl border border-amber-500/20 hover:bg-amber-500 hover:text-black transition-all min-w-35 justify-center shadow-lg group-hover:shadow-amber-500/5"
                         >
                           {openingId === p.id ? <Loader2 size={12} className="animate-spin" /> : <><ExternalLink size={12} /> Launch</>}
                         </button>

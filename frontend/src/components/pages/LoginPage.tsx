@@ -122,7 +122,7 @@ const LoginPage: React.FC = () => {
               <div className="p-3 bg-amber-500 rounded-2xl shadow-2xl shadow-amber-500/20 animate-float">
                 <HardHat size={32} className="text-black" />
               </div>
-              <div className="h-8 w-[1px] bg-zinc-800 rotate-12 mx-2" />
+              <div className="h-8 w-px bg-zinc-800 rotate-12 mx-2" />
               <h1 className="text-3xl font-black text-white uppercase tracking-tighter italic">QS Vault</h1>
             </div>
             
@@ -191,7 +191,7 @@ const LoginPage: React.FC = () => {
             </div>
 
             {authStatus.message && (
-              <div className={`p-5 rounded-[2rem] text-[11px] font-black uppercase tracking-widest flex items-center gap-4 border animate-in zoom-in-95 ${
+              <div className={`p-5 rounded-4xl text-[11px] font-black uppercase tracking-widest flex items-center gap-4 border animate-in zoom-in-95 ${
                 authStatus.type === 'success' 
                   ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.1)]' 
                   : 'bg-red-500/10 text-red-500 border-red-500/20'
@@ -227,14 +227,14 @@ const LoginPage: React.FC = () => {
                 <span className="relative z-10">
                   {loading ? "Verifying Vault Credentials..." : authStatus.message && authStatus.type === 'success' ? "Authorization Link Sent" : "Authorize Session"}
                 </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
               </Button>
             </form>
 
             <div className="relative flex items-center">
-              <div className="grow h-[1px] bg-zinc-800/50"></div>
+              <div className="grow h-px bg-zinc-800/50"></div>
               <span className="shrink mx-6 text-[12px] font-black text-amber-400 uppercase tracking-[0.6em]">OR ACCESS VIA</span>
-              <div className="grow h-[1px] bg-zinc-800/50"></div>
+              <div className="grow h-px bg-zinc-800/50"></div>
             </div>
 
             <Button 
