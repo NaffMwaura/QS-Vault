@@ -1,21 +1,24 @@
 import React, { useState } from 'react';
-import { Mail, CheckCircle, X, Chrome } from 'lucide-react';
+import { Mail, CheckCircle, X } from 'lucide-react';
+// Corrected the path to ensure it maps correctly to your project structure
+import { supabase } from "../../lib/database/database"; 
 
 /* --- Simple UI Components --- */
 
-// Fixes Error 1 & 2: Added interface for Button Props
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
   className?: string;
 }
 
 const Button: React.FC<ButtonProps> = ({ children, className, ...props }) => (
-  <button {...props} className={`disabled:opacity-50 transition-all active:scale-[0.98] ${className}`}>
+  <button 
+    {...props} 
+    className={`disabled:opacity-50 transition-all active:scale-[0.98] flex items-center justify-center ${className}`}
+  >
     {children}
   </button>
 );
 
-// Fixes Error 3 & 4: Added interface for AuthMessage Props
 interface AuthMessageProps {
   message: string | null;
   type: 'success' | 'error';
@@ -36,20 +39,52 @@ const AuthMessage: React.FC<AuthMessageProps> = ({ message, type }) => {
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
-  const [authSuccess, setAuthSuccess] = useState<boolean>(false);
+  const [authStatus, setAuthStatus] = useState<{ message: string | null; type: 'success' | 'error' }>({ message: null, type: 'success' });
 
-  // Fixes Error 5: Added React.FormEvent type
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  // Handle Magic Link Submission
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => { 
-      setLoading(false); 
-      setAuthSuccess(true); 
-    }, 1500);
+    setAuthStatus({ message: null, type: 'success' });
+
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          // This ensures the user is redirected back to the dashboard upon clicking the link
+          emailRedirectTo: window.location.origin + '/dashboard',
+        },
+      });
+
+      if (error) throw error;
+
+      setAuthStatus({ 
+        message: "Magic Link Transmitted! Check your inbox.", 
+        type: 'success' 
+      });
+    } catch (error: any) {
+      setAuthStatus({ 
+        message: error.message || "Failed to send link. Please try again.", 
+        type: 'error' 
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleGoogleLogin = () => {
-    console.log("Google Login Initiated");
+  // Handle Google OAuth
+  const handleGoogleLogin = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin + '/dashboard',
+        },
+      });
+      if (error) throw error;
+    } catch (error: any) {
+      setAuthStatus({ message: error.message, type: 'error' });
+    }
   };
 
   return (
@@ -61,7 +96,7 @@ const LoginPage: React.FC = () => {
           <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">Precision Takeoff <span className="text-zinc-700">•</span> Offline Vault</p>
         </div>
 
-        <AuthMessage message={authSuccess ? "Magic Link Sent! Check your email." : null} type="success" />
+        <AuthMessage message={authStatus.message} type={authStatus.type} />
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
@@ -79,8 +114,12 @@ const LoginPage: React.FC = () => {
             </div>
           </div>
 
-          <Button type="submit" disabled={loading || authSuccess} className="w-full bg-amber-500 hover:bg-amber-400 text-black font-black py-6 rounded-2xl uppercase text-[11px] tracking-[0.2em]">
-            {loading ? "Verifying..." : authSuccess ? "Link Transmitted" : "Authorize Session"}
+          <Button 
+            type="submit" 
+            disabled={loading || (authStatus.type === 'success' && !!authStatus.message)} 
+            className="w-full bg-amber-500 hover:bg-amber-400 text-black font-black py-6 rounded-2xl uppercase text-[11px] tracking-[0.2em]"
+          >
+            {loading ? "Verifying..." : authStatus.message && authStatus.type === 'success' ? "Link Transmitted" : "Authorize Session"}
           </Button>
         </form>
 
@@ -90,8 +129,29 @@ const LoginPage: React.FC = () => {
           <div className="grow border-t border-zinc-800"></div>
         </div>
 
-        <Button onClick={handleGoogleLogin} className="w-full bg-white hover:bg-zinc-200 text-black font-black py-6 rounded-2xl flex items-center justify-center gap-3 uppercase text-[11px] tracking-[0.2em] shadow-lg">
-          <Chrome size={18} />
+        {/* Enhanced Google Button with high-visibility SVG icon */}
+        <Button 
+          onClick={handleGoogleLogin} 
+          className="w-full bg-white hover:bg-zinc-100 text-black font-black py-6 rounded-2xl flex items-center justify-center gap-3 uppercase text-[11px] tracking-[0.2em] shadow-lg border border-zinc-200"
+        >
+          <svg className="w-5 h-5" viewBox="0 0 24 24">
+            <path
+              fill="#EA4335"
+              d="M12 5.04c1.94 0 3.51.68 4.75 1.81l3.5-3.5C18.1 1.42 15.29 0 12 0 7.31 0 3.25 2.69 1.24 6.62l4.08 3.16C6.29 7.3 8.93 5.04 12 5.04z"
+            />
+            <path
+              fill="#4285F4"
+              d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58l3.89 3c2.28-2.1 3.53-5.2 3.53-8.82z"
+            />
+            <path
+              fill="#FBBC05"
+              d="M5.32 14.22c-.24-.73-.38-1.5-.38-2.22s.14-1.49.38-2.22L1.24 6.62C.45 8.18 0 9.94 0 12c0 2.06.45 3.82 1.24 5.38l4.08-3.16z"
+            />
+            <path
+              fill="#34A853"
+              d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.89-3c-1.11.75-2.53 1.19-4.04 1.19-3.07 0-5.71-2.26-6.68-5.34l-4.08 3.16C3.25 21.31 7.31 24 12 24z"
+            />
+          </svg>
           <span>Continue with Google</span>
         </Button>
 
