@@ -1,5 +1,6 @@
+import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { Loader2, Wifi, WifiOff } from "lucide-react";
 import { QueryClientProvider } from "@tanstack/react-query";
 
 // Features & Libs
@@ -18,48 +19,71 @@ import AppShell from "./components/layout/AppShell";
 
 /**
  * RootComponent manages the top-level routing logic.
- * It uses the Auth state to decide whether to show the "Project Vault" (AppShell)
- * or the "Public Marketing" view.
+ * It is now theme-aware and connectivity-aware during the loading phase.
  */
 const RootComponent = () => {
-  const { session, isLoading } = useAuth();
+  const { session, isLoading, theme } = useAuth();
   const navigate = useNavigate();
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
 
-  // Initialize the background "Heartbeat" to sync measurements to the cloud
-  // This hook monitors connectivity and processes the Dexie sync queue.
+  // Initialize the background sync engine
   useSync();
 
-  // Initial Auth Check / Synchronizing Splash Screen
+  // Track connectivity for the splash screen
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
+  // INITIAL LOADING / SPLASH SCREEN
+  // Now responds to theme and connectivity
   if (isLoading) {
     return (
-      <div className="h-screen w-screen bg-[#09090b] flex flex-col items-center justify-center gap-6 transition-colors duration-500">
+      <div className={`h-screen w-screen flex flex-col items-center justify-center gap-8 transition-colors duration-700 
+        ${theme === 'dark' ? 'bg-[#09090b]' : 'bg-zinc-100'}`}>
+        
         <div className="relative">
-          {/* This Loader2 with animate-spin handles the rotation you asked about */}
-          <Loader2 className="w-12 h-12 text-amber-500 animate-spin" />
-          <div className="absolute inset-0 blur-xl bg-amber-500/20 animate-pulse" />
+          <Loader2 className={`w-16 h-16 animate-spin ${theme === 'dark' ? 'text-amber-500' : 'text-amber-600'}`} />
+          <div className="absolute inset-0 blur-2xl bg-amber-500/20 animate-pulse" />
         </div>
-        <div className="space-y-2 text-center">
-          <h2 className="text-amber-500 font-black uppercase tracking-[0.5em] text-xs italic">
+
+        <div className="space-y-4 text-center">
+          <h2 className={`font-black uppercase tracking-[0.6em] text-sm italic 
+            ${theme === 'dark' ? 'text-amber-500' : 'text-zinc-900'}`}>
             QS POCKET KNIFE
           </h2>
-          <p className="text-zinc-600 text-[9px] font-black uppercase tracking-widest animate-pulse">
-            Establishing Secure Link...
-          </p>
+          
+          <div className="flex flex-col items-center gap-2">
+            <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.4em] animate-pulse">
+              {isOnline ? "Establishing Secure Link..." : "Initializing Offline Vault..."}
+            </p>
+            
+            <div className={`flex items-center gap-2 px-3 py-1 rounded-full border text-[8px] font-black uppercase tracking-widest transition-all
+              ${isOnline 
+                ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-600' 
+                : 'bg-red-500/5 border-red-500/20 text-red-500 animate-pulse'}`}>
+              {isOnline ? <Wifi size={10} /> : <WifiOff size={10} />}
+              {isOnline ? 'Network Active' : 'Offline Mode'}
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
-  // --- PROTECTED AREA: Project Vault Access ---
+  // --- PROTECTED AREA ---
   if (session) {
     return (
-      /* Removed session prop call to match latest AppShell.tsx clean interface */
       <AppShell>
         <Routes>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/projects/:id" element={<ProjectDetailPage />} />
-          
-          {/* Automatic Redirection Logic for Authenticated Users */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/login" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
@@ -68,7 +92,7 @@ const RootComponent = () => {
     );
   }
 
-  // --- PUBLIC AREA: Marketing & Authorization ---
+  // --- PUBLIC AREA ---
   return (
     <Routes>
       <Route 
@@ -76,8 +100,6 @@ const RootComponent = () => {
         element={<MarketingPage onGetStarted={() => navigate("/login")} />} 
       />
       <Route path="/login" element={<LoginPage />} />
-      
-      {/* Catch-all: Redirect unknown public routes back to Home */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
@@ -85,7 +107,6 @@ const RootComponent = () => {
 
 /**
  * Main Application Wrapper
- * Order of providers is critical for state propagation.
  */
 function App() {
   return (
