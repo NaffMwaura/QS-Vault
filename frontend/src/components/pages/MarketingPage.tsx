@@ -1,4 +1,4 @@
-import { useEffect, useState,  } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../../features/auth/AuthContext";
 import {
   Zap,
@@ -66,7 +66,7 @@ const FeatureCard = ({ icon: Icon, title, description }: CardProps) => (
 );
 
 const ValuePropCard = ({ icon: Icon, title, description }: CardProps) => (
-  <div className="p-6 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-md transition hover:shadow-xl space-y-3 flex items-start gap-4">
+  <div className="p-6 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-md transition hover:shadow-xl space-y-3 flex items-start gap-4 text-left">
     <div className="p-2 bg-amber-500/10 rounded-lg shrink-0">
       <Icon size={20} className="text-amber-500" />
     </div>
@@ -88,21 +88,24 @@ const NavigationBar = ({ onAuthClick }: { onAuthClick: () => void }) => {
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
-    const handleStatus = () => setIsOnline(navigator.onLine);
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
     window.addEventListener("scroll", handleScroll);
-    window.addEventListener("online", handleStatus);
-    window.addEventListener("offline", handleStatus);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
     return () => {
       window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("online", handleStatus);
-      window.removeEventListener("offline", handleStatus);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, []);
 
   return (
     <nav className={`
       fixed top-0 inset-x-0 z-50 transition-all duration-300
-      ${scrolled ? "bg-white/80 dark:bg-black/80 backdrop-blur-md py-3 border-b border-zinc-200 dark:border-zinc-800" : "bg-transparent py-6"}
+      ${scrolled ? "bg-white/90 dark:bg-black/90 backdrop-blur-md py-3 border-b border-zinc-200 dark:border-zinc-800 shadow-sm" : "bg-transparent py-6"}
     `}>
       <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
         <div className="flex items-center gap-6">
@@ -118,7 +121,7 @@ const NavigationBar = ({ onAuthClick }: { onAuthClick: () => void }) => {
           <div className={`flex items-center gap-2 px-3 py-1 rounded-full border text-[9px] font-black transition-all duration-500 uppercase tracking-widest ${
             isOnline 
               ? "bg-green-500/10 border-green-500/20 text-green-500" 
-              : "bg-amber-500/10 border-amber-500/20 text-amber-500 animate-pulse"
+              : "bg-red-500/10 border-red-500/20 text-red-500 animate-pulse"
           }`}>
             {isOnline ? <Wifi size={12} /> : <WifiOff size={12} />}
             <span className="hidden sm:inline">{isOnline ? "Sync Ready" : "Offline Mode"}</span>
@@ -127,8 +130,10 @@ const NavigationBar = ({ onAuthClick }: { onAuthClick: () => void }) => {
 
         <div className="flex items-center gap-4">
           <button
+            type="button"
             onClick={toggleTheme}
-            className="p-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:text-amber-500 transition-colors"
+            className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:text-amber-500 transition-all active:scale-95"
+            aria-label="Toggle theme"
           >
             {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
           </button>
@@ -163,7 +168,7 @@ const MarketingPage = ({ onGetStarted }: { onGetStarted: () => void }) => {
   ]);
 
   return (
-    <main className="min-h-screen bg-white dark:bg-[#09090b] selection:bg-amber-500 selection:text-black">
+    <main className="min-h-screen bg-white dark:bg-[#09090b] selection:bg-amber-500 selection:text-black transition-colors duration-300">
       <NavigationBar onAuthClick={onGetStarted} />
 
       {/* HERO SECTION */}
@@ -180,7 +185,7 @@ const MarketingPage = ({ onGetStarted }: { onGetStarted: () => void }) => {
           </div>
 
           <h1 className="text-5xl sm:text-7xl md:text-8xl font-black mb-8 leading-[0.9] tracking-tighter dark:text-white">
-            <span className="block min-h-[1.2em] text-transparent bg-clip-text bg-linear-to-b from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-600">
+            <span className="block min-h-[1.2em] text-transparent bg-clip-text bg-gradient-to-b from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-600 transition-all">
               {typewriterText}<span className="animate-pulse text-amber-500">_</span>
             </span>
             <span className="block mt-4 italic text-amber-500">Delivered On-Site.</span>
@@ -235,7 +240,7 @@ const MarketingPage = ({ onGetStarted }: { onGetStarted: () => void }) => {
       {/* FEATURES GRID */}
       <section className="py-32 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-end gap-8 mb-20">
+          <div className="flex flex-col md:flex-row justify-between items-end gap-8 mb-20 text-left">
             <div className="max-w-2xl">
               <h2 className="text-3xl sm:text-5xl font-black tracking-tight dark:text-white mb-6 uppercase">
                 Professional Tools,<br />Built for the Field.
@@ -325,7 +330,7 @@ const MarketingPage = ({ onGetStarted }: { onGetStarted: () => void }) => {
       {/* FOOTER */}
       <footer className="py-20 text-center bg-white dark:bg-black border-t border-zinc-200 dark:border-zinc-800">
         <div className="mb-6 flex items-center justify-center gap-2">
-           <div className="bg-amber-500 p-1.5 rounded-lg">
+            <div className="bg-amber-500 p-1.5 rounded-lg">
               <HardHat size={20} className="text-black" />
             </div>
             <span className="text-2xl font-black uppercase tracking-tighter italic dark:text-white">
