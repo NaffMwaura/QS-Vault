@@ -13,6 +13,7 @@ import MarketingPage from "./components/pages/MarketingPage";
 import LoginPage from "./components/pages/LoginPage";
 import DashboardPage from "./components/pages/DashboardPage";
 import ProjectDetailPage from "./components/pages/ProjectsDetailPage";
+import AdminDashboardPage from "./components/pages/AdminDashboardPage"; 
 
 // Layout
 import AppShell from "./components/layout/AppShell";
@@ -42,7 +43,6 @@ const RootComponent = () => {
   }, []);
 
   // INITIAL LOADING / SPLASH SCREEN
-  // Now responds to theme and connectivity
   if (isLoading) {
     return (
       <div className={`h-screen w-screen flex flex-col items-center justify-center gap-8 transition-colors duration-700 
@@ -77,13 +77,21 @@ const RootComponent = () => {
     );
   }
 
-  // --- PROTECTED AREA ---
+  // --- PROTECTED AREA (AUTHENTICATED) ---
   if (session) {
     return (
       <AppShell>
         <Routes>
+          {/* Main Surveyor Workspace */}
           <Route path="/dashboard" element={<DashboardPage />} />
+          
+          {/* Command Center: Restricted to authorized nodes */}
+          <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
+          
+          {/* Project Deep-Dive */}
           <Route path="/projects/:id" element={<ProjectDetailPage />} />
+          
+          {/* Global Redirects */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/login" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
@@ -92,7 +100,7 @@ const RootComponent = () => {
     );
   }
 
-  // --- PUBLIC AREA ---
+  // --- PUBLIC AREA (UNAUTHENTICATED) ---
   return (
     <Routes>
       <Route 

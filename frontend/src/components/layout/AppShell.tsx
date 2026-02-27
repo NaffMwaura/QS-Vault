@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation, BrowserRouter } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { 
   HardHat, 
   LayoutGrid, 
@@ -13,21 +13,9 @@ import {
   Sun,
   Moon
 } from "lucide-react";
+import { useAuth } from "../../features/auth/AuthContext";
 
 /** --- TYPES & INTERFACES --- **/
-
-// Aligned with Supabase User type to resolve ts(2322)
-interface AuthUser {
-  email?: string | null;
-}
-
-interface AuthContextValue {
-  user: AuthUser | null;
-  signOut: () => Promise<void> | void;
-  isLoading: boolean;
-  theme: 'light' | 'dark';
-  toggleTheme: () => void;
-}
 
 interface AppShellProps {
   children?: React.ReactNode;
@@ -39,25 +27,6 @@ interface SidebarLinkProps {
   active?: boolean;
   onClick?: () => void;
   theme: 'light' | 'dark';
-}
-
-/** --- MODULE RESOLUTION HANDLER --- **/
-// Fixed type assignment to resolve AuthContextValue mismatch
-let useAuth: () => AuthContextValue = () => ({
-  user: { email: 'surveyor@qsvault.com' },
-  signOut: () => console.log('Signing out...'),
-  isLoading: false,
-  theme: 'dark',
-  toggleTheme: () => console.log('Toggle theme')
-});
-
-try {
-  // Removed unused @ts-expect-error to resolve ts(2578)
-  import("../../features/auth/AuthContext").then(mod => {
-    useAuth = mod.useAuth;
-  }).catch(() => {});
-} catch {
-  // Fallback for non-Vite environments
 }
 
 /** --- LOADING COMPONENT (4 SPINNING CIRCLES + OFFLINE CHECK) --- **/
@@ -102,41 +71,36 @@ const VaultLoader = ({ isOnline }: { isOnline: boolean }) => (
 
 /** --- MAIN APP SHELL IMPLEMENTATION --- **/
 
-const AppShellInternal: React.FC<AppShellProps> = ({ children }) => {
-  const { user, signOut, isLoading: authLoading, theme, toggleTheme } = useAuth();
+const AppShell: React.FC<AppShellProps> = ({ children }) => {
+  const { user, signOut, isLoading: authLoading, theme, toggleTheme, isOnline } = useAuth();
   const location = useLocation();
   
-  // Initialize with navigator value directly to avoid synchronous setState in useEffect
-  const [isOnline, setIsOnline] = useState(() => 
-    typeof navigator !== 'undefined' ? navigator.onLine : true
-  );
-  const [isTransitioning, setIsTransitioning] = useState(true);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const prevPathRef = useRef(location.pathname);
 
-  // 1. Network Status Heartbeat - Fix: Removed synchronous setState from effect body
-  useEffect(() => {
-    const handleStatusChange = () => setIsOnline(navigator.onLine);
-    window.addEventListener('online', handleStatusChange);
-    window.addEventListener('offline', handleStatusChange);
-    return () => {
-      window.removeEventListener('online', handleStatusChange);
-      window.removeEventListener('offline', handleStatusChange);
-    };
-  }, []);
-
-  // 2. Handle Route Transition - Fix: Async state update to resolve cascading render
+  // Handle Route Transition - Shows the specialized VaultLoader during navigation
   useEffect(() => {
     if (prevPathRef.current !== location.pathname) {
       prevPathRef.current = location.pathname;
-      // Defer state update to next tick to avoid render conflict
-      setTimeout(() => setIsTransitioning(true), 0);
+      
+      /** * Fixed: eslint(react-hooks/set-state-in-effect)
+       * We wrap the state update in a timeout to defer it to the next event loop tick.
+       * This avoids direct/synchronous state updates within the effect that can trigger
+       * unnecessary re-renders or violate strict hook usage patterns.
+       */
+      const startTimer = setTimeout(() => {
+        setIsTransitioning(true);
+      }, 0);
+      
+      const transitionTimer = setTimeout(() => {
+        setIsTransitioning(false);
+      }, 1200); // Standardized transition speed for UX
+
+      return () => {
+        clearTimeout(startTimer);
+        clearTimeout(transitionTimer);
+      };
     }
-
-    const transitionTimer = setTimeout(() => {
-      setIsTransitioning(false);
-    }, 3500); 
-
-    return () => clearTimeout(transitionTimer);
   }, [location.pathname]);
 
   if (authLoading || isTransitioning) {
@@ -306,14 +270,5 @@ const SidebarLink: React.FC<SidebarLinkProps> = ({ icon, label, active = false, 
     </span>
   </button>
 );
-
-/** --- PREVIEW WRAPPER --- **/
-const AppShell = (props: AppShellProps) => {
-  return (
-    <BrowserRouter>
-      <AppShellInternal {...props} />
-    </BrowserRouter>
-  );
-};
 
 export default AppShell;

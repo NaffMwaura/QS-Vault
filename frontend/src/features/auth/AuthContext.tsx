@@ -1,53 +1,58 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-// Use ESM-friendly CDN for the preview environment
-import { createClient, type Session, type User, type AuthChangeEvent } from "@supabase/supabase-js";
+// Import types from the ESM-friendly CDN for the preview environment
+import { type Session, type User, type AuthChangeEvent } from "@supabase/supabase-js";
 
 /** --- TYPES & INTERFACES --- **/
 
 type Theme = "light" | "dark";
+export type UserRole = 'user' | 'editor' | 'admin' | 'super-admin';
 
 interface AuthContextType {
   session: Session | null;
   user: User | null;
+  role: UserRole | null; // Added role back to context for dashboard routing
   isLoading: boolean;
   signOut: () => Promise<void>;
   theme: Theme;
   toggleTheme: () => void;
+  isOnline: boolean;
 }
 
-// --- 1. CONFIGURATION & UTILS ---
-
-/**
- * Specifically typed helper to avoid 'any' and resolve environment variables.
- * Casts import.meta.env to a known structure to satisfy ESLint.
+/** * SupabaseAuthInstance
+ * Resolved: Specific interface to avoid 'any' and provide type safety for auth and role fetching.
  */
-const getEnvVar = (key: string): string => {
+interface SupabaseAuthInstance {
+  auth: {
+    getSession: () => Promise<{ data: { session: Session | null }; error: Error | null }>;
+    onAuthStateChange: (callback: (event: AuthChangeEvent, session: Session | null) => void) => { 
+      data: { subscription: { unsubscribe: () => void } } 
+    };
+    signOut: () => Promise<{ error: Error | null }>;
+  };
+  from: (table: string) => {
+    select: (columns: string) => {
+      eq: (column: string, value: string) => {
+        single: () => Promise<{ data: { role: string } | null; error: Error | null }>;
+      };
+    };
+  };
+}
+
+/** --- MODULE RESOLUTION HANDLER --- **/
+let supabase: SupabaseAuthInstance | null = null;
+
+const initializeSupabase = async () => {
   try {
-    const env = (import.meta as unknown as { env: Record<string, string | undefined> }).env;
-    return env[key] || "";
+    const mod = await import("../../lib/database/database");
+    if (mod.supabase) {
+      supabase = mod.supabase;
+    }
   } catch {
-    return "";
+    console.warn("Vault Sync: Centralized client resolution pending...");
   }
 };
 
-const supabaseUrl = getEnvVar("VITE_SUPABASE_URL");
-const supabaseAnonKey = getEnvVar("VITE_SUPABASE_ANON_KEY");
-
-// Initialize Supabase with session persistence for "Close Tab" security
-const supabase = createClient(
-  supabaseUrl || "https://placeholder-id.supabase.co",
-  supabaseAnonKey || "placeholder-key",
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true,
-      storage: window.localStorage
-    }
-  }
-);
-
-/** --- 2. COMPONENTS: LOADING SPINNER --- **/
+/** --- UI COMPONENTS: LOADING --- **/
 
 const LoadingWorkspace = () => (
   <div className="min-h-screen bg-[#09090b] flex flex-col items-center justify-center p-6 text-center">
@@ -56,31 +61,45 @@ const LoadingWorkspace = () => (
       <div className="absolute inset-0 border-4 border-amber-500 rounded-full border-t-transparent animate-spin"></div>
       <div className="absolute inset-3 border-2 border-amber-500/30 rounded-full animate-pulse"></div>
     </div>
-    <h2 className="text-amber-500 font-black uppercase tracking-[0.5em] text-lg mb-2 italic">
-      QS POCKET KNIFE
-    </h2>
-    <p className="text-zinc-600 text-[10px] font-black uppercase tracking-widest animate-pulse">
-      Establishing Secure Link...
-    </p>
+    <div className="space-y-2">
+      <h2 className="text-amber-500 font-black uppercase tracking-[0.5em] text-lg italic">
+        QS POCKET KNIFE
+      </h2>
+      <p className="text-zinc-600 text-[10px] font-black uppercase tracking-widest animate-pulse italic">
+        Securing Workspace...
+      </p>
+    </div>
   </div>
 );
 
-// --- 3. CONTEXT ---
+// --- CONTEXT INITIALIZATION ---
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// --- 4. PROVIDER ---
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [role, setRole] = useState<UserRole | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // --- NETWORK DETECTION ---
+  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
 
-  // --- THEME LOGIC ---
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
+  // --- THEME ENGINE ---
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window === 'undefined') return "dark";
-    const saved = localStorage.getItem("qs_theme") as Theme;
-    return saved || "dark";
+    return (localStorage.getItem("qs_theme") as Theme) || "dark";
   });
 
   useEffect(() => {
@@ -90,71 +109,90 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem("qs_theme", theme);
   }, [theme]);
 
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+  const toggleTheme = () => setTheme((prev) => (prev === "light" ? "dark" : "light"));
+
+  /** --- FETCH ROLE HELPER --- **/
+  const fetchUserRole = async (userId: string) => {
+    if (!supabase) return;
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .single();
+      
+      if (!error && data) {
+        setRole(data.role as UserRole);
+      }
+    } catch (e) {
+      console.error("Error fetching role:", e);
+    }
   };
 
-  // --- AUTH LOGIC ---
+  // --- AUTH INITIALIZATION ---
   useEffect(() => {
-    const initializeAuth = async () => {
+    const startAuthHandshake = async () => {
+      if (!supabase) await initializeSupabase();
+      if (!supabase) return;
+
       try {
         const { data: { session: initialSession } } = await supabase.auth.getSession();
         setSession(initialSession);
         setUser(initialSession?.user ?? null);
-      } catch (error) {
-        console.error("Auth initialization error:", error);
+        
+        if (initialSession?.user) {
+          await fetchUserRole(initialSession.user.id);
+        }
+      } catch (err) {
+        console.error("Vault Access Error:", err);
       } finally {
-        // Professional delay to show branding
-        setTimeout(() => setIsLoading(false), 800);
+        setTimeout(() => setIsLoading(false), 600);
       }
+
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event: AuthChangeEvent, currentSession: Session | null) => {
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+        
+        if (currentSession?.user) {
+          await fetchUserRole(currentSession.user.id);
+        } else {
+          setRole(null);
+        }
+        
+        setIsLoading(false);
+      });
+
+      return () => subscription.unsubscribe();
     };
 
-    initializeAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, currentSession: Session | null) => {
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-      setIsLoading(false);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
+    startAuthHandshake();
   }, []);
 
   const signOut = async () => {
-    try {
+    if (supabase) {
       await supabase.auth.signOut();
       
-      /** * Safe dynamic clear for TanStack query cache.
-       * Uses a template string to avoid static analysis errors in the Canvas preview.
-       */
-      const clearQueryCache = async () => {
-        try {
-          const libPath = "../../lib/queryClient";
-          // Dynamic import is wrapped in try-catch to handle environment differences
-          const mod = await import(`${libPath}`);
-          if (mod?.queryClient?.clear) {
-            mod.queryClient.clear();
-          }
-        } catch {
-          // Fallback if file is unreachable
-        }
-      };
-      
-      clearQueryCache();
-    } catch (error) {
-      console.error("Sign out error:", error);
+      try {
+        import("../../lib/queryClient").then(mod => {
+          if (mod.queryClient) mod.queryClient.clear();
+        }).catch(() => {});
+      } catch {
+        /* No-op */
+      }
+
+      window.location.href = '/';
     }
   };
 
   const value: AuthContextType = {
     session,
     user,
+    role,
     isLoading,
     signOut,
     theme,
     toggleTheme,
+    isOnline,
   };
 
   return (

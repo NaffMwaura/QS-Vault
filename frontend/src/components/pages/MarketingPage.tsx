@@ -120,9 +120,13 @@ const NavigationBar = ({ onAuthClick }: { onAuthClick: () => void }) => {
             <div className="bg-amber-500 p-2 rounded-xl shadow-xl shadow-amber-500/20">
               <HardHat size={22} className="text-black" />
             </div>
-            <span className={`text-2xl font-black uppercase tracking-tighter italic ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
+            <a href="">
+       <span className={`text-3xl font-black uppercase tracking-tighter italic ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
               QS VAULT<span className="text-amber-500">.</span>
             </span>
+
+            </a>
+     
           </div>
 
           <div className={`flex items-center gap-2 px-4 py-2 rounded-full border text-[9px] font-black transition-all duration-500 uppercase tracking-[0.2em] ${
@@ -203,13 +207,13 @@ const MarketingPage = ({ onGetStarted }: { onGetStarted: () => void }) => {
             </span>
           </div>
 
-          <h1 className={`text-6xl sm:text-8xl md:text-9xl font-black mb-10 leading-[0.85] tracking-tighter transition-colors
+          <h1 className={`text-4xl sm:text-5xl md:text-6xl font-black mb-10 leading-[0.85] tracking-tighter transition-colors
             ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
-            <span className={`block min-h-[1.1em] text-transparent bg-clip-text transition-all duration-700
+            <span className={`block min-h-[1.1em] text-transparent bg-clip-text transition-all duration-1000
               ${theme === 'dark' ? 'bg-linear-to-b from-white to-zinc-600' : 'bg-linear-to-b from-zinc-900 to-zinc-500'}`}>
               {typewriterText}<span className="animate-pulse text-amber-500">_</span>
             </span>
-            <span className="block mt-6 italic text-amber-500">On-Site Mastery.</span>
+            <span className="block mt-6 italic text-amber-500 drop-shadow-2xl">On-Site Mastery.</span>
           </h1>
 
           <p className={`text-xl sm:text-2xl mb-16 max-w-4xl mx-auto font-medium leading-relaxed
