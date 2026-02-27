@@ -1,0 +1,22 @@
+# Netlify Configuration for QS Vault Deployment
+# Place this file in the root directory of your project
+
+[build]
+  # The command to compile your React application
+  command = "npm run build"
+  
+  # The directory where the production build is generated (Vite default is 'dist')
+  publish = "dist"
+
+# Handling React Router Redirects
+# This ensures that if a user refreshes the page on /admin-dashboard, 
+# Netlify redirects to index.html so React can handle the route.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[context.production.environment]
+  # These will be pulled from your Netlify UI Environment Variables
+  # You do not need to hardcode them here.
+  NODE_VERSION = "20"
