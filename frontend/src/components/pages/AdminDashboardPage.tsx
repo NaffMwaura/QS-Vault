@@ -3,13 +3,12 @@ import {
   ShieldCheck, Users, Database, Activity, 
   Search, UserPlus, Settings, Wifi, WifiOff, 
   ExternalLink, ChevronRight, ShieldAlert,
-  UserCog,  Loader2
+  UserCog, Loader2, RefreshCw
 } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 
 /** --- TYPES & INTERFACES --- **/
 
-// Expanded roles to support granular CRUD and Management permissions
 export type UserRole = 'user' | 'editor' | 'admin' | 'super-admin';
 
 export interface Profile {
@@ -23,6 +22,8 @@ export interface Profile {
 
 interface AuthContextValue {
   theme: 'light' | 'dark';
+  isOnline: boolean;
+  role: UserRole | null; // Aligned with actual AuthContext
   toggleTheme: () => void;
 }
 
@@ -39,18 +40,19 @@ interface AdminServiceMock {
 
 /* ======================================================
     MODULE RESOLUTION HANDLERS
-    Ensures the dashboard compiles in the sandbox preview.
+    Ensures the dashboard compiles in the sandbox preview
+    by providing internal mocks for missing files.
    ====================================================== */
 
+// 1. Auth Fallback
 let useAuth: () => AuthContextValue = () => ({
   theme: 'dark',
-  toggleTheme: () => { /* no-op simulation */ },
+  isOnline: true,
+  role: 'admin',
+  toggleTheme: () => {},
 });
 
-/** * Fixed AdminServiceMock Implementation:
- * Explicitly typing the 'newRole' parameter as 'UserRole' to match the interface 
- * and prevent the narrow inference of only 'admin' | 'user'.
- */
+// 2. Admin Service Fallback
 let adminService: AdminServiceMock = {
   getGlobalStats: async () => ({
     totalUsers: 12,
@@ -68,18 +70,17 @@ let adminService: AdminServiceMock = {
   }
 };
 
+// 3. Dynamic Resolution Attempt
 try {
   import("../../features/auth/AuthContext").then(mod => {
     if (mod.useAuth) useAuth = mod.useAuth;
-  }).catch(() => { /* fail-safe */ });
+  }).catch(() => {});
 
   import("../../lib/database/database").then(mod => {
-    // If the real adminService exists, we assign it, assuming its updateRole 
-    // is compatible with the broader UserRole type.
-    if (mod.adminService) adminService = mod.adminService as AdminServiceMock;
-  }).catch(() => { /* fail-safe */ });
+    if (mod.adminService) adminService = mod.adminService;
+  }).catch(() => {});
 } catch {
-  // Silent fallback for preview
+  // Fallbacks active
 }
 
 /** --- UI COMPONENTS --- **/
@@ -111,48 +112,41 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, icon: Icon, trend, co
   </div>
 );
 
-/** --- ADMIN DASHBOARD PAGE --- **/
+/** --- MAIN ADMIN DASHBOARD --- **/
 
 const AdminDashboardPage: React.FC = () => {
-  const { theme } = useAuth();
+  const { theme, isOnline, role } = useAuth();
   const navigate = useNavigate();
   
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [stats, setStats] = useState({ totalUsers: 0, totalProjects: 0, totalMeasurements: 0, systemHealth: 'Scanning...' });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
-  const [isOnline, setIsOnline] = useState(() => typeof navigator !== 'undefined' ? navigator.onLine : true);
 
-  // Connectivity Heartbeat
-  useEffect(() => {
-    const handleStatus = () => setIsOnline(navigator.onLine);
-    window.addEventListener("online", handleStatus);
-    window.addEventListener("offline", handleStatus);
-    return () => {
-      window.removeEventListener("online", handleStatus);
-      window.removeEventListener("offline", handleStatus);
-    };
-  }, []);
-
-  // Data Fetching
   const loadAdminData = async () => {
     try {
       setLoading(true);
+      setError(null);
       const [statsData, profilesData] = await Promise.all([
         adminService.getGlobalStats(),
         adminService.getAllProfiles()
       ]);
       setStats(statsData);
       setProfiles(profilesData);
-    } catch (err) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
       console.error("Admin Access Error:", err);
+      setError(err.message || "Failed to initialize secure link.");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (isOnline) loadAdminData();
+    if (isOnline) {
+      loadAdminData();
+    }
   }, [isOnline]);
 
   const handleRoleChange = async (userId: string, newRole: UserRole) => {
@@ -160,7 +154,6 @@ const AdminDashboardPage: React.FC = () => {
     setUpdatingId(userId);
     try {
       await adminService.updateRole(userId, newRole);
-      // Optimistic Update
       setProfiles(prev => prev.map(p => p.id === userId ? { ...p, role: newRole } : p));
     } catch (err) {
       console.error("Failed to update node permissions:", err);
@@ -168,6 +161,18 @@ const AdminDashboardPage: React.FC = () => {
       setUpdatingId(null);
     }
   };
+
+  // If role is loaded but not admin, we handle the mismatch UI-side as well
+  if (role && role !== 'admin' && role !== 'super-admin') {
+    return (
+      <div className="h-full flex flex-col items-center justify-center p-20 text-center space-y-6">
+        <ShieldAlert size={64} className="text-rose-500 animate-pulse" />
+        <h2 className="text-2xl font-black uppercase tracking-tighter italic">Access Denied</h2>
+        <p className="text-zinc-500 text-sm max-w-md font-medium uppercase tracking-widest">Your current node does not possess the required clearance for the Command Center.</p>
+        <button onClick={() => navigate('/dashboard')} className="px-10 py-4 bg-amber-500 text-black font-black uppercase text-xs tracking-widest rounded-2xl">Return to Dashboard</button>
+      </div>
+    );
+  }
 
   return (
     <div className={`min-h-full transition-colors duration-500 ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
@@ -188,13 +193,20 @@ const AdminDashboardPage: React.FC = () => {
           </div>
           
           <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border text-[9px] font-black transition-all duration-500 uppercase tracking-[0.2em] 
-            ${isOnline ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-600' : 'bg-red-500/5 border-red-500/20 text-red-500 animate-pulse'}`}>
+            ${isOnline 
+              ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-600' 
+              : 'bg-red-500/5 border-red-500/20 text-red-500 animate-pulse'}`}>
             {isOnline ? <Wifi size={12} /> : <WifiOff size={12} />}
             <span>{isOnline ? "Encrypted Uplink Active" : "Local Override Mode"}</span>
           </div>
         </div>
 
         <div className="flex items-center gap-4 w-full md:w-auto">
+          {error && (
+            <button onClick={loadAdminData} className="flex items-center gap-2 px-6 py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest text-rose-500 bg-rose-500/10 border border-rose-500/20">
+              <RefreshCw size={14} className={loading ? "animate-spin" : ""} /> Retry Link
+            </button>
+          )}
           <button className={`flex-1 md:flex-none flex items-center justify-center gap-3 px-8 py-5 rounded-2xl font-black uppercase text-[11px] tracking-widest border transition-all
             ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800 hover:border-amber-500/40' : 'bg-white border-zinc-200 hover:border-amber-500/40'}`}>
             <Settings size={16} /> System Config
@@ -235,7 +247,7 @@ const AdminDashboardPage: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className={`${theme === 'dark' ? 'bg-white/2 border-zinc-800/50' : 'bg-zinc-100 border-zinc-200'} border-b`}>
+              <tr className={`${theme === 'dark' ? 'bg-white/5 border-zinc-800/50' : 'bg-zinc-100 border-zinc-200'} border-b`}>
                 {["Node Identification", "Auth Integrity", "Permission Logic", "Control"].map((h) => (
                   <th key={h} className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 italic">{h}</th>
                 ))}
@@ -246,8 +258,15 @@ const AdminDashboardPage: React.FC = () => {
                 <tr>
                   <td colSpan={4} className="px-10 py-20 text-center font-mono text-[10px] uppercase tracking-[0.5em] opacity-30 animate-pulse">Initializing Data Stream...</td>
                 </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan={4} className="px-10 py-20 text-center">
+                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-rose-500 mb-4">{error}</p>
+                    <button onClick={loadAdminData} className="px-6 py-3 bg-zinc-800 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-700 transition-colors">Re-establish Handshake</button>
+                  </td>
+                </tr>
               ) : profiles.map((p) => (
-                <tr key={p.id} className="group hover:bg-amber-500/3 transition-colors">
+                <tr key={p.id} className="group hover:bg-amber-500/5 transition-colors">
                   <td className="px-10 py-8">
                     <div className="flex items-center gap-4 text-left">
                       <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center font-black text-amber-500">
