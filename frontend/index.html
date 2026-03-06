@@ -2,13 +2,44 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <!-- Updated icon to point to your public image -->
+    <link rel="icon" type="image/jpeg" href="/Prof.jfif" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>vite-project</title>
+    
+    <!-- SEO Meta Tags -->
+    <title>QS Vault | Precision Quantity Surveying & Project Management</title>
+    <meta name="description" content="The professional standard for East African Quantity Surveyors. QS Vault provides offline-capable site takeoffs, SMM compliant BoQ generation, and secure cloud synchronization." />
+    <meta name="keywords" content="Quantity Surveying, Construction Estimation, BoQ Generation, SMM Kenya, Project Management, Construction Software Africa" />
+    <meta name="author" content="Momentum Global Infrastructure" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://qs-vault.netlify.app/" />
+    <meta property="og:title" content="QS Vault | Precision Quantity Surveying OS" />
+    <meta property="og:description" content="Professional takeoff system developed for Africa. SMM compliant, encrypted, and offline-capable." />
+    <!-- Updated social image to point to your public image -->
+    <meta property="og:image" content="/Prof.jfif" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:title" content="QS Vault | Precision Quantity Surveying OS" />
+    <meta property="twitter:description" content="Eliminate errors in construction takeoffs and valuations with regional SMM compliance." />
+    <meta property="twitter:image" content="/Prof.jfif" />
+
+    <!-- Performance & Security -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="theme-color" content="#f59e0b" />
   </head>
   <body>
     <div id="root"></div>
+    <!-- Fallback for users with disabled JavaScript -->
+    <noscript>
+      <div style="text-align: center; padding: 50px; font-family: sans-serif;">
+        <h1>QS Vault Node Offline</h1>
+        <p>This application requires JavaScript to initialize the secure measurement environment.</p>
+      </div>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
