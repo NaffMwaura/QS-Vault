@@ -10,8 +10,9 @@ interface ViteEnv {
 
 const getEnvVar = (key: keyof ViteEnv): string => {
   try {
-    // Resolve environment variables with strict typing for Vite/Sandbox
-    const env = (import.meta as unknown as { env: ViteEnv }).env;
+    // Accessing environment variables in a standard Vite context
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const env = (import.meta as any).env;
     return env[key] || "";
   } catch {
     return "";
@@ -38,6 +39,7 @@ export interface Profile {
   avatar_url: string | null;
   role: UserRole;
   updated_at: string;
+  project_count?: number; // Enhanced field for Admin visibility
 }
 
 export interface Project {
@@ -94,11 +96,6 @@ export interface SyncQueueItem {
 
 /** --- 3. DEXIE LOCAL STORAGE (The Device Vault) --- **/
 
-/**
- * QSPocketKnifeDB
- * Corrected: Removed manual 'version' property which was shadowing the method.
- * Inheritance from Dexie is now properly handled.
- */
 class QSPocketKnifeDB extends Dexie {
   profiles!: Table<Profile, string>;
   projects!: Table<Project, string>;
@@ -109,7 +106,6 @@ class QSPocketKnifeDB extends Dexie {
   constructor() {
     super("QSPocketKnifeDB");
     
-    // Explicitly using the Dexie instance versioning logic
     this.version(1).stores({
       profiles: "id, username, role",
       projects: "id, user_id, updated_at",
@@ -127,6 +123,9 @@ export const db = new QSPocketKnifeDB();
 
 export const syncEngine = {
   processQueue: async () => {
+    // Guard: Don't attempt sync if offline
+    if (!navigator.onLine) return;
+
     const queue = await db.sync_queue.orderBy('id').toArray();
     if (queue.length === 0) return;
 
@@ -156,12 +155,13 @@ export const syncEngine = {
           // Clean up the local queue
           await db.sync_queue.delete(item.id!);
           
-          // Identify the correct Dexie table to update synced timestamp
+          // Update local synced timestamp
           const tableKey = item.table as keyof QSPocketKnifeDB;
           const targetTable = db[tableKey];
           
           if (targetTable && typeof targetTable === 'object' && 'update' in targetTable) {
-            // @ts-expect-error - Dynamic lookup for offline sync status update
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore - Dynamic lookup
             await targetTable.update(item.record_id, { synced_at: new Date().toISOString() });
           }
         } else {
@@ -195,31 +195,44 @@ export const syncEngine = {
   }
 };
 
-/** --- 5. ADMIN SERVICE --- **/
+/** --- 5. ADMIN SERVICE (COMMAND CENTER LOGIC) --- **/
 
 export const adminService = {
   getGlobalStats: async () => {
-    // Exact headcount HEAD queries for global dashboard overview
-    const { count: u } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
-    const { count: p } = await supabase.from('projects').select('*', { count: 'exact', head: true });
-    const { count: m } = await supabase.from('measurements').select('*', { count: 'exact', head: true });
+    // Precise headcount for global overview
+    const [uRes, pRes, mRes] = await Promise.all([
+      supabase.from('profiles').select('*', { count: 'exact', head: true }),
+      supabase.from('projects').select('*', { count: 'exact', head: true }),
+      supabase.from('measurements').select('*', { count: 'exact', head: true })
+    ]);
     
     return {
-      totalUsers: u || 0,
-      totalProjects: p || 0,
-      totalMeasurements: m || 0,
-      systemHealth: 'Optimal'
+      totalUsers: uRes.count || 0,
+      totalProjects: pRes.count || 0,
+      totalMeasurements: mRes.count || 0,
+      systemHealth: navigator.onLine ? 'Optimal' : 'Offline'
     };
   },
   
   getAllProfiles: async () => {
-    const { data, error } = await supabase
+    // 1. Fetch all user profiles
+    const { data: profiles, error } = await supabase
       .from('profiles')
       .select('*')
       .order('updated_at', { ascending: false });
     
     if (error) throw error;
-    return data as Profile[];
+
+    // 2. Fetch project distribution for node visualization
+    const { data: projects } = await supabase.from('projects').select('user_id');
+    
+    // 3. Map project counts to profiles for Admin transparency
+    const profileMap = (profiles as Profile[]).map(p => ({
+      ...p,
+      project_count: projects?.filter(proj => proj.user_id === p.id).length || 0
+    }));
+
+    return profileMap;
   },
 
   updateRole: async (userId: string, newRole: UserRole) => {

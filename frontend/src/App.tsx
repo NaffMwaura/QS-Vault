@@ -20,17 +20,17 @@ import AppShell from "./components/layout/AppShell";
 
 /**
  * RootComponent manages the top-level routing logic.
- * It is now theme-aware and connectivity-aware during the loading phase.
+ * It handles the transition between public marketing and the secure vault areas.
  */
 const RootComponent = () => {
-  const { session, isLoading, theme } = useAuth();
+  const { session, isLoading, theme, role } = useAuth();
   const navigate = useNavigate();
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
-  // Initialize the background sync engine
+  // Initialize background sync heartbeats
   useSync();
 
-  // Track connectivity for the splash screen
+  // Monitor network status for the splash screen
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
@@ -43,7 +43,9 @@ const RootComponent = () => {
   }, []);
 
   // INITIAL LOADING / SPLASH SCREEN
-  if (isLoading) {
+  // If we have a session, we wait until the role is resolved (role !== null) 
+  // to prevent standard users from seeing the Admin UI or vice-versa.
+  if (isLoading || (session && role === null)) {
     return (
       <div className={`h-screen w-screen flex flex-col items-center justify-center gap-8 transition-colors duration-700 
         ${theme === 'dark' ? 'bg-[#09090b]' : 'bg-zinc-100'}`}>
@@ -77,6 +79,10 @@ const RootComponent = () => {
     );
   }
 
+  // Define redirection logic based on Authorization Role
+  const isAdmin = role === 'admin' || role === 'super-admin';
+  const defaultProtectedRoute = isAdmin ? "/admin-dashboard" : "/dashboard";
+
   // --- PROTECTED AREA (AUTHENTICATED) ---
   if (session) {
     return (
@@ -91,10 +97,10 @@ const RootComponent = () => {
           {/* Project Deep-Dive */}
           <Route path="/projects/:id" element={<ProjectDetailPage />} />
           
-          {/* Global Redirects */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/login" element={<Navigate to="/dashboard" replace />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          {/* Automatic Redirection Logic based on clearance */}
+          <Route path="/" element={<Navigate to={defaultProtectedRoute} replace />} />
+          <Route path="/login" element={<Navigate to={defaultProtectedRoute} replace />} />
+          <Route path="*" element={<Navigate to={defaultProtectedRoute} replace />} />
         </Routes>
       </AppShell>
     );
@@ -114,7 +120,7 @@ const RootComponent = () => {
 };
 
 /**
- * Main Application Wrapper
+ * Main Application Provider Wrapper
  */
 function App() {
   return (
