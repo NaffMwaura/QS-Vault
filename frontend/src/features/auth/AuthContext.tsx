@@ -1,14 +1,14 @@
 /* eslint-disable react-refresh/only-export-components */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
 import { type Session, type User, type AuthChangeEvent } from "@supabase/supabase-js";
 
 /** --- TYPES & INTERFACES --- **/
 
 export type Theme = "light" | "dark";
 export type UserRole = 'user' | 'editor' | 'admin' | 'super-admin';
+export type DashboardView = 'projects' | 'rates' | 'settings' | 'profile';
 
 export interface AuthContextType {
   session: Session | null;
@@ -19,23 +19,29 @@ export interface AuthContextType {
   theme: Theme;
   toggleTheme: () => void;
   isOnline: boolean;
+  /** * Master View Control:
+   * This state orchestrates the handshake between the AppShell sidebar
+   * and the Dashboard content area.
+   */
+  activeView: DashboardView;
+  setActiveView: (view: DashboardView) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-/** --- MODULE RESOLUTION --- **/
+/* ======================================================
+    SUPABASE CLIENT INITIALIZATION
+   ====================================================== */
 
 let supabase: any = null;
 
 const initializeSupabase = async () => {
   try {
-    // @ts-ignore - Dynamic resolution for local project paths
+    // Dynamic import to support both Sandbox and Local environments
     const mod = await import("../../lib/database/database");
-    if (mod.supabase) {
-      supabase = mod.supabase;
-    }
+    if (mod.supabase) supabase = mod.supabase;
   } catch (e) {
-    console.warn("Vault Handshake: Database client resolution pending...");
+    console.warn("AuthContext: Supabase resolution pending...");
   }
 };
 
@@ -44,9 +50,16 @@ const initializeSupabase = async () => {
 const LoadingWorkspace = () => (
   <div className="min-h-screen bg-[#09090b] flex flex-col items-center justify-center p-6 text-center">
     <div className="relative w-24 h-24 mb-10">
-      <div className="absolute inset-0 border-4 border-zinc-800 rounded-full"></div>
-      <div className="absolute inset-0 border-4 border-amber-500 rounded-full border-t-transparent animate-spin"></div>
-      <div className="absolute inset-4 border-2 border-amber-500/30 rounded-full animate-pulse"></div>
+      {/* Outer Technical Ring */}
+      <div className="absolute inset-0 border-4 border-zinc-900 rounded-full"></div>
+      <div className="absolute inset-0 border-4 border-amber-500 rounded-full border-t-transparent animate-[spin_4s_linear_infinite]"></div>
+      
+      {/* High-Precision Measuring Ring */}
+      <div className="absolute inset-4 border-2 border-zinc-800 rounded-full"></div>
+      <div className="absolute inset-4 border-2 border-amber-400 rounded-full border-b-transparent animate-[spin_2s_linear_infinite_reverse]"></div>
+      
+      {/* Core Heartbeat Pulse */}
+      <div className="absolute inset-8 border border-amber-500/10 rounded-full animate-pulse shadow-[0_0_20px_rgba(245,158,11,0.2)]"></div>
     </div>
     <div className="space-y-2">
       <h2 className="text-amber-500 font-black uppercase tracking-[0.5em] text-lg italic leading-none">
@@ -59,7 +72,7 @@ const LoadingWorkspace = () => (
   </div>
 );
 
-// --- CONTEXT PROVIDER ---
+/** --- CONTEXT PROVIDER --- **/
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
@@ -67,8 +80,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [role, setRole] = useState<UserRole | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  
+  // Master Navigation State
+  const [activeView, setActiveView] = useState<DashboardView>(() => {
+    if (typeof window === 'undefined') return 'projects';
+    return (localStorage.getItem("qs_active_view") as DashboardView) || 'projects';
+  });
 
-  // 1. Connectivity Listener
+  // Theme Management
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window === 'undefined') return "dark";
+    return (localStorage.getItem("qs_theme") as Theme) || "dark";
+  });
+
+  // 1. Persist Navigation View
+  useEffect(() => {
+    localStorage.setItem("qs_active_view", activeView);
+  }, [activeView]);
+
+  // 2. Connectivity Listener
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
@@ -80,12 +110,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  // 2. Theme Management
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === 'undefined') return "dark";
-    return (localStorage.getItem("qs_theme") as Theme) || "dark";
-  });
-
+  // 3. Theme Sync
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove("light", "dark");
@@ -95,7 +120,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const toggleTheme = () => setTheme((prev) => (prev === "light" ? "dark" : "light"));
 
-  // 3. Optimized Role Fetcher
+  // 4. Optimized Role Fetcher
   const fetchUserRole = useCallback(async (userId: string): Promise<UserRole> => {
     if (!supabase) return 'user';
     try {
@@ -103,12 +128,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .from('profiles')
         .select('role')
         .eq('id', userId)
-        .maybeSingle(); // Safer than .single() to avoid 406 errors
+        .maybeSingle();
       
       if (error) {
-        // Logs recursion only if the DB is still misconfigured
         if (error.message.includes("recursion")) {
-          console.error("Critical: Database RLS recursion still exists.");
+          console.error("AuthNode: RLS recursion detected. Defaulting to standard user.");
         }
         return 'user'; 
       }
@@ -118,12 +142,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  // 4. Main Auth Handshake
+  // 5. Main Auth Handshake
   useEffect(() => {
     let mounted = true;
 
     const startAuthHandshake = async () => {
-      if (!supabase) await initializeSupabase();
+      await initializeSupabase();
       
       if (!supabase) {
         if (mounted) setIsLoading(false);
@@ -131,7 +155,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       try {
-        // Get initial session
         const { data: { session: initialSession } } = await supabase.auth.getSession();
         
         if (mounted) {
@@ -144,12 +167,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
       } catch (err) {
-        console.error("Vault Access Failure:", err);
+        console.error("Vault Auth Protocols: Connection Failure", err);
       } finally {
         if (mounted) setIsLoading(false);
       }
 
-      // Listen for changes (Sign in, Sign out, Token Refresh)
       const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event: AuthChangeEvent, currentSession: Session | null) => {
         if (!mounted) return;
 
@@ -161,6 +183,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (mounted) setRole(userRole);
         } else {
           setRole(null);
+          setActiveView('projects'); // Reset on logout
         }
         
         setIsLoading(false);
@@ -182,16 +205,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const value: AuthContextType = {
-    session,
-    user,
-    role,
-    isLoading,
-    signOut,
-    theme,
-    toggleTheme,
+  const value = useMemo(() => ({ 
+    session, 
+    user, 
+    role, 
+    isLoading, 
+    signOut, 
+    theme, 
+    toggleTheme, 
     isOnline,
-  };
+    activeView, 
+    setActiveView
+  }), [session, user, role, isLoading, theme, isOnline, activeView]);
 
   return (
     <AuthContext.Provider value={value}>
