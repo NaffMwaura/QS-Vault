@@ -3,29 +3,13 @@ import { createClient } from "@supabase/supabase-js";
 
 /** --- 1. CLOUD CONFIGURATION --- **/
 
-interface ViteEnv {
-  VITE_SUPABASE_URL?: string;
-  VITE_SUPABASE_ANON_KEY?: string;
-}
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-const getEnvVar = (key: keyof ViteEnv): string => {
-  try {
-    // Accessing environment variables in a standard Vite context
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const env = (import.meta as any).env;
-    return env[key] || "";
-  } catch {
-    return "";
-  }
-};
-
-const supabaseUrl = getEnvVar("VITE_SUPABASE_URL");
-const supabaseAnonKey = getEnvVar("VITE_SUPABASE_ANON_KEY");
-
-// Initialize the Supabase Client
+// Initialize the Supabase Client with failover placeholders
 export const supabase = createClient(
-  supabaseUrl || "https://placeholder-id.supabase.co",
-  supabaseAnonKey || "placeholder-key"
+  supabaseUrl || "https://placeholder.supabase.co",
+  supabaseAnonKey || "placeholder"
 );
 
 /** --- 2. DATABASE INTERFACES --- **/
@@ -39,7 +23,7 @@ export interface Profile {
   avatar_url: string | null;
   role: UserRole;
   updated_at: string;
-  project_count?: number; // Enhanced field for Admin visibility
+  project_count?: number; 
 }
 
 export interface Project {
@@ -116,14 +100,14 @@ class QSPocketKnifeDB extends Dexie {
   }
 }
 
-// Global instance of the local database
 export const db = new QSPocketKnifeDB();
 
 /** --- 4. SYNC ENGINE (Heartbeat Logic) --- **/
 
+
+
 export const syncEngine = {
   processQueue: async () => {
-    // Guard: Don't attempt sync if offline
     if (!navigator.onLine) return;
 
     const queue = await db.sync_queue.orderBy('id').toArray();
@@ -134,7 +118,7 @@ export const syncEngine = {
         let error = null;
 
         if (item.operation === 'INSERT' || item.operation === 'UPDATE') {
-          // Destructure to prevent trying to write to generated Supabase columns
+          // Remove calculated fields that Supabase shouldn't receive
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { amount: _amount, ...cleanPayload } = item.payload;
 
@@ -152,16 +136,12 @@ export const syncEngine = {
         }
 
         if (!error) {
-          // Clean up the local queue
           await db.sync_queue.delete(item.id!);
           
           // Update local synced timestamp
-          const tableKey = item.table as keyof QSPocketKnifeDB;
-          const targetTable = db[tableKey];
-          
-          if (targetTable && typeof targetTable === 'object' && 'update' in targetTable) {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore - Dynamic lookup
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const targetTable = db[item.table as keyof QSPocketKnifeDB] as Table<any, any>;
+          if (targetTable) {
             await targetTable.update(item.record_id, { synced_at: new Date().toISOString() });
           }
         } else {
@@ -199,7 +179,6 @@ export const syncEngine = {
 
 export const adminService = {
   getGlobalStats: async () => {
-    // Precise headcount for global overview
     const [uRes, pRes, mRes] = await Promise.all([
       supabase.from('profiles').select('*', { count: 'exact', head: true }),
       supabase.from('projects').select('*', { count: 'exact', head: true }),
@@ -215,7 +194,6 @@ export const adminService = {
   },
   
   getAllProfiles: async () => {
-    // 1. Fetch all user profiles
     const { data: profiles, error } = await supabase
       .from('profiles')
       .select('*')
@@ -223,10 +201,8 @@ export const adminService = {
     
     if (error) throw error;
 
-    // 2. Fetch project distribution for node visualization
     const { data: projects } = await supabase.from('projects').select('user_id');
     
-    // 3. Map project counts to profiles for Admin transparency
     const profileMap = (profiles as Profile[]).map(p => ({
       ...p,
       project_count: projects?.filter(proj => proj.user_id === p.id).length || 0
@@ -236,11 +212,15 @@ export const adminService = {
   },
 
   updateRole: async (userId: string, newRole: UserRole) => {
+    // 1. Update Cloud (Triggers the JWT metadata sync we set up in SQL)
     const { error } = await supabase
       .from('profiles')
       .update({ role: newRole })
       .eq('id', userId);
     
     if (error) throw error;
+
+    // 2. Update Local Dexie immediately for snappy UI
+    await db.profiles.update(userId, { role: newRole });
   }
 };
