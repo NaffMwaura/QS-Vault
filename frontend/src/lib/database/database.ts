@@ -1,10 +1,20 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Dexie, type Table } from "dexie";
 import { createClient } from "@supabase/supabase-js";
 
 /** --- 1. CLOUD CONFIGURATION --- **/
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Safe environment variable access for Vite/Vercel/Netlify environments
+const getEnv = (key: string) => {
+  try {
+    return import.meta.env[key] || "";
+  } catch {
+    return "";
+  }
+};
+
+const supabaseUrl = getEnv('VITE_SUPABASE_URL');
+const supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY');
 
 // Initialize the Supabase Client with failover placeholders
 export const supabase = createClient(
@@ -37,6 +47,7 @@ export interface Project {
   created_at: string;
   updated_at: string;
   synced_at?: string;
+  username?: string; // Virtual join field for admin view
 }
 
 export interface BillItem {
@@ -104,8 +115,6 @@ export const db = new QSPocketKnifeDB();
 
 /** --- 4. SYNC ENGINE (Heartbeat Logic) --- **/
 
-
-
 export const syncEngine = {
   processQueue: async () => {
     if (!navigator.onLine) return;
@@ -120,7 +129,7 @@ export const syncEngine = {
         if (item.operation === 'INSERT' || item.operation === 'UPDATE') {
           // Remove calculated fields that Supabase shouldn't receive
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { amount: _amount, ...cleanPayload } = item.payload;
+          const { amount: _amount, ...cleanPayload } = item.payload as any;
 
           const { error: upsertError } = await supabase
             .from(item.table)
@@ -138,10 +147,9 @@ export const syncEngine = {
         if (!error) {
           await db.sync_queue.delete(item.id!);
           
-          // Update local synced timestamp
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // Update local synced timestamp in the specific table
           const targetTable = db[item.table as keyof QSPocketKnifeDB] as Table<any, any>;
-          if (targetTable) {
+          if (targetTable && typeof targetTable.update === 'function') {
             await targetTable.update(item.record_id, { synced_at: new Date().toISOString() });
           }
         } else {
@@ -178,6 +186,9 @@ export const syncEngine = {
 /** --- 5. ADMIN SERVICE (COMMAND CENTER LOGIC) --- **/
 
 export const adminService = {
+  // Expose raw client for UI joins if necessary
+  supabase,
+
   getGlobalStats: async () => {
     const [uRes, pRes, mRes] = await Promise.all([
       supabase.from('profiles').select('*', { count: 'exact', head: true }),
@@ -189,7 +200,7 @@ export const adminService = {
       totalUsers: uRes.count || 0,
       totalProjects: pRes.count || 0,
       totalMeasurements: mRes.count || 0,
-      systemHealth: navigator.onLine ? 'Optimal' : 'Offline'
+      systemHealth: typeof navigator !== 'undefined' && navigator.onLine ? 'Optimal' : 'Offline'
     };
   },
   
@@ -203,16 +214,33 @@ export const adminService = {
 
     const { data: projects } = await supabase.from('projects').select('user_id');
     
-    const profileMap = (profiles as Profile[]).map(p => ({
+    return (profiles as Profile[]).map(p => ({
       ...p,
       project_count: projects?.filter(proj => proj.user_id === p.id).length || 0
     }));
+  },
 
-    return profileMap;
+  /** * NEW: Fetch all projects across all user nodes. 
+   * Requires Admin RLS bypass policies in Supabase.
+   */
+  getAllProjects: async () => {
+    const { data, error } = await supabase
+      .from('projects')
+      .select(`
+        *,
+        profiles:user_id (username)
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    return data.map((p: any) => ({
+      ...p,
+      username: p.profiles?.username || 'Unknown Node'
+    }));
   },
 
   updateRole: async (userId: string, newRole: UserRole) => {
-    // 1. Update Cloud (Triggers the JWT metadata sync we set up in SQL)
     const { error } = await supabase
       .from('profiles')
       .update({ role: newRole })
@@ -220,7 +248,21 @@ export const adminService = {
     
     if (error) throw error;
 
-    // 2. Update Local Dexie immediately for snappy UI
-    await db.profiles.update(userId, { role: newRole });
+    // Update Local Dexie immediately for a snappy UI
+    try {
+      await db.profiles.update(userId, { role: newRole });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (e) {
+      // Profile might not exist in local cache yet
+    }
+  },
+
+  deleteProject: async (projectId: string) => {
+    const { error } = await supabase
+      .from('projects')
+      .delete()
+      .eq('id', projectId);
+    
+    if (error) throw error;
   }
 };
