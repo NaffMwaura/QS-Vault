@@ -153,9 +153,9 @@ const NavigationBar = ({ onAuthClick }: { onAuthClick: () => void }) => {
           <button
             onClick={onAuthClick}
             className={`hidden sm:block text-[11px] font-black uppercase tracking-[0.2em] transition-colors
-              ${theme === 'dark' ? 'text-zinc-500 hover:text-amber-500' : 'text-zinc-500 hover:text-amber-600'}`}
+              ${theme === 'dark' ? 'text-zinc-200 hover:text-amber-500' : 'text-zinc-500 hover:text-amber-600'}`}
           >
-            Vault Access
+             Login
           </button>
           
           <button
@@ -324,7 +324,7 @@ const MarketingPage = ({ onGetStarted }: { onGetStarted: () => void }) => {
               <div className="flex items-center gap-5">
                 <div className="w-14 h-14 rounded-2xl bg-amber-500 flex items-center justify-center font-black text-black text-xl shadow-lg">JM</div>
                 <div>
-                  <p className={`font-black text-[11px] uppercase tracking-[0.2em] ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>Jane Mwangi</p>
+                  <p className={`font-black text-[11px] uppercase tracking-[0.2em] ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>Denzel Damba</p>
                   <p className="text-zinc-500 text-[10px] uppercase tracking-[0.2em] mt-1 font-bold">Lead QS / Centum RE</p>
                 </div>
               </div>
@@ -338,7 +338,7 @@ const MarketingPage = ({ onGetStarted }: { onGetStarted: () => void }) => {
               <div className="flex items-center gap-5">
                 <div className="w-14 h-14 rounded-2xl bg-zinc-800 flex items-center justify-center font-black text-amber-500 text-xl border border-zinc-700 shadow-lg">MO</div>
                 <div>
-                  <p className={`font-black text-[11px] uppercase tracking-[0.2em] ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>Michael Otieno</p>
+                  <p className={`font-black text-[11px] uppercase tracking-[0.2em] ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>Naff Mwaura</p>
                   <p className="text-zinc-500 text-[10px] uppercase tracking-[0.2em] mt-1 font-bold">Chartered Project Manager</p>
                 </div>
               </div>

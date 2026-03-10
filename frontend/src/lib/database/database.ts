@@ -258,11 +258,23 @@ export const adminService = {
   },
 
   deleteProject: async (projectId: string) => {
+    // 1. Delete from Supabase (Cloud)
     const { error } = await supabase
       .from('projects')
       .delete()
       .eq('id', projectId);
     
     if (error) throw error;
+
+    // 2. Delete from Dexie (Local)
+    // IMPORTANT: This only deletes it from the ADMIN'S local database.
+    // To remove it from the User's device, the user's Sync Engine needs 
+    // a "Clean-up" cycle that checks if local projects still exist in Supabase.
+    try {
+      await db.projects.delete(projectId);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (e) {
+      console.warn("Project not found in local cache, cloud deletion succeeded.");
+    }
   }
 };
