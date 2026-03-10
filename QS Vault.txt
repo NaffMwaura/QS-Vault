@@ -1,0 +1,81 @@
+QS Vault: Professional Modular Architecture
+
+To ease debugging and mirror the professional Quantity Surveying workflow, we are splitting the current monolithic files into logical sub-modules. This structure follows the SMM-KE (Standard Method of Measurement) hierarchy.
+
+1. Global Layout Modules
+
+SidebarCommand.tsx: Handles primary node navigation (Registry, Rates, Settings).
+
+HUDHeader.tsx: Provides session metadata, connectivity status, and the Identity Dropdown.
+
+2. Dashboard Sub-Components
+
+StatGrid.tsx: Real-time infrastructure metrics (Vaults, Takeoffs, Node Health).
+
+VaultRegistry.tsx: The master project inventory.
+
+RatesLibrary.tsx: The regional resource database (Material, Labor, Plant).
+
+IdentityNode.tsx: Profile and security clearance management.
+
+3. Takeoff Engine (Project Details)
+
+CalibrationNode.tsx: Dedicated scale and unit setting (Crucial for precision).
+
+BlueprintViewport.tsx: The PDF rendering and SVG measurement overlay logic.
+
+GeometricRegistry.tsx: The "Stream" of raw measurements captured from the site node.
+
+SMMWorkSections.tsx: Tool selection and section mapping (Excavations, Concrete, etc.).
+
+4. Billing & Analytics
+
+BoQGenerator.tsx: Translates raw takeoff dimensions into priced Bill items.
+
+ArtifactsVault.tsx: PDF/Excel generation for Interim Payment Certificates (IPC) and Elemental Estimates.
+
+5. Professional QS Workflow Enhancements
+
+Audit Handshake: Every measurement now links back to a specific coordinate on the drawing.
+
+Waste Factor Overrides: Ability to add percentage-based waste per material category.
+
+Valuation Delta: Comparing "Measured Quantities" vs "Contract Quantities" for Certifications.
+
+
+Splitting the components in the dashboard pages
+
+======================
+          ||
+          ||
+          ||
+          ||
+         \  /
+          \/
+
+          # 1. Create Directories
+mkdir -p src/components/layout
+mkdir -p src/features/projects/components
+mkdir -p src/features/auth/components
+mkdir -p src/features/takeoff/components
+mkdir -p src/features/boq/components
+
+# 2. Create Global Layout Files
+touch src/components/layout/SidebarCommand.tsx
+touch src/components/layout/HUDHeader.tsx
+
+# 3. Create Dashboard Component Files
+touch src/features/projects/components/StatGrid.tsx
+touch src/features/projects/components/VaultRegistry.tsx
+touch src/features/projects/components/RatesLibrary.tsx
+touch src/features/auth/components/IdentityNode.tsx
+
+# 4. Create Takeoff Engine Files
+touch src/features/takeoff/components/CalibrationNode.tsx
+touch src/features/takeoff/components/BlueprintViewport.tsx
+touch src/features/takeoff/components/GeometricRegistry.tsx
+touch src/features/takeoff/components/SMMWorkSections.tsx
+
+# 5. Create Billing & Analytics Files
+touch src/features/boq/components/BoQGenerator.tsx
+touch src/features/boq/components/ArtifactsVault.tsx
