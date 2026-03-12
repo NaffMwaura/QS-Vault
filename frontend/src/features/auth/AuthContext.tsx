@@ -20,7 +20,7 @@ export interface AuthContextType {
   toggleTheme: () => void;
   isOnline: boolean;
   /** * Master View Control:
-   * This state orchestrates the handshake between the AppShell sidebar
+   * This state orchestrates the view between the AppShell sidebar
    * and the Dashboard content area.
    */
   activeView: DashboardView;
@@ -41,7 +41,7 @@ const initializeSupabase = async () => {
     const mod = await import("../../lib/database/database");
     if (mod.supabase) supabase = mod.supabase;
   } catch (e) {
-    console.warn("AuthContext: Supabase resolution pending...");
+    console.warn("Office Security: Connection to database pending...");
   }
 };
 
@@ -50,11 +50,11 @@ const initializeSupabase = async () => {
 const LoadingWorkspace = () => (
   <div className="min-h-screen bg-[#09090b] flex flex-col items-center justify-center p-6 text-center">
     <div className="relative w-24 h-24 mb-10">
-      {/* Outer Technical Ring */}
+      {/* Outer Decorative Ring */}
       <div className="absolute inset-0 border-4 border-zinc-900 rounded-full"></div>
-      <div className="absolute inset-0 border-4 border-amber-500 rounded-full border-t-transparent animate-[spin_4s_linear_infinite]"></div>
+      <div className="absolute inset-0 border-4 border-amber-500 rounded-full border-t-transparent animate-[spin_3s_linear_infinite]"></div>
       
-      {/* High-Precision Measuring Ring */}
+      {/* Precision Measuring Ring */}
       <div className="absolute inset-4 border-2 border-zinc-800 rounded-full"></div>
       <div className="absolute inset-4 border-2 border-amber-400 rounded-full border-b-transparent animate-[spin_2s_linear_infinite_reverse]"></div>
       
@@ -66,7 +66,7 @@ const LoadingWorkspace = () => (
         QS POCKET KNIFE
       </h2>
       <p className="text-zinc-600 text-[10px] font-black uppercase tracking-widest animate-pulse italic">
-        Securing Workspace Node...
+        Preparing your office workspace...
       </p>
     </div>
   </div>
@@ -131,9 +131,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .maybeSingle();
       
       if (error) {
-        if (error.message.includes("recursion")) {
-          console.error("AuthNode: RLS recursion detected. Defaulting to standard user.");
-        }
         return 'user'; 
       }
       return (data?.role as UserRole) || 'user';
@@ -142,11 +139,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  // 5. Main Auth Handshake
+  // 5. Main Authentication Process
   useEffect(() => {
     let mounted = true;
 
-    const startAuthHandshake = async () => {
+    const startAuthProcess = async () => {
       await initializeSupabase();
       
       if (!supabase) {
@@ -167,7 +164,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
       } catch (err) {
-        console.error("Vault Auth Protocols: Connection Failure", err);
+        console.error("Office Security: Connection Failure", err);
       } finally {
         if (mounted) setIsLoading(false);
       }
@@ -183,7 +180,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (mounted) setRole(userRole);
         } else {
           setRole(null);
-          setActiveView('projects'); // Reset on logout
+          setActiveView('projects'); // Reset view on logout
         }
         
         setIsLoading(false);
@@ -195,13 +192,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
     };
 
-    startAuthHandshake();
+    startAuthProcess();
   }, [fetchUserRole]);
 
+  /** * REFINED SIGN OUT
+   * We remove the hard page reload (window.location.href) to allow
+   * React Router to handle the transition smoothly.
+   */
   const signOut = async () => {
     if (supabase) {
       await supabase.auth.signOut();
-      window.location.href = '/';
+      // The onAuthStateChange listener above will trigger and set user to null,
+      // which causes the App.tsx router to automatically show the login page.
     }
   };
 

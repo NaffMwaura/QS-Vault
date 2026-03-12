@@ -5,7 +5,6 @@ import {
   WifiOff, 
   ChevronRight, 
   ChevronDown,
-  User as 
   Settings, 
   Edit3, 
   LogOut,
@@ -21,10 +20,10 @@ import {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let useAuth: any = () => ({
-  user: { id: 'dev-node-001', email: 'surveyor@vault.systems', user_metadata: { full_name: 'Naftaly Mwaura' } },
-  signOut: async () => console.log("Secure Logout Protocol Executed"),
+  user: { id: 'dev-user-001', email: 'surveyor@vault.systems', user_metadata: { full_name: 'Naftaly Mwaura' } },
+  signOut: async () => console.log("Logout Initiated"),
   theme: 'dark',
-  toggleTheme: () => console.log("Theme Toggle Executed"),
+  toggleTheme: () => console.log("Theme Toggle"),
   isOnline: true
 });
 
@@ -65,7 +64,7 @@ const HUDHeader: React.FC<HUDHeaderProps> = ({ activeView, setActiveView }) => {
   }, []);
 
   const getInitials = () => {
-    const name = user?.user_metadata?.full_name || 'Surveyor Node';
+    const name = user?.user_metadata?.full_name || 'User';
     return name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
@@ -75,29 +74,30 @@ const HUDHeader: React.FC<HUDHeaderProps> = ({ activeView, setActiveView }) => {
     <header className={`h-16 sm:h-20 border-b flex items-center justify-between px-4 sm:px-8 z-50 backdrop-blur-md transition-all duration-300 sticky top-0
       ${theme === 'dark' ? 'bg-[#09090b]/80 border-zinc-800/40 shadow-lg' : 'bg-white border-zinc-200 shadow-sm'}`}>
       
-      {/* 1. Connectivity Sentinel & Breadcrumbs */}
+      {/* 1. Connection Status & Navigation Info */}
       <div className="flex items-center gap-2 sm:gap-4">
         <div className={`flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border transition-all duration-500
           ${!isOnline 
             ? 'bg-red-500/10 border-red-500/30 text-red-500 animate-pulse' 
             : theme === 'dark' ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-600' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
            {isOnline ? <Wifi size={12} /> : <WifiOff size={12} />}
-           <span className={`text-[8px] sm:text-[9px] font-black uppercase tracking-[0.2em]`}>
-             {isOnline ? 'Vault Synced' : 'Local Protocol'}
+           <span className={`text-[8px] sm:text-[9px] font-black uppercase tracking-widest`}>
+             {isOnline ? 'Online & Synced' : 'Working Offline'}
            </span>
         </div>
         <ChevronRight size={14} className="text-zinc-600 hidden xs:block" />
-        <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-amber-500 italic truncate max-w-100px] xs:max-w-none leading-none">
-          {activeView.toUpperCase()} MODE
+        <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-amber-500 italic truncate max-w-120px] xs:max-w-none leading-none">
+          {activeView === 'projects' ? 'PROJECT LIST' : activeView.toUpperCase()}
         </span>
       </div>
 
-      {/* 2. Identity Handshake Module */}
+      {/* 2. User Profile & Settings */}
       <div className="flex items-center gap-2 sm:gap-6">
-        {/* Quick Theme Switcher (Visible on desktop) */}
+        {/* Appearance Toggle */}
         <button 
           onClick={toggleTheme}
           className={`p-2 rounded-xl transition-colors hidden sm:block ${theme === 'dark' ? 'hover:bg-zinc-800 text-zinc-500' : 'hover:bg-zinc-100 text-zinc-400'}`}
+          title="Switch Light/Dark Mode"
         >
           {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
         </button>
@@ -116,7 +116,7 @@ const HUDHeader: React.FC<HUDHeaderProps> = ({ activeView, setActiveView }) => {
                 {fullName.split(' ')[0]}
               </p>
               <p className="text-[8px] font-bold uppercase tracking-[0.4em] mt-1 text-zinc-500 flex items-center gap-1 justify-end">
-                REF: {user?.id?.slice(0, 8).toUpperCase() || 'OFFLINE'} <ChevronDown size={8} className={`transition-transform duration-300 ${showDropdown ? 'rotate-180' : ''}`} />
+                ID: {user?.id?.slice(0, 8).toUpperCase() || 'LOCAL'} <ChevronDown size={8} className={`transition-transform duration-300 ${showDropdown ? 'rotate-180' : ''}`} />
               </p>
             </div>
             <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl border transition-all duration-300 overflow-hidden flex items-center justify-center shadow-inner
@@ -128,13 +128,13 @@ const HUDHeader: React.FC<HUDHeaderProps> = ({ activeView, setActiveView }) => {
             </div>
           </button>
 
-          {/* Identity Dropdown Overlay */}
+          {/* Profile Menu Overlay */}
           {showDropdown && (
             <div className={`absolute top-full right-0 mt-3 w-60 sm:w-64 rounded-2xl border shadow-2xl backdrop-blur-3xl p-2 z-100] animate-in fade-in zoom-in-95 duration-200
               ${theme === 'dark' ? 'bg-zinc-950/95 border-zinc-800 shadow-black/50' : 'bg-white/95 border-zinc-200 shadow-zinc-200'}`}>
               
               <div className="px-4 py-3 mb-2 border-b border-zinc-800/50">
-                <p className="text-[9px] font-black uppercase text-zinc-500 tracking-widest mb-1 leading-none">Authentication Node</p>
+                <p className="text-[9px] font-black uppercase text-zinc-500 tracking-widest mb-1 leading-none">Your Account</p>
                 <p className="text-[11px] font-bold truncate text-amber-500 italic leading-none">{user?.email}</p>
               </div>
               
@@ -144,17 +144,17 @@ const HUDHeader: React.FC<HUDHeaderProps> = ({ activeView, setActiveView }) => {
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all
                     ${theme === 'dark' ? 'text-zinc-400 hover:bg-zinc-800 hover:text-white' : 'text-zinc-600 hover:bg-zinc-100 hover:text-black'}`}
                 >
-                  <Settings size={14} className="text-amber-500" /> Vault Configuration
+                  <Settings size={14} className="text-amber-500" /> Office Settings
                 </button>
                 <button 
                   onClick={() => { setActiveView('profile'); setShowDropdown(false); }}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all
                     ${theme === 'dark' ? 'text-zinc-400 hover:bg-zinc-800 hover:text-white' : 'text-zinc-600 hover:bg-zinc-100 hover:text-black'}`}
                 >
-                  <Edit3 size={14} className="text-amber-500" /> Edit Node Identity
+                  <Edit3 size={14} className="text-amber-500" /> Edit My Profile
                 </button>
                 
-                {/* Mobile-only toggle */}
+                {/* Mobile appearance toggle */}
                 <div className="sm:hidden">
                   <button 
                     onClick={toggleTheme}
@@ -162,7 +162,7 @@ const HUDHeader: React.FC<HUDHeaderProps> = ({ activeView, setActiveView }) => {
                       ${theme === 'dark' ? 'text-zinc-400 hover:bg-zinc-800 hover:text-white' : 'text-zinc-600 hover:bg-zinc-100 hover:text-black'}`}
                   >
                     {theme === 'dark' ? <Sun size={14} className="text-amber-500" /> : <Moon size={14} className="text-amber-500" />} 
-                    Switch Appearance
+                    Change Theme
                   </button>
                 </div>
 
@@ -172,7 +172,7 @@ const HUDHeader: React.FC<HUDHeaderProps> = ({ activeView, setActiveView }) => {
                   onClick={() => { setShowDropdown(false); signOut(); }}
                   className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-rose-500 hover:bg-rose-500/10 transition-all"
                 >
-                  <LogOut size={14} /> Terminate Handshake
+                  <LogOut size={14} /> Logout
                 </button>
               </div>
             </div>

@@ -1,10 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Dexie, type Table } from "dexie";
 import { createClient } from "@supabase/supabase-js";
 
 /** --- 1. CLOUD CONFIGURATION --- **/
 
-// Safe environment variable access for Vite/Vercel/Netlify environments
 const getEnv = (key: string) => {
   try {
     return import.meta.env[key] || "";
@@ -16,7 +16,6 @@ const getEnv = (key: string) => {
 const supabaseUrl = getEnv('VITE_SUPABASE_URL');
 const supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY');
 
-// Initialize the Supabase Client with failover placeholders
 export const supabase = createClient(
   supabaseUrl || "https://placeholder.supabase.co",
   supabaseAnonKey || "placeholder"
@@ -47,7 +46,7 @@ export interface Project {
   created_at: string;
   updated_at: string;
   synced_at?: string;
-  username?: string; // Virtual join field for admin view
+  username?: string; 
 }
 
 export interface BillItem {
@@ -73,11 +72,14 @@ export interface Measurement {
   project_id: string;
   bill_item_id: string | null;
   label: string | null;
+  type: 'length' | 'area' | 'count';
   value: number;
   unit: string;
+  sectionCode: string; // Added to support SMM Work Section filtering
   points: CanvasPoint[] | null; 
   created_at: string;
   updated_at: string;
+  timestamp: string; // Used for "Recent Audit Entries" on dashboard
 }
 
 export interface SyncQueueItem {
@@ -101,11 +103,12 @@ class QSPocketKnifeDB extends Dexie {
   constructor() {
     super("QSPocketKnifeDB");
     
+    // Schema versioning with indices for high-speed QS queries
     this.version(1).stores({
       profiles: "id, username, role",
       projects: "id, user_id, updated_at",
       bill_items: "id, project_id, item_code",
-      measurements: "id, project_id, bill_item_id",
+      measurements: "id, project_id, bill_item_id, sectionCode, timestamp",
       sync_queue: "++id, table, operation, record_id, created_at"
     });
   }
@@ -127,8 +130,7 @@ export const syncEngine = {
         let error = null;
 
         if (item.operation === 'INSERT' || item.operation === 'UPDATE') {
-          // Remove calculated fields that Supabase shouldn't receive
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          // Clean payload of UI-only calculated fields before cloud injection
           const { amount: _amount, ...cleanPayload } = item.payload as any;
 
           const { error: upsertError } = await supabase
@@ -145,19 +147,20 @@ export const syncEngine = {
         }
 
         if (!error) {
+          // Success: Remove from local queue
           await db.sync_queue.delete(item.id!);
           
-          // Update local synced timestamp in the specific table
+          // Mark local record as synced
           const targetTable = db[item.table as keyof QSPocketKnifeDB] as Table<any, any>;
           if (targetTable && typeof targetTable.update === 'function') {
             await targetTable.update(item.record_id, { synced_at: new Date().toISOString() });
           }
         } else {
-          console.error(`[SyncEngine] Supabase error for ${item.table}:`, error.message);
-          break;
+          console.error(`[Office Sync] Supabase error for ${item.table}:`, error.message);
+          break; // Stop processing queue on error to maintain data integrity
         }
       } catch (err) {
-        console.error(`[SyncEngine] Sync Handshake Failure:`, err);
+        console.error(`[Office Sync] Handshake Failure:`, err);
         break; 
       }
     }
@@ -177,6 +180,7 @@ export const syncEngine = {
       created_at: Date.now()
     });
     
+    // Attempt immediate sync if connection is detected
     if (navigator.onLine) {
       syncEngine.processQueue();
     }
@@ -186,7 +190,6 @@ export const syncEngine = {
 /** --- 5. ADMIN SERVICE (COMMAND CENTER LOGIC) --- **/
 
 export const adminService = {
-  // Expose raw client for UI joins if necessary
   supabase,
 
   getGlobalStats: async () => {
@@ -220,9 +223,6 @@ export const adminService = {
     }));
   },
 
-  /** * NEW: Fetch all projects across all user nodes. 
-   * Requires Admin RLS bypass policies in Supabase.
-   */
   getAllProjects: async () => {
     const { data, error } = await supabase
       .from('projects')
@@ -248,17 +248,14 @@ export const adminService = {
     
     if (error) throw error;
 
-    // Update Local Dexie immediately for a snappy UI
     try {
       await db.profiles.update(userId, { role: newRole });
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
-      // Profile might not exist in local cache yet
+      // Local profile cache might not be initialized
     }
   },
 
   deleteProject: async (projectId: string) => {
-    // 1. Delete from Supabase (Cloud)
     const { error } = await supabase
       .from('projects')
       .delete()
@@ -266,15 +263,10 @@ export const adminService = {
     
     if (error) throw error;
 
-    // 2. Delete from Dexie (Local)
-    // IMPORTANT: This only deletes it from the ADMIN'S local database.
-    // To remove it from the User's device, the user's Sync Engine needs 
-    // a "Clean-up" cycle that checks if local projects still exist in Supabase.
     try {
       await db.projects.delete(projectId);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
-      console.warn("Project not found in local cache, cloud deletion succeeded.");
+      // Record not present in local admin cache
     }
   }
 };

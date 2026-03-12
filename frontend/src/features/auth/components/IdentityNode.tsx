@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState,  type ChangeEvent } from 'react';
 import { 
   Camera, 
@@ -13,20 +14,26 @@ import {
 } from 'lucide-react';
 
 /* ======================================================
-    MODULE RESOLUTION HANDLER (SANDBOX COMPATIBILITY)
+    MODULE RESOLUTION HANDLER (PRODUCTION READY)
    ====================================================== */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// Default mock for stability in the Canvas environment
 let useAuth: any = () => ({
-  user: { id: 'cf61d25e-22d', email: 'surveyor@vault.systems', user_metadata: { full_name: 'Naftaly Mwaura' } },
+  user: { id: 'dev-user-001', email: 'surveyor@vault.systems', user_metadata: { full_name: 'Naftaly Mwaura' } },
   theme: 'dark',
 });
 
+let db: any = null;
+let syncEngine: any = null;
+
 const resolveModules = async () => {
   try {
-    // @ts-
-    const authMod = await import("../../../features/auth/AuthContext");
+    const authMod = await import("../../auth/AuthContext");
     if (authMod.useAuth) useAuth = authMod.useAuth;
+
+    const dbMod = await import("../../../lib/database/database");
+    if (dbMod.db) db = dbMod.db; 
+    if (dbMod.syncEngine) syncEngine = dbMod.syncEngine;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     // Sandbox fallback
@@ -42,7 +49,7 @@ interface IdentityNodeProps {
   onUpdateComplete?: () => void;
 }
 
-/** --- MAIN COMPONENT --- **/
+/** --- MAIN COMPONENT: PROFILE SETTINGS --- **/
 
 const IdentityNode: React.FC<IdentityNodeProps> = ({ onBack, onUpdateComplete }) => {
   const { user, theme } = useAuth();
@@ -52,7 +59,7 @@ const IdentityNode: React.FC<IdentityNodeProps> = ({ onBack, onUpdateComplete })
   const [isUpdating, setIsUpdating] = useState(false);
   const [hasChanged, setHasChanged] = useState(false);
 
-  // Sync initials
+  // Generate initials for the avatar fallback
   const getInitials = () => fullName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
 
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
@@ -65,22 +72,47 @@ const IdentityNode: React.FC<IdentityNodeProps> = ({ onBack, onUpdateComplete })
     }
   };
 
-  const handleCommitMutation = async () => {
+  /** * DATA PERSISTENCE HANDSHAKE
+   * Saves to local Dexie storage immediately and queues a sync to Supabase.
+   */
+  const handleUpdateProfile = async () => {
+    if (!user || !db) return;
     setIsUpdating(true);
-    // Simulate encryption and local storage handshake
-    setTimeout(() => {
-      setIsUpdating(false);
+
+    const profileData = {
+      id: user.id,
+      full_name: fullName,
+      updated_at: new Date().toISOString()
+    };
+
+    try {
+      // 1. SAVE TO DEVICE (DEXIE) - Works without Wi-Fi
+      await db.profiles.update(user.id, profileData);
+
+      // 2. QUEUE FOR CLOUD (SUPABASE) - Syncs when online
+      if (syncEngine?.queueChange) {
+        await syncEngine.queueChange('profiles', user.id, 'UPDATE', profileData);
+      }
+      
       setHasChanged(false);
       if (onUpdateComplete) onUpdateComplete();
-    }, 1500);
+      
+      // Visual feedback delay
+      setTimeout(() => setIsUpdating(false), 1000);
+    } catch (err) {
+      console.error("Profile Update Error:", err);
+      setIsUpdating(false);
+    }
   };
 
   return (
     <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700 text-left">
+      
+      {/* Profile Card Container */}
       <div className={`p-8 sm:p-20 rounded-[4rem] sm:rounded-[5rem] backdrop-blur-3xl border relative overflow-hidden transition-all duration-500
-        ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800 shadow-2xl' : 'bg-white border-zinc-200 shadow-xl'}`}>
+        ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800 shadow-2xl shadow-black' : 'bg-white border-zinc-200 shadow-xl'}`}>
         
-        {/* 1. Navigation Anchor */}
+        {/* 1. Back to Office Link */}
         <button 
           onClick={onBack} 
           className={`absolute top-8 sm:top-12 left-8 sm:left-12 p-4 sm:p-5 rounded-2xl border transition-all active:scale-90 shadow-xl group
@@ -89,12 +121,12 @@ const IdentityNode: React.FC<IdentityNodeProps> = ({ onBack, onUpdateComplete })
           <ArrowLeft size={28} className="group-hover:-translate-x-1 transition-transform" />
         </button>
 
-        {/* 2. Visual Identity Node */}
+        {/* 2. Avatar Node */}
         <div className="relative w-48 sm:w-56 h-48 sm:h-56 mx-auto mb-12 group">
           <div className={`w-full h-full rounded-[4rem] border-8 overflow-hidden shadow-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-105
-            ${theme === 'dark' ? 'bg-zinc-950 border-amber-500/10' : 'bg-zinc-50 border-amber-500/5'}`}>
+            ${theme === 'dark' ? 'bg-zinc-950 border-amber-500/10' : 'bg-zinc-50 border-amber-500/5 shadow-inner'}`}>
             {profileImage ? (
-              <img src={profileImage} className="w-full h-full object-cover" alt="Profile Node" />
+              <img src={profileImage} className="w-full h-full object-cover" alt="User Profile" />
             ) : (
               <div className="text-zinc-800 font-black text-6xl italic select-none">
                 {getInitials() || '?'}
@@ -108,48 +140,49 @@ const IdentityNode: React.FC<IdentityNodeProps> = ({ onBack, onUpdateComplete })
           </label>
         </div>
 
-        {/* 3. Textual Identity Node */}
+        {/* 3. Header Info */}
         <div className="space-y-4 text-center mb-16">
           <h2 className={`text-5xl sm:text-6xl font-black italic tracking-tighter uppercase leading-none wrap-break-word
             ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
-            {fullName || 'Unidentified Node'}
+            {fullName || 'New Profile'}
           </h2>
           <div className="flex items-center justify-center gap-3">
             <ShieldCheck size={16} className="text-amber-500" />
-            <p className="text-sm font-black text-amber-500 uppercase tracking-[0.5em] italic leading-none">
-              Level 4 Node Access
+            <p className="text-sm font-black text-amber-500 uppercase tracking-[0.3em] italic leading-none">
+              Professional Account Verified
             </p>
           </div>
         </div>
 
-        {/* 4. Configuration Inputs */}
+        {/* 4. Form Controls */}
         <div className="space-y-8 pt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-3 text-left">
-              <label className="text-[10px] font-black uppercase text-zinc-600 ml-4 tracking-[0.4em] italic leading-none">
-                Identity Display Name
+              <label className="text-[10px] font-black uppercase text-zinc-500 ml-4 tracking-[0.4em] italic">
+                Display Name
               </label>
               <div className="relative">
                 <UserIcon size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-700" />
                 <input 
+                  placeholder="Your Full Name..."
                   value={fullName} 
                   onChange={e => { setFullName(e.target.value); setHasChanged(true); }}
                   className={`w-full p-6 pl-14 rounded-4xl border outline-none font-bold text-lg transition-all shadow-inner
-                    ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800 text-white focus:border-amber-500/40' : 'bg-zinc-50 border-zinc-200 text-zinc-900 focus:border-amber-500/40'}`} 
+                    ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800 text-white focus:border-amber-500' : 'bg-zinc-50 border-zinc-200 text-zinc-900 focus:border-amber-500'}`} 
                 />
               </div>
             </div>
 
-            <div className="space-y-3 text-left opacity-60 grayscale cursor-not-allowed">
-              <label className="text-[10px] font-black uppercase text-zinc-600 ml-4 tracking-[0.4em] italic leading-none">
-                Registered Email node
+            <div className="space-y-3 text-left opacity-60">
+              <label className="text-[10px] font-black uppercase text-zinc-500 ml-4 tracking-[0.4em] italic">
+                Registered Email
               </label>
               <div className="relative">
                 <Mail size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-700" />
                 <input 
                   disabled
                   value={user?.email || ''}
-                  className={`w-full p-6 pl-14 rounded-4xl border outline-none font-bold text-lg
+                  className={`w-full p-6 pl-14 rounded-4xl border outline-none font-bold text-lg cursor-not-allowed
                     ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800 text-zinc-500' : 'bg-zinc-50 border-zinc-200 text-zinc-400'}`} 
                 />
                 <Lock size={12} className="absolute right-6 top-1/2 -translate-y-1/2 text-zinc-800" />
@@ -164,35 +197,36 @@ const IdentityNode: React.FC<IdentityNodeProps> = ({ onBack, onUpdateComplete })
                 <Fingerprint size={24} />
               </div>
               <div>
-                <p className="text-[11px] font-black uppercase tracking-widest text-zinc-300">Auth Signature Ref</p>
-                <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-tighter mt-1">
-                  {user?.id?.toUpperCase() || 'NODE-OFFLINE-HANDSHAKE'}
+                <p className="text-[11px] font-black uppercase tracking-widest text-zinc-500">Security Reference ID</p>
+                <p className="text-[10px] font-mono text-zinc-700 uppercase tracking-tighter mt-1">
+                  {user?.id?.toUpperCase() || 'OFFLINE_CACHE'}
                 </p>
               </div>
             </div>
             <div className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
               <CheckCircle2 size={12} className="text-emerald-500" />
-              <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Verified node</span>
+              <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Connected</span>
             </div>
           </div>
 
           <button 
             disabled={isUpdating || !hasChanged} 
-            onClick={handleCommitMutation}
-            className={`w-full py-6 sm:py-8 rounded-[2.5rem] font-black uppercase text-xs tracking-[0.4em] shadow-2xl transition-all flex items-center justify-center gap-5 italic
+            onClick={handleUpdateProfile}
+            className={`w-full py-7 rounded-[2.5rem] font-black uppercase text-xs tracking-[0.4em] shadow-2xl transition-all flex items-center justify-center gap-5 italic
               ${isUpdating || !hasChanged 
-                ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed grayscale' 
-                : 'bg-amber-500 text-black hover:bg-amber-400 hover:scale-[1.01] active:scale-[0.98]'}`}
+                ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed' 
+                : 'bg-amber-500 text-black hover:bg-amber-400 hover:scale-[1.01] active:scale-95 shadow-amber-500/10'}`}
           >
             {isUpdating ? <Loader2 size={24} className="animate-spin" /> : <Save size={24} className="stroke-[3px]" />}
-            Commit Local Mutation
+            Update Office Profile
           </button>
         </div>
       </div>
 
+      {/* Simplified Compliance Footer */}
       <footer className="mt-12 text-center opacity-20">
-        <p className="text-[10px] font-black uppercase tracking-[0.6em] text-zinc-600">
-          QS VAULT AUTHENTICATION PROTOCOL V2.0.4
+        <p className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600">
+          AUTHORIZED CONSTRUCTION OS v2.0
         </p>
       </footer>
     </div>

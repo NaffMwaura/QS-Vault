@@ -15,15 +15,19 @@ interface GlassCardProps {
 // Providing a robust fallback for the theme context to ensure compilation in all environments
 let useAuth = () => ({ theme: 'dark' as 'light' | 'dark' });
 
-try {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore - Dynamic resolution for environment compatibility
-  import("../../features/auth/AuthContext").then(mod => {
-    if (mod.useAuth) useAuth = mod.useAuth;
-  }).catch(() => {});
-} catch {
-  // Fallback to default dark theme if module is unreachable
-}
+const resolveModules = async () => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore - Dynamic resolution for environment compatibility
+    const authMod = await import("../../features/auth/AuthContext");
+    if (authMod.useAuth) useAuth = authMod.useAuth;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (e) {
+    // Fallback to default dark theme if module is unreachable
+  }
+};
+
+resolveModules();
 
 /** --- GLASS CARD COMPONENT --- **/
 

@@ -3,13 +3,12 @@ import React from 'react';
 import { 
   Database, 
   Globe, 
-  Shield,  
- 
-  WifiOff
+  WifiOff,
+  ClipboardList
 } from 'lucide-react';
 
 /* ======================================================
-    MODULE RESOLUTION HANDLER (SANDBOX COMPATIBILITY)
+    OFFICE DATABASE INTEGRATION
    ====================================================== */
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -20,6 +19,7 @@ let useAuth: any = () => ({
 
 const resolveModules = async () => {
   try {
+    // Attempt to resolve real office security settings
     const authMod = await import("../../../features/auth/AuthContext");
     if (authMod.useAuth) useAuth = authMod.useAuth;
   } catch (e) {
@@ -50,7 +50,7 @@ const StatCard: React.FC<{ item: StatItem; theme: 'light' | 'dark' }> = ({ item,
   <div className={`p-8 sm:p-10 rounded-[2.5rem] sm:rounded-[3rem] border backdrop-blur-3xl flex justify-between items-center group transition-all duration-500 hover:scale-[1.02]
     ${theme === 'dark' 
       ? 'bg-zinc-900/40 border-zinc-800 hover:border-amber-500/30 shadow-2xl shadow-black/50' 
-      : 'bg-white border-zinc-200 hover:border-amber-500/30 shadow-xl'}`}>
+      : 'bg-white border-zinc-200 hover:border-amber-500/30 shadow-xl shadow-zinc-200/50'}`}>
     
     <div className="text-left space-y-3">
       <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 leading-none">
@@ -65,6 +65,7 @@ const StatCard: React.FC<{ item: StatItem; theme: 'light' | 'dark' }> = ({ item,
           {item.desc}
         </p>
       )}
+    
     </div>
 
     <div className={`p-5 rounded-3xl transition-all duration-500 group-hover:scale-110 shadow-inner
@@ -77,32 +78,32 @@ const StatCard: React.FC<{ item: StatItem; theme: 'light' | 'dark' }> = ({ item,
   </div>
 );
 
-/** --- MAIN COMPONENT --- **/
+/** --- MAIN COMPONENT: OFFICE METRICS GRID --- **/
 
-const StatGrid: React.FC<StatGridProps> = ({ projectsCount = 0 }) => {
+const StatGrid: React.FC<StatGridProps> = ({ projectsCount = 0, measurementsCount = 0 }) => {
   const { theme, isOnline } = useAuth();
 
   const stats: StatItem[] = [
     { 
-      label: 'Active Vaults', 
+      label: 'Active Projects', 
       value: projectsCount, 
       icon: Database, 
       color: 'text-amber-500',
-      desc: 'Project Nodes'
+      desc: 'Office Workspaces'
     },
     { 
-      label: 'Cloud Status', 
-      value: isOnline ? 'Verified' : 'Local', 
+      label: 'Sync Status', 
+      value: isOnline ? 'Verified' : 'Offline', 
       icon: isOnline ? Globe : WifiOff, 
       color: isOnline ? 'text-emerald-500' : 'text-rose-500',
-      desc: isOnline ? 'Handshake Active' : 'Buffer Mode'
+      desc: isOnline ? 'Live Cloud Sync' : 'Saving to Device'
     },
     { 
-      label: 'Security', 
-      value: 'Level 4', 
-      icon: Shield, 
+      label: 'Measurements', 
+      value: measurementsCount, 
+      icon: ClipboardList, 
       color: 'text-blue-500',
-      desc: 'Auth Node Alpha'
+      desc: 'Total Records'
     },
   ];
 
