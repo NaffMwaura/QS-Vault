@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, type To } from 'react-router-dom';
 import { 
   Clock, 
@@ -11,11 +11,12 @@ import {
   AlertCircle,
   FileText,
   Calculator,
-  Share2
+  Share2,
+  FileSearch
 } from 'lucide-react';
 
 /* ======================================================
-    OFFICE MODULE RESOLUTION (SANDBOX COMPATIBLE)
+    OFFICE MODULE RESOLUTION (PRODUCTION HANDSHAKE)
    ====================================================== */
 
 // Mock Auth logic for the environment - Optimized for SPA navigation
@@ -25,7 +26,7 @@ let useAuth: any = () => ({
   activeView: 'projects',
   setActiveView: (view: string) => console.log("Workspace Shift:", view),
   isOnline: true,
-  signOut: async () => { /* Real logic handled by AuthContext.tsx */ } 
+  signOut: async () => { /* Logic in AuthContext.tsx */ } 
 });
 
 let db: any = null;
@@ -53,7 +54,7 @@ const resolveModules = async () => {
     if (dbMod.db) db = dbMod.db;
     if (dbMod.syncEngine) syncEngine = dbMod.syncEngine;
 
-    // Map UI components to their respective feature directories
+    // Feature Component Resolution
     StatGrid = (await import("../../features/projects/components/StatGrid")).default;
     VaultRegistry = (await import("../../features/projects/components/VaultRegistry")).default;
     RatesLibrary = (await import("../../features/projects/components/RatesLibrary")).default;
@@ -66,13 +67,13 @@ const resolveModules = async () => {
     CertificateGenerator = (await import("../../features/reports/components/CertificateGenerator")).default;
     WhatsAppExport = (await import("../../features/reports/components/WhatsAppExport")).default;
   } catch (e) {
-    // Sandbox shims active for preview stability
+    // Shims active for previewer stability
   }
 };
 
 resolveModules();
 
-/** --- MASTER DASHBOARD: PROFESSIONAL QUANTITY SURVEYING WORKSPACE --- **/
+/** --- MASTER DASHBOARD: PROFESSIONAL QUANTITY SURVEYING HUB --- **/
 
 const DashboardPage: React.FC = () => {
   const { activeView, setActiveView, user, theme, signOut } = useAuth();
@@ -82,12 +83,12 @@ const DashboardPage: React.FC = () => {
   const [recentMeasurements, setRecentMeasurements] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  /** * OFFICE DATA SYNCHRONIZATION
+  /** * OFFICE DATA REFRESH
    * Pulls real-time project inventory and recent site measurements from the device memory.
    */
-  const refreshOfficeRecords = async () => {
+  const refreshOfficeRecords = useCallback(async () => {
     if (!user || !db) {
-      setTimeout(() => setIsLoading(false), 1000);
+      setTimeout(() => setIsLoading(false), 1200);
       return;
     }
     try {
@@ -104,12 +105,11 @@ const DashboardPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     refreshOfficeRecords();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, activeView]);
+  }, [refreshOfficeRecords, activeView]);
 
   /** * PROJECT DELETION HANDSHAKE
    * Permanently clears a project and all associated measured data.
@@ -132,9 +132,7 @@ const DashboardPage: React.FC = () => {
     }
   };
 
-  /** * MEASUREMENT AUDIT PURGE
-   * Removes a single quantified node from the ledger.
-   */
+  /** * MEASUREMENT AUDIT PURGE */
   const handleDeleteMeasurement = async (id: string) => {
     if (!db) return;
     try {
@@ -161,7 +159,7 @@ const DashboardPage: React.FC = () => {
     <div className="space-y-10 animate-in fade-in duration-700 pb-20 text-left">
       
       {/* 1. TOP UTILITY HUD */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-4">
         <div className="w-full lg:w-auto">
           <SyncQueueMonitor />
         </div>
@@ -186,7 +184,7 @@ const DashboardPage: React.FC = () => {
         ) : (
           <div className="animate-in fade-in duration-500">
             
-            {/* VIEW: PROJECT PORTFOLIO */}
+            {/* VIEW: PROJECT PORTFOLIO (Registry Management) */}
             {activeView === 'projects' && (
               <div className="grid lg:grid-cols-4 gap-10">
                 <div className="lg:col-span-3 space-y-10">
@@ -235,7 +233,7 @@ const DashboardPage: React.FC = () => {
                         </div>
                       )) : (
                         <div className="p-8 text-center opacity-20 border border-dashed border-zinc-800 rounded-2xl">
-                          <p className="text-[9px] font-black uppercase tracking-widest">No activity recorded</p>
+                          <p className="text-[9px] font-black uppercase tracking-widest text-left">No activity recorded</p>
                         </div>
                       )}
                     </div>
@@ -252,15 +250,15 @@ const DashboardPage: React.FC = () => {
               </div>
             )}
 
-            {/* VIEW: PRICE BOOKS */}
+            {/* VIEW: PRICE BOOKS (Rates Library) */}
             {activeView === 'rates' && <RatesLibrary />}
 
-            {/* VIEW: REPORTS & FILING (FULL INTEGRATED HUB) */}
+            {/* VIEW: REPORTS & FILING (Fully Integrated Hub) */}
             {activeView === 'settings' && (
                <div className="space-y-12 animate-in fade-in duration-500">
                   <div className="grid lg:grid-cols-4 gap-10">
                     
-                    {/* LEFT COLUMN: ARCHIVE & BOQ */}
+                    {/* LEFT COLUMN: ARCHIVE & BOQ GENERATION */}
                     <div className="lg:col-span-2 space-y-10">
                       <div className="flex items-center gap-3 px-4">
                         <FileText size={18} className="text-amber-500" />
@@ -270,19 +268,21 @@ const DashboardPage: React.FC = () => {
                       
                       <div className="flex items-center gap-3 px-4 pt-4 border-t border-zinc-800/20">
                         <Calculator size={18} className="text-amber-500" />
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 italic text-left">Valuation Engine</h4>
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 italic text-left">Project Valuation Engine</h4>
                       </div>
+                      {/* Integrated BoQ Generator */}
                       <BoQGenerator projectId={projects[0]?.id} projectName={projects[0]?.name || "Active Project"} />
                     </div>
 
-                    {/* RIGHT COLUMN: SHARING & CERTIFICATION & AUDIT LEDGER */}
+                    {/* RIGHT COLUMN: SHARING, AUDIT & CERTIFICATION */}
                     <div className="lg:col-span-2 space-y-10">
                       <div className="space-y-4 px-4">
                         <div className="flex items-center gap-3">
                           <Share2 size={18} className="text-amber-500" />
-                          <h4 className="text-[10px] font-black uppercase tracking-widest text-amber-500 italic text-left">Site Transmittal</h4>
+                          <h4 className="text-[10px] font-black uppercase tracking-widest text-amber-500 italic text-left">Secure Transmittal</h4>
                         </div>
                         <p className={`text-xl font-black uppercase tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-zinc-900'} text-left`}>WhatsApp Update</p>
+                        {/* Integrated WhatsApp Export */}
                         <WhatsAppExport projectName={projects[0]?.name || "Project"} data={{
                           certNumber: "IPC/001",
                           valuationDate: new Date().toLocaleDateString(),
@@ -296,9 +296,10 @@ const DashboardPage: React.FC = () => {
 
                       <div className="space-y-4 px-4 pt-4 border-t border-zinc-800/40">
                         <div className="flex items-center gap-3">
-                          <AlertCircle size={18} className="text-emerald-500" />
-                          <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 italic text-left">Measured Audit Ledger</h4>
+                          <FileSearch size={18} className="text-emerald-500" />
+                          <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 italic text-left">Measurement Audit Ledger</h4>
                         </div>
+                        {/* Integrated Geometric Registry for audit trail */}
                         <GeometricRegistry 
                           measurements={recentMeasurements} 
                           onDelete={handleDeleteMeasurement} 
@@ -311,7 +312,8 @@ const DashboardPage: React.FC = () => {
                            <FileText size={18} className="text-amber-500" />
                            <h4 className="text-[10px] font-black uppercase tracking-widest text-emerald-500 italic text-left">Certification Node</h4>
                         </div>
-                        <p className={`text-xl font-black uppercase tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-zinc-900'} text-left`}>Interim Certificate</p>
+                        <p className={`text-xl font-black uppercase tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-zinc-900'} text-left`}>Latest IPC Draft</p>
+                        {/* Integrated Certificate Generator */}
                         <CertificateGenerator projectId={projects[0]?.id} projectName={projects[0]?.name || "Select Project"} />
                       </div>
                     </div>
@@ -326,7 +328,7 @@ const DashboardPage: React.FC = () => {
                 <div className="max-w-4xl mx-auto px-4">
                   <button 
                     onClick={handleSecureLogout}
-                    className="w-full py-8 rounded-[2.5rem] border border-rose-500/20 bg-rose-500/5 text-rose-500 font-black uppercase text-xs tracking-[0.4em] hover:bg-rose-500 hover:text-white transition-all shadow-xl"
+                    className="w-full py-8 rounded-[2.5rem] border border-rose-500/20 bg-rose-500/5 text-rose-500 font-black uppercase text-xs tracking-[0.4em] hover:bg-rose-500 hover:text-white transition-all shadow-xl active:scale-95"
                   >
                     Terminate Office Session
                   </button>
@@ -337,15 +339,16 @@ const DashboardPage: React.FC = () => {
         )}
       </div>
 
+      {/* FOOTER COMPLIANCE BADGE */}
       <footer className="pt-20 text-center opacity-10 hidden sm:block">
-        <p className="text-[9px] font-black uppercase tracking-[0.8em] italic text-zinc-500">
+        <p className="text-[9px] font-black uppercase tracking-[0.8em] italic text-zinc-500 text-center">
           AUTHORIZED CONSTRUCTION OS v2.0 • SMM-KE COMPLIANT ENGINE
         </p>
       </footer>
 
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 20px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 20px; transition: background 0.3s; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
       `}</style>
     </div>
