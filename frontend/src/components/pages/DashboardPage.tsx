@@ -190,6 +190,7 @@ const DashboardPage: React.FC = () => {
                 <div className="lg:col-span-3 space-y-10">
                   <StatGrid projectsCount={projects.length} measurementsCount={recentMeasurements.length} />
                   
+                  
                   <div className="space-y-4">
                     <div className="px-2">
                        <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-500 mb-1 italic text-left">Project Registry</h4>
