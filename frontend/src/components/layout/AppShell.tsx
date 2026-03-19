@@ -37,7 +37,6 @@ const resolveModules = async () => {
 
 resolveModules();
 
-/** --- TYPES & INTERFACES --- **/
 interface AppShellProps {
   children?: React.ReactNode;
 }
@@ -61,7 +60,6 @@ const OfficeLoader = ({ isOnline }: { isOnline: boolean }) => (
   </div>
 );
 
-/** --- MAIN APP SHELL FRAME --- **/
 const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const { isLoading: authLoading, theme, isOnline, activeView, setActiveView } = useAuth();
   const location = useLocation();

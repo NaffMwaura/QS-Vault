@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  Users, 
-  Database, 
-  
-  Search, 
-  ExternalLink, 
+import {
+  Users,
+  Database,
+
+  Search,
+  ExternalLink,
   ShieldAlert,
-  Loader2, 
+  Loader2,
   ShieldCheck,
   Trash2,
   RefreshCw,
@@ -18,10 +18,6 @@ import {
   Share2
 } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
-
-/* ======================================================
-    OFFICE MODULE RESOLUTION (STABILIZED)
-   ====================================================== */
 
 let useAuth: any = () => ({
   user: { id: 'admin-node-001' },
@@ -69,8 +65,6 @@ const resolveModules = async () => {
 
 resolveModules();
 
-/** --- UI HELPER: STAT CARD --- **/
-
 const StatCard = ({ label, value, icon: Icon, color, theme }: any) => (
   <div className={`p-8 rounded-[2.5rem] border backdrop-blur-2xl transition-all duration-500 hover:scale-[1.02] group
     ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800/60 shadow-black' : 'bg-white border-zinc-200 shadow-sm shadow-zinc-200/50'}`}>
@@ -83,8 +77,6 @@ const StatCard = ({ label, value, icon: Icon, color, theme }: any) => (
     <h3 className="text-4xl font-black tracking-tighter italic leading-none text-left">{value}</h3>
   </div>
 );
-
-/** --- MAIN ADMIN CONTENT HUB --- **/
 
 const AdminDashboardPage: React.FC = () => {
   const { theme, isOnline, role, isLoading: authLoading, activeView, setActiveView, signOut } = useAuth();
@@ -101,9 +93,8 @@ const AdminDashboardPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
-  /** * ADMIN DATA REFRESH
-   * Syncs global platform state from master office records.
-   */
+  // ADMIN DATA REFRESH
+   //Syncs global platform state from master office records.
   const loadAdminData = useCallback(async () => {
     // Check for service existence without triggering infinite loop
     if (!adminService) {
@@ -118,7 +109,7 @@ const AdminDashboardPage: React.FC = () => {
         adminService.getAllProfiles(),
         adminService.getAllProjects()
       ]);
-      
+
       setStats(statsData);
       setProfiles(profilesData || []);
       setAllProjects(globalProjects || []);
@@ -142,7 +133,7 @@ const AdminDashboardPage: React.FC = () => {
         return () => clearTimeout(timer);
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [role, authLoading, !!adminService, loadAdminData]);
 
   const handleRoleChange = async (userId: string, newRole: string) => {
@@ -167,7 +158,7 @@ const AdminDashboardPage: React.FC = () => {
     }
   };
 
-  /** * SECURE LOGOUT HANDSHAKE */
+//Secure logout handshake
   const handleLogout = async () => {
     if (window.confirm("Confirm secure session termination?")) {
       await signOut();
@@ -194,7 +185,7 @@ const AdminDashboardPage: React.FC = () => {
 
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
-      
+
       {/* 1. TOP UTILITY HUD */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-4 text-left">
         <div className="w-full lg:w-auto">
@@ -207,7 +198,7 @@ const AdminDashboardPage: React.FC = () => {
 
       {/* 2. DYNAMIC WORKSPACE SWITCHER */}
       <div className="relative min-h-[60vh] text-left">
-        
+
         {/* VIEW: MAIN ADMIN DASHBOARD */}
         {activeView === 'projects' && (
           <div className="space-y-10 animate-in fade-in duration-500">
@@ -221,14 +212,14 @@ const AdminDashboardPage: React.FC = () => {
 
             {/* ADMIN TABS */}
             <div className="flex gap-4 border-b border-zinc-800/40 pb-6">
-              <button 
+              <button
                 onClick={() => { setAdminTab('users'); setSearchQuery(''); }}
                 className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all
                   ${adminTab === 'users' ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20' : 'text-zinc-500 hover:text-white'}`}
               >
                 User Registry
               </button>
-              <button 
+              <button
                 onClick={() => { setAdminTab('inventory'); setSearchQuery(''); }}
                 className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all
                   ${adminTab === 'inventory' ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20' : 'text-zinc-500 hover:text-white'}`}
@@ -243,7 +234,7 @@ const AdminDashboardPage: React.FC = () => {
             {/* MASTER REGISTRY / INVENTORY TABLE */}
             <div className={`rounded-[3.5rem] border backdrop-blur-3xl overflow-hidden transition-all duration-500
               ${theme === 'dark' ? 'bg-zinc-900/30 border-zinc-800 shadow-black' : 'bg-white border-zinc-200 shadow-xl'}`}>
-              
+
               <div className="p-8 sm:p-12 border-b border-zinc-800/30 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white/2">
                 <div className="text-left">
                   <h3 className="text-2xl font-black uppercase italic tracking-tighter leading-none">
@@ -255,10 +246,10 @@ const AdminDashboardPage: React.FC = () => {
                 </div>
                 <div className="relative w-full md:w-96 group text-left">
                   <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-amber-500 transition-colors" size={18} />
-                  <input 
-                    type="text" placeholder="Search registry..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} 
+                  <input
+                    type="text" placeholder="Search registry..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
                     className={`w-full pl-16 pr-8 py-5 rounded-2xl border outline-none font-bold text-xs transition-all
-                      ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800 text-white' : 'bg-zinc-50 border-zinc-200'}`} 
+                      ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800 text-white' : 'bg-zinc-50 border-zinc-200'}`}
                   />
                 </div>
               </div>
@@ -283,33 +274,33 @@ const AdminDashboardPage: React.FC = () => {
                               </div>
                               <div className="text-left">
                                 <p className="font-black text-lg uppercase group-hover:text-amber-500 transition-colors leading-none">{p.username}</p>
-                                <p className="text-[9px] font-mono text-zinc-500 uppercase mt-2">REF: {p.id.slice(0,12)}</p>
+                                <p className="text-[9px] font-mono text-zinc-500 uppercase mt-2">REF: {p.id.slice(0, 12)}</p>
                               </div>
                             </div>
                           </td>
                           <td className="p-10 text-left">
-                             <div className="flex items-center gap-6">
-                                <select 
-                                  value={p.role} disabled={updatingId === p.id} onChange={(e) => handleRoleChange(p.id, e.target.value)}
-                                  className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-[10px] font-black uppercase text-zinc-300 outline-none focus:border-amber-500 transition-all cursor-pointer shadow-inner"
-                                >
-                                  <option value="user">Standard User</option>
-                                  <option value="editor">Editor</option>
-                                  <option value="admin">System Admin</option>
-                                  <option value="super-admin">Super Admin</option>
-                                </select>
-                                <div className="h-4 w-px bg-zinc-800" />
-                                <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{p.project_count || 0} Workspaces</span>
-                             </div>
+                            <div className="flex items-center gap-6">
+                              <select
+                                value={p.role} disabled={updatingId === p.id} onChange={(e) => handleRoleChange(p.id, e.target.value)}
+                                className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-[10px] font-black uppercase text-zinc-300 outline-none focus:border-amber-500 transition-all cursor-pointer shadow-inner"
+                              >
+                                <option value="user">Standard User</option>
+                                <option value="editor">Editor</option>
+                                <option value="admin">System Admin</option>
+                                <option value="super-admin">Super Admin</option>
+                              </select>
+                              <div className="h-4 w-px bg-zinc-800" />
+                              <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{p.project_count || 0} Workspaces</span>
+                            </div>
                           </td>
                           <td className="p-10 text-right">
-                             <button 
-                               onClick={() => inspectUserWorkspaces(p.username)}
-                               className="p-4 bg-zinc-950 border border-zinc-800 text-zinc-500 rounded-2xl hover:bg-amber-500 hover:text-black transition-all shadow-xl"
-                               title="Inspect User Dashboard"
-                             >
-                               <ExternalLink size={18}/>
-                             </button>
+                            <button
+                              onClick={() => inspectUserWorkspaces(p.username)}
+                              className="p-4 bg-zinc-950 border border-zinc-800 text-zinc-500 rounded-2xl hover:bg-amber-500 hover:text-black transition-all shadow-xl"
+                              title="Inspect User Dashboard"
+                            >
+                              <ExternalLink size={18} />
+                            </button>
                           </td>
                         </tr>
                       ))
@@ -330,8 +321,8 @@ const AdminDashboardPage: React.FC = () => {
                           </td>
                           <td className="p-10 text-right">
                             <div className="flex gap-3 justify-end">
-                              <button onClick={() => navigate(`/projects/${proj.id}`)} className="p-4 bg-zinc-950 border border-zinc-800 text-zinc-500 rounded-2xl hover:bg-amber-500 hover:text-black transition-all shadow-xl"><ExternalLink size={16}/></button>
-                              <button onClick={() => handleDeleteProject(proj.id)} className="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-2xl hover:bg-rose-500 hover:text-white transition-all shadow-xl"><Trash2 size={16}/></button>
+                              <button onClick={() => navigate(`/projects/${proj.id}`)} className="p-4 bg-zinc-950 border border-zinc-800 text-zinc-500 rounded-2xl hover:bg-amber-500 hover:text-black transition-all shadow-xl"><ExternalLink size={16} /></button>
+                              <button onClick={() => handleDeleteProject(proj.id)} className="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-2xl hover:bg-rose-500 hover:text-white transition-all shadow-xl"><Trash2 size={16} /></button>
                             </div>
                           </td>
                         </tr>
@@ -350,85 +341,85 @@ const AdminDashboardPage: React.FC = () => {
         {/* VIEW: GLOBAL REPORTING HUB (FULLY INTEGRATED) */}
         {activeView === 'settings' && (
           <div className="space-y-12 animate-in fade-in">
-             <div className="grid lg:grid-cols-4 gap-10">
-                
-                {/* GLOBAL ARCHIVE & VALUATIONS */}
-                <div className="lg:col-span-2 space-y-10">
-                  <div className="flex items-center gap-3 px-4">
-                    <FileText size={18} className="text-amber-500" />
-                    <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 italic text-left">Platform Document Archive</h4>
+            <div className="grid lg:grid-cols-4 gap-10">
+
+              {/* GLOBAL ARCHIVE & VALUATIONS */}
+              <div className="lg:col-span-2 space-y-10">
+                <div className="flex items-center gap-3 px-4">
+                  <FileText size={18} className="text-amber-500" />
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 italic text-left">Platform Document Archive</h4>
+                </div>
+                <ArtifactsVault />
+
+                <div className="flex items-center gap-3 px-4 pt-4 border-t border-zinc-800/20">
+                  <Calculator size={18} className="text-amber-500" />
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 italic text-left">Valuation Engine Auditor</h4>
+                </div>
+                {allProjects.length > 0 ? (
+                  <BoQGenerator projectId={allProjects[0]?.id} projectName={allProjects[0]?.name || "Platform Project"} />
+                ) : (
+                  <div className="p-10 border border-dashed border-zinc-800 rounded-4xl text-center opacity-30 italic text-xs uppercase tracking-widest">No Projects Available for Audit</div>
+                )}
+              </div>
+
+              {/* SYSTEM OVERRIDES & AUDITS */}
+              <div className="lg:col-span-2 space-y-10">
+                <div className={`p-10 rounded-[3.5rem] border ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800' : 'bg-white border-zinc-200 shadow-xl'} text-left`}>
+                  <div className="flex items-center gap-3 mb-6">
+                    <ShieldAlert size={20} className="text-rose-500" />
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 text-left">Root System Overrides</h4>
                   </div>
-                  <ArtifactsVault />
-                  
-                  <div className="flex items-center gap-3 px-4 pt-4 border-t border-zinc-800/20">
-                    <Calculator size={18} className="text-amber-500" />
-                    <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 italic text-left">Valuation Engine Auditor</h4>
+                  <p className="text-[11px] font-bold text-zinc-400 leading-relaxed mb-10 text-left">
+                    Emergency platform controls enabled for Super Nodes. These actions bypass standard user verification and force global database state changes.
+                  </p>
+                  <button className="w-full py-5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 font-black uppercase text-[10px] tracking-widest hover:bg-rose-500 hover:text-white transition-all shadow-lg">
+                    Force Global Cloud Sync
+                  </button>
+                </div>
+
+                {/* FIX: Sanitized reporting data to prevent URI malformed error */}
+                <div className="space-y-4 px-4">
+                  <div className="flex items-center gap-3">
+                    <Share2 size={18} className="text-amber-500" />
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-amber-500 italic text-left">Admin Transmittal</h4>
                   </div>
-                  {allProjects.length > 0 ? (
-                    <BoQGenerator projectId={allProjects[0]?.id} projectName={allProjects[0]?.name || "Platform Project"} />
-                  ) : (
-                    <div className="p-10 border border-dashed border-zinc-800 rounded-4xl text-center opacity-30 italic text-xs uppercase tracking-widest">No Projects Available for Audit</div>
+                  <WhatsAppExport projectName="Global-Admin-Audit" data={{
+                    certNumber: "ADMIN-IPC-001",
+                    valuationDate: new Date().toLocaleDateString().replace(/\//g, '-'),
+                    contractSum: 0,
+                    workExecuted: stats.totalMeasurements * 5000,
+                    materialsOnSite: 0,
+                    previousCertified: 0,
+                    retentionPercent: 10
+                  }} />
+                </div>
+
+                <div className="space-y-4 px-4 pt-10 border-t border-zinc-800/40">
+                  <div className="flex items-center gap-3">
+                    <FileText size={18} className="text-emerald-500" />
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-emerald-500 italic text-left">Draft Certification Auditor</h4>
+                  </div>
+                  {allProjects.length > 0 && (
+                    <CertificateGenerator projectId={allProjects[0]?.id} projectName={allProjects[0]?.name || "Select Project"} />
                   )}
                 </div>
-
-                {/* SYSTEM OVERRIDES & AUDITS */}
-                <div className="lg:col-span-2 space-y-10">
-                   <div className={`p-10 rounded-[3.5rem] border ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800' : 'bg-white border-zinc-200 shadow-xl'} text-left`}>
-                      <div className="flex items-center gap-3 mb-6">
-                         <ShieldAlert size={20} className="text-rose-500" />
-                         <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 text-left">Root System Overrides</h4>
-                      </div>
-                      <p className="text-[11px] font-bold text-zinc-400 leading-relaxed mb-10 text-left">
-                         Emergency platform controls enabled for Super Nodes. These actions bypass standard user verification and force global database state changes.
-                      </p>
-                      <button className="w-full py-5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 font-black uppercase text-[10px] tracking-widest hover:bg-rose-500 hover:text-white transition-all shadow-lg">
-                         Force Global Cloud Sync
-                      </button>
-                   </div>
-
-                   {/* FIX: Sanitized reporting data to prevent URI malformed error */}
-                   <div className="space-y-4 px-4">
-                     <div className="flex items-center gap-3">
-                       <Share2 size={18} className="text-amber-500" />
-                       <h4 className="text-[10px] font-black uppercase tracking-widest text-amber-500 italic text-left">Admin Transmittal</h4>
-                     </div>
-                     <WhatsAppExport projectName="Global-Admin-Audit" data={{
-                       certNumber: "ADMIN-IPC-001", 
-                       valuationDate: new Date().toLocaleDateString().replace(/\//g, '-'),
-                       contractSum: 0,
-                       workExecuted: stats.totalMeasurements * 5000, 
-                       materialsOnSite: 0,
-                       previousCertified: 0,
-                       retentionPercent: 10 
-                     }} />
-                   </div>
-
-                   <div className="space-y-4 px-4 pt-10 border-t border-zinc-800/40">
-                     <div className="flex items-center gap-3">
-                        <FileText size={18} className="text-emerald-500" />
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-emerald-500 italic text-left">Draft Certification Auditor</h4>
-                     </div>
-                     {allProjects.length > 0 && (
-                        <CertificateGenerator projectId={allProjects[0]?.id} projectName={allProjects[0]?.name || "Select Project"} />
-                     )}
-                   </div>
-                </div>
-             </div>
+              </div>
+            </div>
           </div>
         )}
 
         {/* VIEW: ADMIN IDENTITY */}
         {activeView === 'profile' && (
           <div className="space-y-12 animate-in fade-in">
-             <IdentityNode onBack={() => setActiveView('projects')} />
-             <div className="max-w-4xl mx-auto px-4">
-                <button 
-                  onClick={handleLogout}
-                  className="w-full py-8 rounded-[2.5rem] border border-rose-500/20 bg-rose-500/5 text-rose-500 font-black uppercase text-xs tracking-[0.4em] hover:bg-rose-500 hover:text-white transition-all shadow-xl active:scale-95"
-                >
-                  Terminate Admin Session
-                </button>
-             </div>
+            <IdentityNode onBack={() => setActiveView('projects')} />
+            <div className="max-w-4xl mx-auto px-4">
+              <button
+                onClick={handleLogout}
+                className="w-full py-8 rounded-[2.5rem] border border-rose-500/20 bg-rose-500/5 text-rose-500 font-black uppercase text-xs tracking-[0.4em] hover:bg-rose-500 hover:text-white transition-all shadow-xl active:scale-95"
+              >
+                Terminate Admin Session
+              </button>
+            </div>
           </div>
         )}
       </div>

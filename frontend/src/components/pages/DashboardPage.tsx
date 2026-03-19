@@ -2,8 +2,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, type To } from 'react-router-dom';
-import { 
-  Clock, 
+import {
+  Clock,
   UserCheck,
   Globe,
   Loader2,
@@ -15,10 +15,6 @@ import {
   FileSearch
 } from 'lucide-react';
 
-/* ======================================================
-    OFFICE MODULE RESOLUTION (PRODUCTION HANDSHAKE)
-   ====================================================== */
-
 // Mock Auth logic for the environment - Optimized for SPA navigation
 let useAuth: any = () => ({
   user: { id: 'dev-node-001', user_metadata: { full_name: 'Naftaly Mwaura' } },
@@ -26,7 +22,7 @@ let useAuth: any = () => ({
   activeView: 'projects',
   setActiveView: (view: string) => console.log("Workspace Shift:", view),
   isOnline: true,
-  signOut: async () => { /* Logic in AuthContext.tsx */ } 
+  signOut: async () => { /* Logic in AuthContext.tsx */ }
 });
 
 let db: any = null;
@@ -73,7 +69,7 @@ const resolveModules = async () => {
 
 resolveModules();
 
-/** --- MASTER DASHBOARD: PROFESSIONAL QUANTITY SURVEYING HUB --- **/
+// MASTER DASHBOARD: PROFESSIONAL QUANTITY SURVEYING HUB --- **/
 
 const DashboardPage: React.FC = () => {
   const { activeView, setActiveView, user, theme, signOut } = useAuth();
@@ -83,9 +79,8 @@ const DashboardPage: React.FC = () => {
   const [recentMeasurements, setRecentMeasurements] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  /** * OFFICE DATA REFRESH
-   * Pulls real-time project inventory and recent site measurements from the device memory.
-   */
+  // OFFICE DATA REFRESH
+  // Pulls real-time project inventory and recent site measurements from the device memory.
   const refreshOfficeRecords = useCallback(async () => {
     if (!user || !db) {
       setTimeout(() => setIsLoading(false), 1200);
@@ -97,7 +92,7 @@ const DashboardPage: React.FC = () => {
         db.projects.where('user_id').equals(user.id).reverse().toArray(),
         db.measurements.limit(15).reverse().toArray()
       ]);
-      
+
       setProjects(userProjects);
       setRecentMeasurements(recentEntries);
     } catch (err) {
@@ -117,7 +112,7 @@ const DashboardPage: React.FC = () => {
   const handleDeleteProject = async (projectId: string) => {
     if (!db) return;
     if (!window.confirm("CRITICAL: Purge this project and all associated measurements from local storage? This action is permanent.")) return;
-    
+
     try {
       await db.projects.delete(projectId);
       await db.measurements.where('project_id').equals(projectId).delete();
@@ -157,7 +152,7 @@ const DashboardPage: React.FC = () => {
 
   return (
     <div className="space-y-10 animate-in fade-in duration-700 pb-20 text-left">
-      
+
       {/* 1. TOP UTILITY HUD */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-4">
         <div className="w-full lg:w-auto">
@@ -183,23 +178,23 @@ const DashboardPage: React.FC = () => {
           </div>
         ) : (
           <div className="animate-in fade-in duration-500">
-            
+
             {/* VIEW: PROJECT PORTFOLIO (Registry Management) */}
             {activeView === 'projects' && (
               <div className="grid lg:grid-cols-4 gap-10">
                 <div className="lg:col-span-3 space-y-10">
                   <StatGrid projectsCount={projects.length} measurementsCount={recentMeasurements.length} />
-                  
-                  
+
+
                   <div className="space-y-4">
                     <div className="px-2">
-                       <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-500 mb-1 italic text-left">Project Registry</h4>
-                       <p className={`text-2xl font-black uppercase italic tracking-tighter text-left ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>Current Portfolio</p>
+                      <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-500 mb-1 italic text-left">Project Registry</h4>
+                      <p className={`text-2xl font-black uppercase italic tracking-tighter text-left ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>Current Portfolio</p>
                     </div>
-                    <VaultRegistry 
-                      projects={projects} 
-                      setProjects={setProjects} 
-                      navigate={(path: To) => navigate(path)} 
+                    <VaultRegistry
+                      projects={projects}
+                      setProjects={setProjects}
+                      navigate={(path: To) => navigate(path)}
                       onDeleteProject={handleDeleteProject}
                     />
                   </div>
@@ -222,7 +217,7 @@ const DashboardPage: React.FC = () => {
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
-                            <button 
+                            <button
                               onClick={() => handleDeleteMeasurement(m.id)}
                               className="p-1 text-zinc-800 hover:text-rose-500 transition-colors"
                               title="Purge Entry"
@@ -256,70 +251,70 @@ const DashboardPage: React.FC = () => {
 
             {/* VIEW: REPORTS & FILING (Fully Integrated Hub) */}
             {activeView === 'settings' && (
-               <div className="space-y-12 animate-in fade-in duration-500">
-                  <div className="grid lg:grid-cols-4 gap-10">
-                    
-                    {/* LEFT COLUMN: ARCHIVE & BOQ GENERATION */}
-                    <div className="lg:col-span-2 space-y-10">
-                      <div className="flex items-center gap-3 px-4">
-                        <FileText size={18} className="text-amber-500" />
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 italic text-left">Document Archive</h4>
+              <div className="space-y-12 animate-in fade-in duration-500">
+                <div className="grid lg:grid-cols-4 gap-10">
+
+                  {/* LEFT COLUMN: ARCHIVE & BOQ GENERATION */}
+                  <div className="lg:col-span-2 space-y-10">
+                    <div className="flex items-center gap-3 px-4">
+                      <FileText size={18} className="text-amber-500" />
+                      <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 italic text-left">Document Archive</h4>
+                    </div>
+                    <ArtifactsVault />
+
+                    <div className="flex items-center gap-3 px-4 pt-4 border-t border-zinc-800/20">
+                      <Calculator size={18} className="text-amber-500" />
+                      <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 italic text-left">Project Valuation Engine</h4>
+                    </div>
+                    {/* Integrated BoQ Generator */}
+                    <BoQGenerator projectId={projects[0]?.id} projectName={projects[0]?.name || "Active Project"} />
+                  </div>
+
+                  {/* RIGHT COLUMN: SHARING, AUDIT & CERTIFICATION */}
+                  <div className="lg:col-span-2 space-y-10">
+                    <div className="space-y-4 px-4">
+                      <div className="flex items-center gap-3">
+                        <Share2 size={18} className="text-amber-500" />
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-amber-500 italic text-left">Secure Transmittal</h4>
                       </div>
-                      <ArtifactsVault />
-                      
-                      <div className="flex items-center gap-3 px-4 pt-4 border-t border-zinc-800/20">
-                        <Calculator size={18} className="text-amber-500" />
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 italic text-left">Project Valuation Engine</h4>
-                      </div>
-                      {/* Integrated BoQ Generator */}
-                      <BoQGenerator projectId={projects[0]?.id} projectName={projects[0]?.name || "Active Project"} />
+                      <p className={`text-xl font-black uppercase tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-zinc-900'} text-left`}>WhatsApp Update</p>
+                      {/* Integrated WhatsApp Export */}
+                      <WhatsAppExport projectName={projects[0]?.name || "Project"} data={{
+                        certNumber: "IPC/001",
+                        valuationDate: new Date().toLocaleDateString(),
+                        contractSum: 0,
+                        workExecuted: recentMeasurements.reduce((acc, curr) => acc + curr.value, 0) * 100,
+                        materialsOnSite: 0,
+                        previousCertified: 0,
+                        retentionPercent: 10
+                      }} />
                     </div>
 
-                    {/* RIGHT COLUMN: SHARING, AUDIT & CERTIFICATION */}
-                    <div className="lg:col-span-2 space-y-10">
-                      <div className="space-y-4 px-4">
-                        <div className="flex items-center gap-3">
-                          <Share2 size={18} className="text-amber-500" />
-                          <h4 className="text-[10px] font-black uppercase tracking-widest text-amber-500 italic text-left">Secure Transmittal</h4>
-                        </div>
-                        <p className={`text-xl font-black uppercase tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-zinc-900'} text-left`}>WhatsApp Update</p>
-                        {/* Integrated WhatsApp Export */}
-                        <WhatsAppExport projectName={projects[0]?.name || "Project"} data={{
-                          certNumber: "IPC/001",
-                          valuationDate: new Date().toLocaleDateString(),
-                          contractSum: 0,
-                          workExecuted: recentMeasurements.reduce((acc, curr) => acc + curr.value, 0) * 100, 
-                          materialsOnSite: 0,
-                          previousCertified: 0,
-                          retentionPercent: 10
-                        }} />
+                    <div className="space-y-4 px-4 pt-4 border-t border-zinc-800/40">
+                      <div className="flex items-center gap-3">
+                        <FileSearch size={18} className="text-emerald-500" />
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 italic text-left">Measurement Audit Ledger</h4>
                       </div>
+                      {/* Integrated Geometric Registry for audit trail */}
+                      <GeometricRegistry
+                        measurements={recentMeasurements}
+                        onDelete={handleDeleteMeasurement}
+                        activeSection="All Sections"
+                      />
+                    </div>
 
-                      <div className="space-y-4 px-4 pt-4 border-t border-zinc-800/40">
-                        <div className="flex items-center gap-3">
-                          <FileSearch size={18} className="text-emerald-500" />
-                          <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 italic text-left">Measurement Audit Ledger</h4>
-                        </div>
-                        {/* Integrated Geometric Registry for audit trail */}
-                        <GeometricRegistry 
-                          measurements={recentMeasurements} 
-                          onDelete={handleDeleteMeasurement} 
-                          activeSection="All Sections" 
-                        />
+                    <div className="space-y-4 px-4 pt-10 border-t border-zinc-800/40">
+                      <div className="flex items-center gap-3">
+                        <FileText size={18} className="text-amber-500" />
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-emerald-500 italic text-left">Certification Node</h4>
                       </div>
-
-                      <div className="space-y-4 px-4 pt-10 border-t border-zinc-800/40">
-                        <div className="flex items-center gap-3">
-                           <FileText size={18} className="text-amber-500" />
-                           <h4 className="text-[10px] font-black uppercase tracking-widest text-emerald-500 italic text-left">Certification Node</h4>
-                        </div>
-                        <p className={`text-xl font-black uppercase tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-zinc-900'} text-left`}>Latest IPC Draft</p>
-                        {/* Integrated Certificate Generator */}
-                        <CertificateGenerator projectId={projects[0]?.id} projectName={projects[0]?.name || "Select Project"} />
-                      </div>
+                      <p className={`text-xl font-black uppercase tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-zinc-900'} text-left`}>Latest IPC Draft</p>
+                      {/* Integrated Certificate Generator */}
+                      <CertificateGenerator projectId={projects[0]?.id} projectName={projects[0]?.name || "Select Project"} />
                     </div>
                   </div>
-               </div>
+                </div>
+              </div>
             )}
 
             {/* VIEW: USER PROFILE & IDENTITY */}
@@ -327,7 +322,7 @@ const DashboardPage: React.FC = () => {
               <div className="space-y-12">
                 <IdentityNode onBack={() => setActiveView('projects')} />
                 <div className="max-w-4xl mx-auto px-4">
-                  <button 
+                  <button
                     onClick={handleSecureLogout}
                     className="w-full py-8 rounded-[2.5rem] border border-rose-500/20 bg-rose-500/5 text-rose-500 font-black uppercase text-xs tracking-[0.4em] hover:bg-rose-500 hover:text-white transition-all shadow-xl active:scale-95"
                   >
