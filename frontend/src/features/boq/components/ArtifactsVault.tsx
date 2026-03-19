@@ -14,10 +14,7 @@ import {
   Database
 } from 'lucide-react';
 
-/* ======================================================
-    OFFICE DATABASE INTEGRATION
-   ====================================================== */
-
+    // Office Databse Integration
 let useAuth: any = () => ({ user: { id: 'dev-user' }, theme: 'dark' });
 let db: any = null;
 
@@ -46,8 +43,6 @@ interface ReportItem {
   lastUpdated: string;
   version: string;
 }
-
-/** --- SUB-COMPONENT: DOCUMENT_CARD --- **/
 
 const DocumentCard: React.FC<{ 
   report: ReportItem; 
@@ -125,10 +120,6 @@ const ArtifactsVault: React.FC = () => {
   const [reports, setReports] = useState<ReportItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  /** * DATABASE FETCH
-   * Instead of fake data, we look at your real projects 
-   * to show that the system is actually working.
-   */
   useEffect(() => {
     const syncWithOfficeData = async () => {
       if (!user || !db) {

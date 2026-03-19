@@ -11,10 +11,6 @@ import {
   Database
 } from 'lucide-react';
 
-/* ======================================================
-    OFFICE DATABASE INTEGRATION
-   ====================================================== */
-
 // Default shims for the preview environment
 let useAuth: any = () => ({
   theme: 'dark',
@@ -37,8 +33,6 @@ const resolveModules = async () => {
 
 resolveModules();
 
-/** --- TYPES --- **/
-
 interface BoQItem {
   id: string;
   code: string;
@@ -55,16 +49,11 @@ interface BoQGeneratorProps {
   initialItems?: BoQItem[]; 
 }
 
-/** --- MAIN COMPONENT: BILL OF QUANTITIES GENERATOR --- **/
-
 const BoQGenerator: React.FC<BoQGeneratorProps> = ({ projectId, projectName, initialItems = [] }) => {
   const { theme } = useAuth();
   const [items, setItems] = useState<BoQItem[]>(initialItems);
   const [isLoading, setIsLoading] = useState(true);
 
-  /** * LIVE DATA SYNC
-   * Fetches real bill items from the local database for this specific project.
-   */
   useEffect(() => {
     const loadBillData = async () => {
       if (!db || !projectId) {
