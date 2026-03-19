@@ -14,10 +14,6 @@ import {
   Trash2
 } from 'lucide-react';
 
-/* ======================================================
-    OFFICE MODULE RESOLUTION
-   ====================================================== */
-
 let useAuth: any = () => ({ 
   user: { id: 'dev-surveyor-001' }, 
   theme: 'dark' 
@@ -60,8 +56,7 @@ interface VaultRegistryProps {
   onDeleteProject: (id: string) => void; // INTEGRATION: Prop for deletion
 }
 
-/** --- MAIN COMPONENT: PROJECT PORTFOLIO --- **/
-
+//Main Component
 const VaultRegistry: React.FC<VaultRegistryProps> = ({ projects, setProjects, navigate, onDeleteProject }) => {
   const { user, theme } = useAuth();
   

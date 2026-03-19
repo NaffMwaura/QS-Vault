@@ -15,10 +15,6 @@ import {
   Loader2
 } from 'lucide-react';
 
-/* ======================================================
-    OFFICE DATABASE INTEGRATION
-   ====================================================== */
-
 let useAuth: any = () => ({ theme: 'dark' });
 let db: any = null;
 
@@ -70,9 +66,6 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({ projectId, 
     retentionPercent: 10
   });
 
-  /** * LIVE DATA HARVESTING
-   * Pulls actual financial figures from the local office database
-   */
   useEffect(() => {
     const fetchFinancialData = async () => {
       if (!db || !projectId) {

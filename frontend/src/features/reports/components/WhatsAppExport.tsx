@@ -1,19 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
-import { 
-  MessageSquare, 
-  Share2, 
-  Send, 
-  CheckCircle2, 
+import {
+  MessageSquare,
+  Share2,
+  Send,
+  CheckCircle2,
   Copy,
   Smartphone,
   ShieldCheck
 } from 'lucide-react';
-
-/* ======================================================
-    MODULE RESOLUTION HANDLER (SANDBOX COMPATIBILITY)
-   ====================================================== */
 
 let useAuth: any = () => ({
   theme: 'dark',
@@ -30,8 +26,6 @@ const resolveModules = async () => {
 
 resolveModules();
 
-/** --- TYPES --- **/
-
 interface IPCData {
   certNumber: string;
   valuationDate: string;
@@ -47,8 +41,7 @@ interface WhatsAppExportProps {
   projectName: string;
 }
 
-/** --- MAIN COMPONENT: QUICK PROJECT SHARE --- **/
-
+// Main Project -> The project share
 const WhatsAppExport: React.FC<WhatsAppExportProps> = ({ data, projectName }) => {
   const { theme } = useAuth();
   const [copied, setCopied] = useState(false);
@@ -63,17 +56,17 @@ const WhatsAppExport: React.FC<WhatsAppExportProps> = ({ data, projectName }) =>
    */
   const generatePlainMessage = () => {
     return `QS VAULT: VALUATION UPDATE\n` +
-           `----------------------------------------\n` +
-           `Project: ${projectName.toUpperCase()}\n` +
-           `Cert No: ${data.certNumber}\n` +
-           `Date: ${data.valuationDate}\n\n` +
-           `Measured Value: KES ${data.workExecuted.toLocaleString()}\n` +
-           `Retention (${data.retentionPercent}%): KES ${(data.workExecuted * data.retentionPercent / 100).toLocaleString()}\n` +
-           `----------------------------------------\n` +
-           `NET AMOUNT DUE: KES ${netDue.toLocaleString()}\n` +
-           `TOTAL (INC. VAT): KES ${totalWithVat.toLocaleString()}\n` +
-           `----------------------------------------\n` +
-           `Shared via QS Vault Construction OS v2.0`;
+      `----------------------------------------\n` +
+      `Project: ${projectName.toUpperCase()}\n` +
+      `Cert No: ${data.certNumber}\n` +
+      `Date: ${data.valuationDate}\n\n` +
+      `Measured Value: KES ${data.workExecuted.toLocaleString()}\n` +
+      `Retention (${data.retentionPercent}%): KES ${(data.workExecuted * data.retentionPercent / 100).toLocaleString()}\n` +
+      `----------------------------------------\n` +
+      `NET AMOUNT DUE: KES ${netDue.toLocaleString()}\n` +
+      `TOTAL (INC. VAT): KES ${totalWithVat.toLocaleString()}\n` +
+      `----------------------------------------\n` +
+      `Shared via QS Vault Construction OS v2.0`;
   };
 
   const handleWhatsAppTrigger = () => {
@@ -91,7 +84,7 @@ const WhatsAppExport: React.FC<WhatsAppExportProps> = ({ data, projectName }) =>
     dummy.select();
     document.execCommand("copy");
     document.body.removeChild(dummy);
-    
+
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -99,7 +92,7 @@ const WhatsAppExport: React.FC<WhatsAppExportProps> = ({ data, projectName }) =>
   return (
     <div className={`p-8 rounded-[3rem] border backdrop-blur-3xl transition-all duration-500
       ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800 shadow-2xl shadow-black/40' : 'bg-white border-zinc-200 shadow-xl'}`}>
-      
+
       <div className="space-y-8">
         <div className="flex justify-between items-start">
           <div className="text-left space-y-1">
@@ -129,14 +122,14 @@ const WhatsAppExport: React.FC<WhatsAppExportProps> = ({ data, projectName }) =>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <button 
+          <button
             type="button"
             onClick={handleCopyText}
             className={`flex items-center justify-center gap-3 py-5 rounded-2xl border transition-all active:scale-95
-              ${copied 
-                ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500' 
-                : theme === 'dark' 
-                  ? 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:text-white' 
+              ${copied
+                ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500'
+                : theme === 'dark'
+                  ? 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:text-white'
                   : 'bg-zinc-100 border-zinc-200 text-zinc-500 hover:text-zinc-900'}`}
           >
             {copied ? <CheckCircle2 size={16} /> : <Copy size={16} />}
@@ -145,7 +138,7 @@ const WhatsAppExport: React.FC<WhatsAppExportProps> = ({ data, projectName }) =>
             </span>
           </button>
 
-          <button 
+          <button
             type="button"
             onClick={handleWhatsAppTrigger}
             className="flex items-center justify-center gap-3 py-5 bg-[#25D366] text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl hover:scale-[1.02] active:scale-95 transition-all shadow-[#25D366]/20"
@@ -163,8 +156,8 @@ const WhatsAppExport: React.FC<WhatsAppExportProps> = ({ data, projectName }) =>
             </span>
           </div>
           <div className="flex items-center gap-2">
-             <Share2 size={12} className="text-zinc-500" />
-             <span className="text-[8px] font-bold uppercase text-zinc-500">Live Secure Share</span>
+            <Share2 size={12} className="text-zinc-500" />
+            <span className="text-[8px] font-bold uppercase text-zinc-500">Live Secure Share</span>
           </div>
         </div>
       </div>
