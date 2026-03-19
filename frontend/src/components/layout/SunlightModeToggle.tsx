@@ -1,15 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  SunMedium, 
-  Zap, 
+import {
+  SunMedium,
+  Zap,
   Highlighter
 } from 'lucide-react';
-
-/* ======================================================
-    MODULE RESOLUTION HANDLER (SANDBOX COMPATIBILITY)
-    Ensures the component compiles while linking to your
-    local office security settings.
-   ====================================================== */
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let useAuth: any = () => ({
@@ -22,15 +16,13 @@ const resolveModules = async () => {
     // Attempt to resolve real project modules
     const authMod = await import("../../features/auth/AuthContext");
     if (authMod.useAuth) useAuth = authMod.useAuth;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     // Fallback to mock for stability
   }
 };
 
 resolveModules();
-
-/** --- MAIN COMPONENT: OUTDOOR VISIBILITY TOGGLE --- **/
 
 const SunlightModeToggle: React.FC = () => {
   const { theme, toggleTheme } = useAuth();
@@ -41,7 +33,7 @@ const SunlightModeToggle: React.FC = () => {
   useEffect(() => {
     if (isSunlightMode) {
       document.documentElement.classList.add('sunlight-optimized');
-      
+
       // If the user is in Dark Mode, we force a switch to Light Mode
       // as it provides better contrast outdoors.
       if (theme === 'dark') {
@@ -63,8 +55,8 @@ const SunlightModeToggle: React.FC = () => {
         onClick={toggleVisibilityMode}
         className={`
           relative flex items-center gap-3 px-4 py-2 sm:px-6 sm:py-3 rounded-2xl border transition-all duration-500 group overflow-hidden
-          ${isSunlightMode 
-            ? 'bg-amber-500 border-amber-600 text-black shadow-[0_0_30px_rgba(245,158,11,0.4)]' 
+          ${isSunlightMode
+            ? 'bg-amber-500 border-amber-600 text-black shadow-[0_0_30px_rgba(245,158,11,0.4)]'
             : theme === 'dark'
               ? 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:border-amber-500/50 hover:text-amber-500'
               : 'bg-white border-zinc-200 text-zinc-400 hover:border-amber-500/50 hover:text-amber-600 shadow-sm'}
@@ -82,7 +74,7 @@ const SunlightModeToggle: React.FC = () => {
           ) : (
             <SunMedium size={16} className="group-hover:rotate-90 transition-transform duration-700" />
           )}
-          
+
           <span className="text-[10px] font-black uppercase tracking-[0.2em] leading-none">
             {isSunlightMode ? 'Outdoor Mode Active' : 'Outdoor Visibility'}
           </span>
