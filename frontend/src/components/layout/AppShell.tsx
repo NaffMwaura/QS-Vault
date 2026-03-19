@@ -1,14 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from "react-router-dom";
-import { ShieldCheck,  } from "lucide-react";
+import { ShieldCheck, } from "lucide-react";
 
-/* ======================================================
-    MODULE RESOLUTION HANDLER (SANDBOX COMPATIBILITY)
-    Ensures the UI compiles while maintaining links to 
-    your local project folders.
-   ====================================================== */
 
-// Default shims for the preview environment
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let useAuth: any = () => ({
   user: { id: 'dev-surveyor-001', user_metadata: { full_name: 'Naftaly Mwaura' } },
@@ -35,7 +29,7 @@ const resolveModules = async () => {
 
     const sidebarMod = await import("./SidebarCommand");
     SidebarCommand = sidebarMod.default;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     // Technical shims active in the previewer
   }
@@ -48,7 +42,6 @@ interface AppShellProps {
   children?: React.ReactNode;
 }
 
-/** --- SUB-COMPONENT: OFFICE_LOADER --- **/
 const OfficeLoader = ({ isOnline }: { isOnline: boolean }) => (
   <div className="min-h-screen bg-[#09090b] flex flex-col items-center justify-center p-6 text-center z-100] fixed inset-0">
     <div className="relative w-24 h-24 sm:w-32 sm:h-32 mb-12">
@@ -89,19 +82,19 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
   return (
     <div className={`min-h-screen flex font-sans transition-colors duration-500 overflow-hidden selection:bg-amber-500/30
       ${theme === 'dark' ? 'bg-[#09090b] text-zinc-100' : 'bg-zinc-100 text-zinc-900'}`}>
-      
+
       {/* 1. PRIMARY SIDEBAR NAVIGATION */}
-      <SidebarCommand 
-        activeView={activeView || 'projects'} 
-        setActiveView={setActiveView} 
+      <SidebarCommand
+        activeView={activeView || 'projects'}
+        setActiveView={setActiveView}
       />
 
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-        
+
         {/* 2. GLOBAL HUD HEADER ( Connectivity & User Profile ) */}
-        <HUDHeader 
-          activeView={activeView || 'projects'} 
-          setActiveView={setActiveView} 
+        <HUDHeader
+          activeView={activeView || 'projects'}
+          setActiveView={setActiveView}
         />
 
         {/* 3. MAIN SCROLLABLE WORKSPACE */}
@@ -123,19 +116,19 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
                 </div>
               )}
             </div>
-            
+
             {/* Professional Compliance Footer */}
             <footer className="pt-24 pb-12 text-center opacity-20 hidden md:block mt-auto">
-               <div className="flex items-center justify-center gap-8 mb-4">
-                  <div className="h-px w-20 bg-zinc-800" />
-                  <p className="text-[10px] font-black uppercase tracking-[0.8em] italic">
-                    QS VAULT PRECISION OS V2.0
-                  </p>
-                  <div className="h-px w-20 bg-zinc-800" />
-               </div>
-               <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-zinc-600">
-                 CERTIFIED PROFESSIONAL ACCESS • SMM-KE COMPLIANT ENGINE
-               </p>
+              <div className="flex items-center justify-center gap-8 mb-4">
+                <div className="h-px w-20 bg-zinc-800" />
+                <p className="text-[10px] font-black uppercase tracking-[0.8em] italic">
+                  QS VAULT PRECISION OS V2.0
+                </p>
+                <div className="h-px w-20 bg-zinc-800" />
+              </div>
+              <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-zinc-600">
+                CERTIFIED PROFESSIONAL ACCESS • SMM-KE COMPLIANT ENGINE
+              </p>
             </footer>
           </section>
         </main>

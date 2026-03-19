@@ -1,19 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { } from 'react';
-import { 
-  LayoutGrid, 
-  Database, 
-  Settings, 
-  HardHat, 
-  LogOut, 
-  Sun, 
-  Moon} from 'lucide-react';
-
-/* ======================================================
-    MODULE RESOLUTION HANDLER (FIXED)
-    Ensures 'useAuth' is always available in the scope 
-    of the components below.
-   ====================================================== */
+import {
+  LayoutGrid,
+  Database,
+  Settings,
+  HardHat,
+  LogOut,
+  Sun,
+  Moon
+} from 'lucide-react';
 
 // 1. Initial declaration of the hook variable
 let useAuth: any;
@@ -41,7 +36,7 @@ const resolveModules = async () => {
     if (authMod.useAuth) {
       useAuth = authMod.useAuth;
     }
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     // Keep fallback if resolution fails
   }
@@ -58,29 +53,29 @@ interface SidebarCommandProps {
 }
 
 /** --- SUB-COMPONENT: SIDEBAR_LINK --- **/
-const SidebarLink: React.FC<{ 
-  icon: React.ElementType; 
-  label: string; 
-  active: boolean; 
-  onClick: () => void; 
-  theme: 'light' | 'dark' 
+const SidebarLink: React.FC<{
+  icon: React.ElementType;
+  label: string;
+  active: boolean;
+  onClick: () => void;
+  theme: 'light' | 'dark'
 }> = ({ icon: Icon, label, active, onClick, theme }) => (
-  <button 
+  <button
     type="button"
-    onClick={onClick} 
+    onClick={onClick}
     className={`w-full flex items-center gap-5 p-4 lg:p-5 rounded-3xl transition-all duration-300 group relative 
-      ${active 
-        ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-xl shadow-amber-500/5' 
-        : theme === 'dark' 
-          ? 'text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800/30 border border-transparent' 
+      ${active
+        ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-xl shadow-amber-500/5'
+        : theme === 'dark'
+          ? 'text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800/30 border border-transparent'
           : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 border border-transparent'}`}
   >
     {active && (
       <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-1.5 h-10 bg-amber-500 rounded-full blur-[1px]" />
     )}
-    <Icon 
-      size={20} 
-      className={`${active ? 'scale-110 text-amber-500' : 'group-hover:scale-110 group-hover:text-amber-500'} transition-all duration-300 shrink-0`} 
+    <Icon
+      size={20}
+      className={`${active ? 'scale-110 text-amber-500' : 'group-hover:scale-110 group-hover:text-amber-500'} transition-all duration-300 shrink-0`}
     />
     <span className="hidden lg:block text-[11px] font-black uppercase tracking-[0.25em] text-left leading-none">
       {label}
@@ -107,13 +102,13 @@ const SidebarCommand: React.FC<SidebarCommandProps> = ({ activeView, setActiveVi
 
   return (
     <aside className={`relative z-50 w-20 lg:w-72 flex flex-col transition-all duration-500 ease-in-out border-r shrink-0
-      ${theme === 'dark' 
-        ? 'bg-zinc-950/70 backdrop-blur-3xl border-zinc-800/40 shadow-2xl shadow-black' 
+      ${theme === 'dark'
+        ? 'bg-zinc-950/70 backdrop-blur-3xl border-zinc-800/40 shadow-2xl shadow-black'
         : 'bg-white border-zinc-200 shadow-xl'}`}>
-      
+
       {/* Branding */}
-      <div 
-        className="p-6 lg:p-8 flex items-center gap-4 cursor-pointer group" 
+      <div
+        className="p-6 lg:p-8 flex items-center gap-4 cursor-pointer group"
         onClick={() => setActiveView('projects')}
       >
         <div className="bg-amber-500 p-2.5 rounded-2xl shadow-xl shadow-amber-500/20 shrink-0 transition-transform group-hover:rotate-6 active:scale-90">
@@ -132,7 +127,7 @@ const SidebarCommand: React.FC<SidebarCommandProps> = ({ activeView, setActiveVi
       {/* Navigation */}
       <nav className="flex-1 px-4 py-8 space-y-3">
         {navLinks.map((link) => (
-          <SidebarLink 
+          <SidebarLink
             key={link.id}
             icon={link.icon}
             label={link.label}
@@ -145,7 +140,7 @@ const SidebarCommand: React.FC<SidebarCommandProps> = ({ activeView, setActiveVi
 
       {/* Profile & Session Controls */}
       <div className={`p-4 border-t ${theme === 'dark' ? 'border-zinc-800/30' : 'border-zinc-200'}`}>
-        <div 
+        <div
           onClick={() => setActiveView('profile')}
           className={`mb-4 hidden lg:flex items-center gap-3 p-3 rounded-2xl border cursor-pointer transition-all hover:border-amber-500/30
           ${theme === 'dark' ? 'bg-zinc-500/5 border-zinc-500/10' : 'bg-zinc-50 border-zinc-100'}`}
@@ -161,7 +156,7 @@ const SidebarCommand: React.FC<SidebarCommandProps> = ({ activeView, setActiveVi
               Professional License
             </p>
           </div>
-          <button 
+          <button
             type="button"
             onClick={(e) => { e.stopPropagation(); toggleTheme(); }}
             className="p-2 rounded-lg hover:bg-zinc-500/10 text-zinc-500 transition-colors"
@@ -169,8 +164,8 @@ const SidebarCommand: React.FC<SidebarCommandProps> = ({ activeView, setActiveVi
             {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
           </button>
         </div>
-        
-        <button 
+
+        <button
           type="button"
           onClick={signOut}
           className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all group
