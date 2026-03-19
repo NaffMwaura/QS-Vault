@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Mail, CheckCircle, X, HardHat, ShieldCheck, Zap, 
+import {
+  Mail, CheckCircle, X, HardHat, ShieldCheck, Zap,
   Database, ArrowLeft, Ruler, Wifi, WifiOff, Sun, Moon,
   Lock, User, Eye, EyeOff, Info, ChevronRight
 } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
-
-/** --- TYPES & INTERFACES --- **/
 
 interface AuthContextValue {
   theme: 'light' | 'dark';
@@ -15,7 +13,6 @@ interface AuthContextValue {
 
 interface SupabaseClientMock {
   auth: {
-    // Fixed: Replaced 'any' with specific shapes used in the component to satisfy no-explicit-any
     signInWithPassword: (args: { email?: string; password?: string }) => Promise<{ data: { user: { id: string } } | null; error: Error | null }>;
     signUp: (args: { email?: string; password?: string; options?: { data?: Record<string, string>; emailRedirectTo?: string } }) => Promise<{ data: { user: { id: string } } | null; error: Error | null }>;
     signInWithOAuth: (args: { provider: string; options?: { redirectTo?: string } }) => Promise<{ error: Error | null }>;
@@ -29,7 +26,6 @@ interface SupabaseClientMock {
   };
 }
 
-/** --- MODULE RESOLUTION HANDLER --- **/
 let supabase: SupabaseClientMock = {
   auth: {
     signInWithPassword: async () => ({ data: { user: { id: 'mock' } }, error: null }),
@@ -48,13 +44,12 @@ let supabase: SupabaseClientMock = {
 try {
   // Use @ts-expect-error instead of @ts-ignore per eslint@typescript-eslint/ban-ts-comment
   import("../../lib/database/database").then(mod => {
-    // Fixed: Used 'as unknown as SupabaseClientMock' to bypass the 'any' requirement for structural matching
     supabase = mod.supabase as unknown as SupabaseClientMock;
   }).catch(() => {
     // Fail-safe for async resolution
   });
 } catch {
-  // Silent fallback for sandbox environment
+  //
 }
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -75,10 +70,6 @@ interface FeatureItemProps {
   theme: 'light' | 'dark';
 }
 
-/* ======================================================
-    AUTH CONTEXT HANDLER
-   ====================================================== */
-
 let useAuth: () => AuthContextValue = () => ({
   theme: 'dark',
   toggleTheme: () => { /* no-op simulation */ },
@@ -91,10 +82,9 @@ try {
     // Fail-safe for async resolution
   });
 } catch {
-  // Fixed: Removed unused 'e' and empty block per eslint requirements
-}
 
-/** --- UI COMPONENTS --- **/
+  //
+}
 
 const Button: React.FC<ButtonProps> = ({ children, className, variant = 'primary', ...props }) => {
   const baseStyles = "disabled:opacity-50 transition-all active:scale-[0.98] flex items-center justify-center font-black uppercase text-[11px] tracking-[0.2em] rounded-2xl py-5 px-6";
@@ -124,13 +114,11 @@ const FeatureItem: React.FC<FeatureItemProps> = ({ icon: Icon, title, descriptio
     </div>
   </div>
 );
-
-/** --- MAIN LOGIN PAGE --- **/
-
+// Login Page
 const LoginPage: React.FC = () => {
   const { theme, toggleTheme } = useAuth();
   const navigate = useNavigate();
-  
+
   // Auth State
   const [isRegistering, setIsRegistering] = useState(false);
   const [username, setUsername] = useState('');
@@ -139,7 +127,7 @@ const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [authStatus, setAuthStatus] = useState<AuthStatus>({ message: null, type: 'success' });
-  
+
   // View State
   const [mobileView, setMobileView] = useState<'branding' | 'form'>('form');
   const [isOnline, setIsOnline] = useState(() => typeof navigator !== 'undefined' ? navigator.onLine : true);
@@ -224,30 +212,30 @@ const LoginPage: React.FC = () => {
   return (
     <div className={`h-screen w-screen flex flex-col lg:flex-row font-sans selection:bg-amber-500/30 overflow-hidden transition-colors duration-500 
       ${theme === 'dark' ? 'bg-[#09090b]' : 'bg-zinc-100'}`}>
-      
+
       {/* 1. LEFT SECTION: BRANDING & SPECS */}
       <div className={`relative flex-1 p-8 md:p-12 lg:p-16 flex flex-col justify-between border-r transition-all duration-500
         ${mobileView === 'branding' ? 'flex fixed inset-0 z-50 bg-inherit' : 'hidden lg:flex'}
         ${theme === 'dark' ? 'border-zinc-800/40 bg-zinc-950/40' : 'border-zinc-200 bg-white'}`}>
-        
+
         <div className={`absolute top-[-5%] left-[-5%] w-[50%] h-[50%] rounded-full blur-[100px] animate-pulse 
           ${theme === 'dark' ? 'bg-amber-500/5' : 'bg-amber-500/3'}`} />
-        
+
         <div className="relative z-10 flex justify-between items-center">
           <button onClick={() => { window.location.href = '/'; }} className="flex items-center gap-2 text-amber-400 hover:text-amber-500 transition-colors font-black uppercase text-[12px] tracking-[0.2em] group">
             <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
             Home
           </button>
-          
+
           <div className="flex items-center gap-4">
-             <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-[9px] font-black transition-all duration-500 uppercase tracking-[0.2em] 
+            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-[9px] font-black transition-all duration-500 uppercase tracking-[0.2em] 
                ${isOnline ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-600' : 'bg-red-500/5 border-red-500/20 text-red-500 animate-pulse'}`}>
-               {isOnline ? <Wifi size={12} /> : <WifiOff size={12} />}
-               <span className="hidden sm:inline">{isOnline ? "Link Ready" : "Offline Vault"}</span>
-             </div>
-             <button onClick={() => setMobileView('form')} className="lg:hidden p-2 rounded-full bg-zinc-500/10 text-zinc-500">
-                <ChevronRight size={18} />
-             </button>
+              {isOnline ? <Wifi size={12} /> : <WifiOff size={12} />}
+              <span className="hidden sm:inline">{isOnline ? "Link Ready" : "Offline Vault"}</span>
+            </div>
+            <button onClick={() => setMobileView('form')} className="lg:hidden p-2 rounded-full bg-zinc-500/10 text-zinc-500">
+              <ChevronRight size={18} />
+            </button>
           </div>
         </div>
 
@@ -260,7 +248,7 @@ const LoginPage: React.FC = () => {
               <div className={`h-6 w-px rotate-12 mx-1 ${theme === 'dark' ? 'bg-zinc-800' : 'bg-zinc-200'}`} />
               <h1 className={`text-2xl font-black uppercase tracking-tighter italic ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>QS Vault</h1>
             </div>
-            
+
             <h2 className={`text-3xl md:text-4xl lg:text-5xl font-black uppercase tracking-tighter leading-[0.95] italic ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
               Precision Takeoff<br />
               <span className="text-amber-500 underline decoration-amber-500/20 underline-offset-8">Starts Here.</span>
@@ -284,39 +272,39 @@ const LoginPage: React.FC = () => {
         </div>
 
         <div className="relative z-10 flex items-center justify-between opacity-50 pb-2">
-           <div className="flex items-center gap-4">
-             <Ruler size={14} className="text-amber-500 animate-slide-slow" />
-             <p className="text-[8px] font-black uppercase tracking-[0.4em] text-zinc-500 italic">SYSTEM / QS-PV2.0</p>
-           </div>
-           <button onClick={toggleTheme} className="p-2 rounded-lg hover:bg-amber-500/10 transition-colors">
-             {theme === 'dark' ? <Sun size={12} className="text-zinc-500" /> : <Moon size={12} className="text-zinc-500" />}
-           </button>
+          <div className="flex items-center gap-4">
+            <Ruler size={14} className="text-amber-500 animate-slide-slow" />
+            <p className="text-[8px] font-black uppercase tracking-[0.4em] text-zinc-500 italic">SYSTEM / QS-PV2.0</p>
+          </div>
+          <button onClick={toggleTheme} className="p-2 rounded-lg hover:bg-amber-500/10 transition-colors">
+            {theme === 'dark' ? <Sun size={12} className="text-zinc-500" /> : <Moon size={12} className="text-zinc-500" />}
+          </button>
         </div>
       </div>
 
       {/* 2. RIGHT SECTION: AUTH FORM */}
       <div className={`flex-1 p-6 md:p-12 lg:p-16 flex items-center justify-center relative bg-zinc-950/5 h-full
         ${mobileView === 'form' ? 'flex' : 'hidden lg:flex'}`}>
-        
-        <div className="absolute inset-0 opacity-10 pointer-events-none" 
-              style={{backgroundImage: 'radial-gradient(#f59e0b 0.5px, transparent 0.5px)', backgroundSize: '32px 32px'}} />
+
+        <div className="absolute inset-0 opacity-10 pointer-events-none"
+          style={{ backgroundImage: 'radial-gradient(#f59e0b 0.5px, transparent 0.5px)', backgroundSize: '32px 32px' }} />
 
         <div className="w-full max-w-lg relative z-10">
           <div className={`backdrop-blur-3xl p-8 md:p-10 rounded-[3.5rem] border shadow-2xl space-y-6 transition-all 
             ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800/60 shadow-black/40' : 'bg-white/80 border-zinc-200'}`}>
-            
+
             <div className="flex justify-between items-start">
-               <div className="space-y-1">
-                 <h3 className={`text-2xl font-black uppercase tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
-                   {isRegistering ? 'Register' : 'Identity'}<span className="text-amber-500 italic">.</span>
-                 </h3>
-                 <p className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em]">
-                   {isRegistering ? 'Initialize your node.' : 'Unlock your vault.'}
-                 </p>
-               </div>
-               <button onClick={() => setMobileView('branding')} className="lg:hidden p-2 rounded-full bg-zinc-500/10 text-zinc-500">
-                  <Info size={18} />
-               </button>
+              <div className="space-y-1">
+                <h3 className={`text-2xl font-black uppercase tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
+                  {isRegistering ? 'Register' : 'Identity'}<span className="text-amber-500 italic">.</span>
+                </h3>
+                <p className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+                  {isRegistering ? 'Initialize your node.' : 'Unlock your vault.'}
+                </p>
+              </div>
+              <button onClick={() => setMobileView('branding')} className="lg:hidden p-2 rounded-full bg-zinc-500/10 text-zinc-500">
+                <Info size={18} />
+              </button>
             </div>
 
             {authStatus.message && (
@@ -333,11 +321,11 @@ const LoginPage: React.FC = () => {
                   <label className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.3em] ml-3 italic">Username</label>
                   <div className="relative group">
                     <User size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-amber-500 transition-colors" />
-                    <input 
-                      type="text" required value={username} onChange={(e) => setUsername(e.target.value)} 
-                      placeholder="surveyor_01" 
+                    <input
+                      type="text" required value={username} onChange={(e) => setUsername(e.target.value)}
+                      placeholder="surveyor_01"
                       className={`w-full pl-14 pr-6 py-3.5 rounded-2xl text-xs font-bold border outline-none transition-all focus:ring-4 ring-amber-500/10
-                        ${theme === 'dark' ? 'bg-zinc-950/60 border-zinc-800 text-white placeholder-zinc-800' : 'bg-zinc-50 border-zinc-200'}`} 
+                        ${theme === 'dark' ? 'bg-zinc-950/60 border-zinc-800 text-white placeholder-zinc-800' : 'bg-zinc-50 border-zinc-200'}`}
                     />
                   </div>
                 </div>
@@ -347,11 +335,11 @@ const LoginPage: React.FC = () => {
                 <label className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.3em] ml-3 italic">Vault Email</label>
                 <div className="relative group">
                   <Mail size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-amber-500 transition-colors" />
-                  <input 
-                    type="email" required value={email} onChange={(e) => setEmail(e.target.value)} 
-                    placeholder="surveyor@vault.co" 
+                  <input
+                    type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+                    placeholder="surveyor@vault.co"
                     className={`w-full pl-14 pr-6 py-3.5 rounded-2xl text-xs font-bold border outline-none transition-all focus:ring-4 ring-amber-500/10
-                      ${theme === 'dark' ? 'bg-zinc-950/60 border-zinc-800 text-white placeholder-zinc-800' : 'bg-zinc-50 border-zinc-200'}`} 
+                      ${theme === 'dark' ? 'bg-zinc-950/60 border-zinc-800 text-white placeholder-zinc-800' : 'bg-zinc-50 border-zinc-200'}`}
                   />
                 </div>
               </div>
@@ -360,11 +348,11 @@ const LoginPage: React.FC = () => {
                 <label className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.3em] ml-3 italic">Access Key</label>
                 <div className="relative group">
                   <Lock size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-amber-500 transition-colors" />
-                  <input 
-                    type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} 
-                    placeholder="••••••••" 
+                  <input
+                    type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
                     className={`w-full pl-14 pr-14 py-3.5 rounded-2xl text-xs font-bold border outline-none transition-all focus:ring-4 ring-amber-500/10
-                      ${theme === 'dark' ? 'bg-zinc-950/60 border-zinc-800 text-white placeholder-zinc-800' : 'bg-zinc-50 border-zinc-200'}`} 
+                      ${theme === 'dark' ? 'bg-zinc-950/60 border-zinc-800 text-white placeholder-zinc-800' : 'bg-zinc-50 border-zinc-200'}`}
                   />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-5 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-amber-500">
                     {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
@@ -378,12 +366,12 @@ const LoginPage: React.FC = () => {
             </form>
 
             <div className="text-center">
-               <button 
-                onClick={() => { setIsRegistering(!isRegistering); setAuthStatus({message: null, type: 'success'}); }}
+              <button
+                onClick={() => { setIsRegistering(!isRegistering); setAuthStatus({ message: null, type: 'success' }); }}
                 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-amber-500 transition-colors"
-               >
-                 {isRegistering ? "Return to Authorization" : "Initialize New Node (Register)"}
-               </button>
+              >
+                {isRegistering ? "Return to Authorization" : "Initialize New Node (Register)"}
+              </button>
             </div>
 
             <div className="relative flex items-center py-1">

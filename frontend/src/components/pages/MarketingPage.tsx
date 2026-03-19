@@ -47,10 +47,6 @@ const useTypewriter = (words: string[], speed = 70, deleteSpeed = 50, delay = 15
   return text;
 };
 
-/* ======================================================
-    REUSABLE COMPONENTS (Refined professional spacing)
-   ====================================================== */
-
 interface CardProps {
   icon: LucideIcon;
   title: string;
@@ -60,8 +56,8 @@ interface CardProps {
 
 const FeatureCard = ({ icon: Icon, title, description, theme }: CardProps) => (
   <div className={`p-8 sm:p-12 rounded-[2.5rem] sm:rounded-[3.5rem] border transition-all duration-500 hover:scale-[1.02] text-center group relative overflow-hidden
-    ${theme === 'dark' 
-      ? 'bg-zinc-900/40 border-zinc-800 shadow-2xl hover:border-amber-500/30' 
+    ${theme === 'dark'
+      ? 'bg-zinc-900/40 border-zinc-800 shadow-2xl hover:border-amber-500/30'
       : 'bg-white border-zinc-200 shadow-xl hover:border-amber-500/30'}`}>
     <div className="w-16 h-16 sm:w-20 sm:h-20 bg-amber-500/10 rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto mb-8 group-hover:bg-amber-500 transition-all duration-500">
       <Icon size={32} className="text-amber-500 group-hover:text-black transition-colors" />
@@ -83,10 +79,6 @@ const ValuePropCard = ({ icon: Icon, title, description, theme }: CardProps) => 
     </div>
   </div>
 );
-
-/* ======================================================
-    NAVIGATION BAR (Mobile Friendly)
-   ====================================================== */
 
 const NavigationBar = ({ onAuthClick }: { onAuthClick: () => void }) => {
   const { theme, toggleTheme } = useAuth();
@@ -113,8 +105,8 @@ const NavigationBar = ({ onAuthClick }: { onAuthClick: () => void }) => {
     <>
       <nav className={`
         fixed top-0 inset-x-0 z-50 transition-all duration-500
-        ${scrolled 
-          ? (theme === 'dark' ? "bg-[#09090b]/80 border-zinc-800/50" : "bg-white/80 border-zinc-200/50") + " border-b py-3 sm:py-4 shadow-lg backdrop-blur-md" 
+        ${scrolled
+          ? (theme === 'dark' ? "bg-[#09090b]/80 border-zinc-800/50" : "bg-white/80 border-zinc-200/50") + " border-b py-3 sm:py-4 shadow-lg backdrop-blur-md"
           : "bg-transparent py-6 sm:py-8"}
       `}>
         <div className="max-w-7xl mx-auto px-4 sm:px-8 flex justify-between items-center">
@@ -128,11 +120,10 @@ const NavigationBar = ({ onAuthClick }: { onAuthClick: () => void }) => {
               </span>
             </div>
 
-            <div className={`hidden md:flex items-center gap-2 px-4 py-2 rounded-full border text-[9px] font-black transition-all duration-500 uppercase tracking-[0.2em] ${
-              isOnline 
-                ? (theme === 'dark' ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500" : "bg-emerald-500/5 border-emerald-500/20 text-emerald-600") 
+            <div className={`hidden md:flex items-center gap-2 px-4 py-2 rounded-full border text-[9px] font-black transition-all duration-500 uppercase tracking-[0.2em] ${isOnline
+                ? (theme === 'dark' ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500" : "bg-emerald-500/5 border-emerald-500/20 text-emerald-600")
                 : "bg-red-500/10 border-red-500/20 text-red-500 animate-pulse"
-            }`}>
+              }`}>
               {isOnline ? <Wifi size={12} /> : <WifiOff size={12} />}
               <span>{isOnline ? "Infrastructure Synced" : "Offline Mode"}</span>
             </div>
@@ -147,15 +138,15 @@ const NavigationBar = ({ onAuthClick }: { onAuthClick: () => void }) => {
             >
               {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
             </button>
-            
+
             <button
               onClick={onAuthClick}
               className={`hidden sm:block text-[11px] font-black uppercase tracking-[0.2em] transition-colors
                 ${theme === 'dark' ? 'text-zinc-200 hover:text-amber-500' : 'text-zinc-500 hover:text-amber-600'}`}
             >
-               Login
+              Login
             </button>
-            
+
             <button
               onClick={onAuthClick}
               className="bg-amber-500 text-black px-5 sm:px-8 py-2.5 sm:py-3.5 rounded-xl sm:rounded-2xl font-black text-[10px] sm:text-[11px] uppercase tracking-widest sm:tracking-[0.2em] shadow-xl shadow-amber-500/20 hover:bg-amber-400 transition-all active:scale-95"
@@ -163,7 +154,7 @@ const NavigationBar = ({ onAuthClick }: { onAuthClick: () => void }) => {
               Get Started
             </button>
 
-            <button 
+            <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className={`sm:hidden p-2 rounded-xl border ${theme === 'dark' ? 'border-zinc-800 bg-zinc-900 text-zinc-400' : 'border-zinc-200 bg-zinc-100 text-zinc-600'}`}
             >
@@ -182,9 +173,9 @@ const NavigationBar = ({ onAuthClick }: { onAuthClick: () => void }) => {
             <button onClick={() => { setMobileMenuOpen(false); onAuthClick(); }} className={`text-2xl font-black uppercase tracking-widest text-amber-500`}>Pricing</button>
             <button onClick={() => { setMobileMenuOpen(false); onAuthClick(); }} className={`text-2xl font-black uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>About</button>
             <div className="pt-10 border-t border-zinc-800 w-full flex justify-center gap-8">
-               <button onClick={toggleTheme} className="p-4 rounded-full bg-amber-500/10 text-amber-500">
-                 {theme === 'dark' ? <Sun size={24} /> : <Moon size={24} />}
-               </button>
+              <button onClick={toggleTheme} className="p-4 rounded-full bg-amber-500/10 text-amber-500">
+                {theme === 'dark' ? <Sun size={24} /> : <Moon size={24} />}
+              </button>
             </div>
           </div>
         </div>
@@ -192,10 +183,6 @@ const NavigationBar = ({ onAuthClick }: { onAuthClick: () => void }) => {
     </>
   );
 };
-
-/* ======================================================
-    MARKETING PAGE (Refined spacing & Professional UI)
-   ====================================================== */
 
 const MarketingPage = ({ onGetStarted }: { onGetStarted: () => void }) => {
   const { theme } = useAuth();
@@ -209,18 +196,18 @@ const MarketingPage = ({ onGetStarted }: { onGetStarted: () => void }) => {
   return (
     <main className={`min-h-screen selection:bg-amber-500/30 selection:text-black transition-colors duration-500 overflow-x-hidden custom-scrollbar
       ${theme === 'dark' ? 'bg-[#09090b] text-white' : 'bg-zinc-100 text-zinc-900'}`}>
-      
+
       <NavigationBar onAuthClick={onGetStarted} />
 
       {/* HERO SECTION */}
       <header className="relative min-h-[90vh] sm:min-h-screen flex items-center justify-center px-4 sm:px-6 pt-24 overflow-hidden">
         <div className="absolute inset-0 z-0 pointer-events-none">
-           <div className={`absolute top-0 right-0 w-2/3 h-2/3 rounded-full blur-[140px] -translate-y-1/2 translate-x-1/4 ${theme === 'dark' ? 'bg-amber-500/10' : 'bg-amber-500/5'}`} />
-           <div className={`absolute bottom-0 left-0 w-1/2 h-1/2 rounded-full blur-[120px] translate-y-1/4 -translate-x-1/4 ${theme === 'dark' ? 'bg-zinc-500/10' : 'bg-zinc-500/5'}`} />
-           <div className={`absolute inset-0 ${theme === 'dark' ? 'opacity-[0.07]' : 'opacity-[0.03]'}`} 
-                style={{ backgroundImage: 'radial-gradient(#f59e0b 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+          <div className={`absolute top-0 right-0 w-2/3 h-2/3 rounded-full blur-[140px] -translate-y-1/2 translate-x-1/4 ${theme === 'dark' ? 'bg-amber-500/10' : 'bg-amber-500/5'}`} />
+          <div className={`absolute bottom-0 left-0 w-1/2 h-1/2 rounded-full blur-[120px] translate-y-1/4 -translate-x-1/4 ${theme === 'dark' ? 'bg-zinc-500/10' : 'bg-zinc-500/5'}`} />
+          <div className={`absolute inset-0 ${theme === 'dark' ? 'opacity-[0.07]' : 'opacity-[0.03]'}`}
+            style={{ backgroundImage: 'radial-gradient(#f59e0b 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
         </div>
-        
+
         <div className="relative z-10 max-w-6xl mx-auto text-center px-4">
           <div className={`inline-flex items-center gap-3 px-5 sm:px-6 py-2 sm:py-2.5 rounded-full border mb-8 sm:mb-12 shadow-inner
             ${theme === 'dark' ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-500/5 border-amber-500/10'}`}>
@@ -249,12 +236,12 @@ const MarketingPage = ({ onGetStarted }: { onGetStarted: () => void }) => {
               onClick={onGetStarted}
               className="w-full sm:w-auto group bg-amber-500 text-black font-black py-5 sm:py-6 px-12 sm:px-16 rounded-2xl sm:rounded-[2.5rem] text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] shadow-2xl shadow-amber-500/30 hover:bg-amber-400 transition-all flex items-center justify-center gap-4 hover:scale-105"
             >
-              Start Free Trial 
+              Start Free Trial
               <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </button>
             <button className={`w-full sm:w-auto px-12 sm:px-16 py-5 sm:py-6 rounded-2xl sm:rounded-[2.5rem] text-xs font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] transition-all
-              ${theme === 'dark' 
-                ? 'border border-zinc-800 text-white hover:bg-zinc-900' 
+              ${theme === 'dark'
+                ? 'border border-zinc-800 text-white hover:bg-zinc-900'
                 : 'border border-zinc-300 text-zinc-900 hover:bg-white shadow-sm'}`}>
               View Technical Specs
             </button>
@@ -374,23 +361,23 @@ const MarketingPage = ({ onGetStarted }: { onGetStarted: () => void }) => {
       <footer className={`py-16 sm:py-32 text-center border-t transition-colors duration-500
         ${theme === 'dark' ? 'bg-[#09090b] border-zinc-800' : 'bg-zinc-50 border-zinc-200'}`}>
         <div className="mb-10 flex items-center justify-center gap-3">
-            <div className="bg-amber-500 p-2 rounded-xl shadow-xl shadow-amber-500/20">
-              <HardHat size={24} className="text-black" />
-            </div>
-            <span className={`text-3xl sm:text-4xl font-black uppercase tracking-tighter italic ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
-              QS VAULT<span className="text-amber-500">.</span>
-            </span>
+          <div className="bg-amber-500 p-2 rounded-xl shadow-xl shadow-amber-500/20">
+            <HardHat size={24} className="text-black" />
+          </div>
+          <span className={`text-3xl sm:text-4xl font-black uppercase tracking-tighter italic ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
+            QS VAULT<span className="text-amber-500">.</span>
+          </span>
         </div>
         <div className="space-y-6 px-8">
           <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.3em] sm:tracking-[0.5em] text-zinc-500">
             © {new Date().getFullYear()} PRECISION TAKEOFF SYSTEM / DEVELOPED FOR SUB-SAHARAN INFRASTRUCTURE.
           </p>
           <div className="flex justify-center gap-6 sm:gap-12 text-[8px] sm:text-[9px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-zinc-600 italic">
-             <span className="hover:text-amber-500 cursor-pointer transition-colors">Integrity</span>
-             <span className="text-amber-500/20 hidden sm:inline">•</span>
-             <span className="hover:text-amber-500 cursor-pointer transition-colors">Accuracy</span>
-             <span className="text-amber-500/20 hidden sm:inline">•</span>
-             <span className="hover:text-amber-500 cursor-pointer transition-colors">Innovation</span>
+            <span className="hover:text-amber-500 cursor-pointer transition-colors">Integrity</span>
+            <span className="text-amber-500/20 hidden sm:inline">•</span>
+            <span className="hover:text-amber-500 cursor-pointer transition-colors">Accuracy</span>
+            <span className="text-amber-500/20 hidden sm:inline">•</span>
+            <span className="hover:text-amber-500 cursor-pointer transition-colors">Innovation</span>
           </div>
         </div>
       </footer>
