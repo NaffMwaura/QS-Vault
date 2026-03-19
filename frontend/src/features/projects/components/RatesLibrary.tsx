@@ -65,9 +65,8 @@ const RatesLibrary: React.FC = () => {
   ]);
 
 
-  /** * DATABASE INTEGRATION
-   * Fetches the latest price book from the device memory.
-   */
+  // Database Integration:-Fetches the latest price book from the device memory.
+   
   useEffect(() => {
     const syncRates = async () => {
       if (!db) {

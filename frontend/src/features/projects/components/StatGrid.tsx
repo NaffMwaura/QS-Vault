@@ -7,10 +7,6 @@ import {
   ClipboardList
 } from 'lucide-react';
 
-/* ======================================================
-    OFFICE DATABASE INTEGRATION
-   ====================================================== */
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let useAuth: any = () => ({
   theme: 'dark',
@@ -29,8 +25,6 @@ const resolveModules = async () => {
 
 resolveModules();
 
-/** --- TYPES --- **/
-
 interface StatItem {
   label: string;
   value: string | number;
@@ -43,8 +37,6 @@ interface StatGridProps {
   projectsCount?: number;
   measurementsCount?: number;
 }
-
-/** --- SUB-COMPONENT: STAT_CARD --- **/
 
 const StatCard: React.FC<{ item: StatItem; theme: 'light' | 'dark' }> = ({ item, theme }) => (
   <div className={`p-8 sm:p-10 rounded-[2.5rem] sm:rounded-[3rem] border backdrop-blur-3xl flex justify-between items-center group transition-all duration-500 hover:scale-[1.02]
@@ -77,8 +69,6 @@ const StatCard: React.FC<{ item: StatItem; theme: 'light' | 'dark' }> = ({ item,
     </div>
   </div>
 );
-
-/** --- MAIN COMPONENT: OFFICE METRICS GRID --- **/
 
 const StatGrid: React.FC<StatGridProps> = ({ projectsCount = 0, measurementsCount = 0 }) => {
   const { theme, isOnline } = useAuth();
