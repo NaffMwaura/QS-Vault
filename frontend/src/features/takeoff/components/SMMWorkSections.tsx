@@ -14,12 +14,6 @@ import {
   Info
 } from 'lucide-react';
 
-/* ======================================================
-    MODULE RESOLUTION HANDLER (SANDBOX COMPATIBILITY)
-    Ensures the component compiles in the Canvas environment
-    while linking to your local project structure.
-   ====================================================== */
-
 // Default mock for stability in the Canvas environment
 let useAuth: any = () => ({
   theme: 'dark',
@@ -35,8 +29,6 @@ const resolveModules = async () => {
 };
 
 resolveModules();
-
-/** --- TYPES --- **/
 
 export type MeasurementTool = 'length' | 'area' | 'count';
 
@@ -56,8 +48,6 @@ interface SMMWorkSectionsProps {
   theme?: 'light' | 'dark';
 }
 
-/** --- CONSTANTS: REGIONAL SMM CATEGORIES --- **/
-
 const SMM_REGISTRY: SMMSection[] = [
   { id: 'excavation', code: 'SEC-D', label: 'Excavation & Earthwork', icon: Pickaxe, defaultTool: 'area' },
   { id: 'concrete', code: 'SEC-F', label: 'Concrete Work', icon: Box, defaultTool: 'area' },
@@ -65,9 +55,7 @@ const SMM_REGISTRY: SMMSection[] = [
   { id: 'finishes', code: 'SEC-U', label: 'Floor & Wall Finishes', icon: PaintBucket, defaultTool: 'area' },
   { id: 'openings', code: 'SEC-L', label: 'Doors & Windows', icon: DoorOpen, defaultTool: 'count' },
 ];
-
-/** --- MAIN COMPONENT: WORK SECTIONS & TOOLS --- **/
-
+// Main Component
 const SMMWorkSections: React.FC<SMMWorkSectionsProps> = ({ 
   activeSection, 
   setActiveSection, 
@@ -177,5 +165,3 @@ const SMMWorkSections: React.FC<SMMWorkSectionsProps> = ({
 };
 
 export default SMMWorkSections;
-
-

@@ -14,10 +14,6 @@ import * as pdfjsLib from 'pdfjs-dist';
 // Standard PDF.js configuration for construction drawings
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://esm.sh/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
-/* ======================================================
-    MODULE RESOLUTION HANDLER
-   ====================================================== */
-
 // Default mock for stability in the Canvas environment
 let useAuth: any = () => ({
   theme: 'dark',
@@ -33,8 +29,6 @@ const resolveModules = async () => {
 };
 
 resolveModules();
-
-/** --- TYPES --- **/
 
 interface Point { x: number; y: number; }
 
@@ -53,8 +47,7 @@ interface BlueprintViewportProps {
   onCanvasClick: (e: React.MouseEvent<HTMLCanvasElement>) => void;
 }
 
-/** --- MAIN COMPONENT: BLUEPRINT DRAWING VIEW --- **/
-
+//Main component
 const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
   pdfDoc,
   setPdfDoc,
@@ -75,9 +68,6 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const renderTaskRef = useRef<any>(null);
 
-  /** * DRAWING RENDER ENGINE
-   * Renders the PDF drawing onto the HTML canvas with high resolution.
-   */
   const renderPage = useCallback(async (pdf: any, pNum: number, zoom: number) => {
     if (!canvasRef.current || !pdf) return;
     
@@ -121,9 +111,8 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
     }
   }, [pdfDoc, pageNum, scale, renderPage]);
 
-  /** * FILE HANDSHAKE
-   * Converts a local file upload into a viewable PDF document.
-   */
+   // File Handshake --Converts a local file upload into a viewable PDF document.
+ 
   const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;

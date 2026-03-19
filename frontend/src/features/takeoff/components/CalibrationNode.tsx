@@ -7,10 +7,6 @@ import {
   Ruler,
 } from 'lucide-react';
 
-/* ======================================================
-    MODULE RESOLUTION HANDLER (SANDBOX COMPATIBILITY)
-   ====================================================== */
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let useAuth: any = () => ({
   theme: 'dark',
@@ -27,16 +23,12 @@ const resolveModules = async () => {
 
 resolveModules();
 
-/** --- TYPES --- **/
-
 interface CalibrationNodeProps {
   currentScale: number;
   onScaleChange: (newScale: number) => void;
   unit: 'm' | 'mm';
   onUnitToggle: (unit: 'm' | 'mm') => void;
 }
-
-/** --- MAIN COMPONENT: SCALE CALIBRATION --- **/
 
 const CalibrationNode: React.FC<CalibrationNodeProps> = ({ 
   currentScale, 

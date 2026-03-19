@@ -11,10 +11,6 @@ import {
   Database
 } from 'lucide-react';
 
-/* ======================================================
-    OFFICE DATABASE HANDSHAKE
-   ====================================================== */
-
 let useAuth: any = () => ({
   theme: 'dark',
 });
@@ -35,8 +31,6 @@ const resolveModules = async () => {
 
 resolveModules();
 
-/** --- TYPES --- **/
-
 interface Measurement {
   id: string;
   label: string;
@@ -52,8 +46,6 @@ interface GeometricRegistryProps {
   onDelete: (id: string) => void;
   activeSection: string;
 }
-
-/** --- SUB-COMPONENT: MEASUREMENT_ENTRY --- **/
 
 const MeasurementEntry: React.FC<{ 
   item: Measurement; 
@@ -109,8 +101,6 @@ const MeasurementEntry: React.FC<{
     </div>
   </div>
 );
-
-/** --- MAIN COMPONENT: TAKEOFF LEDGER --- **/
 
 const GeometricRegistry: React.FC<GeometricRegistryProps> = ({ 
   measurements, 
@@ -199,5 +189,3 @@ const GeometricRegistry: React.FC<GeometricRegistryProps> = ({
 };
 
 export default GeometricRegistry;
-
-

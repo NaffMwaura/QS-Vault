@@ -10,10 +10,6 @@ import {
     Activity
 } from 'lucide-react';
 
-/* ======================================================
-    MODULE RESOLUTION HANDLER (SANDBOX COMPATIBILITY)
-   ====================================================== */
-
 // Default mock for stability in the Canvas environment
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let useAuth: any = () => ({
@@ -31,23 +27,17 @@ const resolveModules = async () => {
 
 resolveModules();
 
-/** --- TYPES --- **/
-
 export type SMMSection = 'Concrete' | 'Walling' | 'Finishes';
 
 interface SMMTemplatesProps {
     activeSection: string;
-    /** * PARAMETER SYNC
-     * Notifies the parent engine of changes to depth/height/waste.
-     */
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onParameterChange: (params: any) => void;
     isDeductionMode: boolean;
     setIsDeductionMode: (val: boolean) => void;
 }
-
-/** --- MAIN COMPONENT: MEASUREMENT RULES & TEMPLATES --- **/
-
+// Main Component
 const SMMTemplates: React.FC<SMMTemplatesProps> = ({
     activeSection,
     onParameterChange,
@@ -213,5 +203,3 @@ const SMMTemplates: React.FC<SMMTemplatesProps> = ({
 };
 
 export default SMMTemplates;
-
-
