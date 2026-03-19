@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  RefreshCw, 
-  Cloud, 
-  CloudOff, 
-  Database, 
+import {
+  RefreshCw,
+  Cloud,
+  CloudOff,
+  Database,
   Zap,
   FileUp,
   FileText,
@@ -13,10 +13,6 @@ import {
   X,
   Plus
 } from 'lucide-react';
-
-/* ======================================================
-    OFFICE DATABASE INTEGRATION
-   ====================================================== */
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let useAuth: any = () => ({
@@ -35,17 +31,15 @@ const resolveModules = async () => {
     if (authMod.useAuth) useAuth = authMod.useAuth;
 
     const dbMod = await import("../../../lib/database/database");
-    if (dbMod.db) db = dbMod.db; 
+    if (dbMod.db) db = dbMod.db;
     if (dbMod.syncEngine) syncEngine = dbMod.syncEngine;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     // Sandbox fallback active
   }
 };
 
 resolveModules();
-
-/** --- MAIN COMPONENT: DATA SYNC MONITOR --- **/
 
 const SyncQueueMonitor: React.FC = () => {
   const { theme, isOnline } = useAuth();
@@ -55,10 +49,6 @@ const SyncQueueMonitor: React.FC = () => {
   const [localBuffer, setLocalBuffer] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  /** * LIVE SYNC MONITORING
-   * Checks the local database queue for any records waiting 
-   * to be uploaded to the office cloud.
-   */
   useEffect(() => {
     const checkQueue = async () => {
       try {
@@ -109,7 +99,7 @@ const SyncQueueMonitor: React.FC = () => {
   return (
     <div className={`p-8 rounded-[3rem] border backdrop-blur-3xl transition-all duration-500
       ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800' : 'bg-white border-zinc-200 shadow-xl'}`}>
-      
+
       {/* 1. Sync Status HUD */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-10 text-left">
         <div className="flex items-center gap-6">
@@ -122,7 +112,7 @@ const SyncQueueMonitor: React.FC = () => {
               <CloudOff className="text-zinc-600" size={28} />
             )}
           </div>
-          
+
           <div className="space-y-1">
             <h4 className={`text-xl font-black uppercase italic tracking-tighter leading-none
               ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
@@ -130,8 +120,8 @@ const SyncQueueMonitor: React.FC = () => {
             </h4>
             <div className="flex items-center gap-2">
               <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border
-                ${isOnline 
-                  ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' 
+                ${isOnline
+                  ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500'
                   : 'bg-zinc-500/10 border-zinc-500/20 text-zinc-500'}`}>
                 {isOnline ? 'Network Operational' : 'Offline Mode'}
               </span>
@@ -150,12 +140,12 @@ const SyncQueueMonitor: React.FC = () => {
             </p>
           </div>
 
-          <button 
+          <button
             onClick={handleManualSync}
             disabled={!isOnline || isSyncing}
             className={`p-5 rounded-2xl transition-all active:scale-95 shadow-2xl
-              ${!isOnline || isSyncing 
-                ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed opacity-50' 
+              ${!isOnline || isSyncing
+                ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed opacity-50'
                 : 'bg-amber-500 text-black hover:bg-amber-400 shadow-amber-500/20'}`}
             title="Force Cloud Sync"
           >
@@ -166,7 +156,7 @@ const SyncQueueMonitor: React.FC = () => {
 
       {/* 2. Document & File Intake */}
       <div className="space-y-4">
-        <div 
+        <div
           onClick={() => fileInputRef.current?.click()}
           className={`p-6 rounded-4xl border-2 border-dashed transition-all cursor-pointer group flex items-center justify-between
             ${theme === 'dark' ? 'border-zinc-800 hover:border-amber-500/40 bg-zinc-950/40' : 'border-zinc-200 hover:border-amber-500/40 bg-zinc-50 shadow-inner'}`}
@@ -180,13 +170,13 @@ const SyncQueueMonitor: React.FC = () => {
               <p className="text-[9px] font-bold text-zinc-600 uppercase mt-1 leading-none text-left">Supports PDF, Excel, & DWG drawings</p>
             </div>
           </div>
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            onChange={onFileIntake} 
-            className="hidden" 
-            multiple 
-            accept=".pdf,.docx,.xlsx,.xls,.dwg" 
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={onFileIntake}
+            className="hidden"
+            multiple
+            accept=".pdf,.docx,.xlsx,.xls,.dwg"
           />
           <Plus size={20} className="text-zinc-700 group-hover:text-amber-500 transition-colors" />
         </div>
@@ -198,7 +188,7 @@ const SyncQueueMonitor: React.FC = () => {
               <div key={file.id} className={`flex items-center justify-between p-4 rounded-2xl border ${theme === 'dark' ? 'bg-zinc-900/60 border-zinc-800' : 'bg-white border-zinc-100 shadow-sm'}`}>
                 <div className="flex items-center gap-4 overflow-hidden">
                   <div className="text-amber-500 shrink-0">
-                    {file.type === 'PDF' ? <FileText size={16}/> : file.type === 'XLSX' || file.type === 'XLS' ? <FileSpreadsheet size={16}/> : <FileCode size={16}/>}
+                    {file.type === 'PDF' ? <FileText size={16} /> : file.type === 'XLSX' || file.type === 'XLS' ? <FileSpreadsheet size={16} /> : <FileCode size={16} />}
                   </div>
                   <div className="text-left overflow-hidden">
                     <p className="text-[10px] font-bold truncate uppercase text-zinc-400 leading-none">{file.name}</p>
@@ -206,7 +196,7 @@ const SyncQueueMonitor: React.FC = () => {
                   </div>
                 </div>
                 <button onClick={() => setLocalBuffer(prev => prev.filter(f => f.id !== file.id))} className="text-zinc-700 hover:text-rose-500 p-1">
-                  <X size={14}/>
+                  <X size={14} />
                 </button>
               </div>
             ))}
@@ -223,7 +213,7 @@ const SyncQueueMonitor: React.FC = () => {
             {isOnline ? 'Syncing with Office Cloud' : 'Local Data Protected'}
           </p>
         </div>
-        
+
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <Database size={10} className="text-zinc-600" />
