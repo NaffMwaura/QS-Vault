@@ -13,11 +13,6 @@ import {
   Lock
 } from 'lucide-react';
 
-/* ======================================================
-    MODULE RESOLUTION HANDLER (PRODUCTION READY)
-   ====================================================== */
-
-// Default mock for stability in the Canvas environment
 let useAuth: any = () => ({
   user: { id: 'dev-user-001', email: 'surveyor@vault.systems', user_metadata: { full_name: 'Naftaly Mwaura' } },
   theme: 'dark',
@@ -48,9 +43,7 @@ interface IdentityNodeProps {
   onBack: () => void;
   onUpdateComplete?: () => void;
 }
-
-/** --- MAIN COMPONENT: PROFILE SETTINGS --- **/
-
+  //Main Components
 const IdentityNode: React.FC<IdentityNodeProps> = ({ onBack, onUpdateComplete }) => {
   const { user, theme } = useAuth();
   
@@ -72,9 +65,6 @@ const IdentityNode: React.FC<IdentityNodeProps> = ({ onBack, onUpdateComplete })
     }
   };
 
-  /** * DATA PERSISTENCE HANDSHAKE
-   * Saves to local Dexie storage immediately and queues a sync to Supabase.
-   */
   const handleUpdateProfile = async () => {
     if (!user || !db) return;
     setIsUpdating(true);

@@ -19,19 +19,13 @@ export interface AuthContextType {
   theme: Theme;
   toggleTheme: () => void;
   isOnline: boolean;
-  /** * Master View Control:
-   * This state orchestrates the view between the AppShell sidebar
-   * and the Dashboard content area.
-   */
   activeView: DashboardView;
   setActiveView: (view: DashboardView) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-/* ======================================================
-    SUPABASE CLIENT INITIALIZATION
-   ====================================================== */
+    // SUPABASE CLIENT INITIALIZATION
 
 let supabase: any = null;
 
@@ -45,8 +39,7 @@ const initializeSupabase = async () => {
   }
 };
 
-/** --- UI COMPONENTS: LOADING --- **/
-
+  // UI components: Loading
 const LoadingWorkspace = () => (
   <div className="min-h-screen bg-[#09090b] flex flex-col items-center justify-center p-6 text-center">
     <div className="relative w-24 h-24 mb-10">
@@ -71,8 +64,6 @@ const LoadingWorkspace = () => (
     </div>
   </div>
 );
-
-/** --- CONTEXT PROVIDER --- **/
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
@@ -194,11 +185,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     startAuthProcess();
   }, [fetchUserRole]);
-
-  /** * REFINED SIGN OUT
-   * We remove the hard page reload (window.location.href) to allow
-   * React Router to handle the transition smoothly.
-   */
   const signOut = async () => {
     if (supabase) {
       await supabase.auth.signOut();
