@@ -4,12 +4,12 @@ import { useEffect } from "react";
 import { queryClient } from "../lib/queryClient";
 import { syncEngine } from "../lib/database/database";
 
-/**
- * useSync Hook
- * * This hook acts as the "Heartbeat" of the QS Vault. It monitors the device's 
- * connection status and orchestrates the flow of data between the local 
- * Dexie wallet and the Supabase cloud vault.
- */
+
+ // useSync Hook
+ // This hook acts as the "Heartbeat" of the QS Vault. It monitors the device's 
+ //connection status and orchestrates the flow of data between the local 
+ //Dexie wallet and the Supabase cloud vault.
+
 export const useSync = () => {
   useEffect(() => {
     // Flag to prevent overlapping sync processes during rapid network toggling
