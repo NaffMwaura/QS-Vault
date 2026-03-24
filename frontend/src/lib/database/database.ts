@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Dexie, type Table } from "dexie";
 import { createClient } from "@supabase/supabase-js";
@@ -24,6 +25,7 @@ export interface Profile {
   avatar_url: string | null;
   role: UserRole;
   updated_at: string;
+  project_count?: number;
 }
 
 export interface Project {
@@ -36,9 +38,10 @@ export interface Project {
   status: 'active' | 'completed' | 'archived';
   created_at: string;
   updated_at: string;
-  lat?: number; // For GPS Geofencing
+  lat?: number; 
   lng?: number; 
-  geofence_radius?: number; // in meters
+  geofence_radius?: number; 
+  username?: string; 
 }
 
 /* --- FIELD ENGINE (SITE EXECUTION) --- */
@@ -227,7 +230,6 @@ class QSPocketKnifeDB extends Dexie {
   constructor() {
     super("QSPocketKnifeDB");
     
-    // Version 4: Full Multi-Engine Construction OS Schema
     this.version(4).stores({
       profiles: "id, username, role",
       projects: "id, user_id, updated_at",
@@ -252,16 +254,36 @@ class QSPocketKnifeDB extends Dexie {
 
 export const db = new QSPocketKnifeDB();
 
-/** --- 4. GLOBAL SYNC ENGINE (EXECUTIONER) --- **/
+/** --- 4. GLOBAL SYNC ENGINE (OFFICE HANDSHAKE) --- **/
 
-// Internal state to prevent overlapping sync cycles
 let isProcessing = false;
 
 export const syncEngine = {
-  /** * processQueue
-   * This is called by the useSync hook. It iterates through the
-   * local sync_queue and pushes each change to Supabase.
+  /** * sanitizePayload
+   * Standardizes payloads for PostgreSQL compatibility.
+   * Maps camelCase to snake_case and removes UI fields.
    */
+  sanitizePayload: (table: string, payload: any) => {
+    const { synced_at, is_local, amount, ...clean } = payload;
+    
+    // Hard mapping for SMM columns to ensure no schema mismatch
+    if (table === 'measurements') {
+      if (clean.sectionCode !== undefined) {
+        clean.section_code = clean.sectionCode;
+        delete clean.sectionCode;
+      }
+    }
+
+    if (table === 'bill_items') {
+      if (clean.itemCode !== undefined) {
+        clean.item_code = clean.itemCode;
+        delete clean.itemCode;
+      }
+    }
+
+    return clean;
+  },
+
   processQueue: async () => {
     if (!navigator.onLine || isProcessing) return;
     
@@ -273,16 +295,27 @@ export const syncEngine = {
 
       for (const item of queue) {
         try {
+          const cleanData = syncEngine.sanitizePayload(item.table, item.payload);
+
           const { error } = item.operation === 'DELETE' 
             ? await supabase.from(item.table).delete().eq('id', item.record_id)
-            : await supabase.from(item.table).upsert(item.payload, { onConflict: 'id' });
+            : await supabase.from(item.table).upsert(cleanData, { onConflict: 'id' });
 
           if (!error) {
-            // Remove from local queue only after successful cloud handshake
             await db.sync_queue.delete(item.id!);
+            const targetTable = (db as any)[item.table];
+            if (targetTable) {
+              await targetTable.update(item.record_id, { synced_at: new Date().toISOString() });
+            }
           } else {
-            // If Supabase returns an error, we stop processing to maintain order
-            console.warn(`[Sync Engine] Table ${item.table} paused: ${error.message}`);
+            console.error(`[Sync Engine] ${item.table} upload paused:`, error.message);
+            
+            // Critical schema error check
+            if (error.message.includes("column") || error.code === "42703" || error.message.includes("section_code")) {
+              console.warn(`[Sync Engine] Schema Mismatch on ${item.table}. Skipping record to unblock ledger.`);
+              await db.sync_queue.delete(item.id!);
+              continue;
+            }
             break; 
           }
         } catch (err) {
@@ -295,9 +328,6 @@ export const syncEngine = {
     }
   },
 
-  /** * queueChange
-   * Captures a local write operation and schedules it for upload.
-   */
   queueChange: async (
     table: string, 
     id: string, 
@@ -312,9 +342,62 @@ export const syncEngine = {
       created_at: Date.now()
     });
 
-    // Request immediate processing if network is available
     if (navigator.onLine) {
       syncEngine.processQueue();
     }
+  }
+};
+
+/** --- 5. ADMIN SERVICE (PLATFORM AUDIT LOGIC) --- **/
+
+export const adminService = {
+  getGlobalStats: async () => {
+    const [uRes, pRes, mRes] = await Promise.all([
+      supabase.from('profiles').select('*', { count: 'exact', head: true }),
+      supabase.from('projects').select('*', { count: 'exact', head: true }),
+      supabase.from('measurements').select('*', { count: 'exact', head: true })
+    ]);
+    
+    return {
+      totalUsers: uRes.count || 0,
+      totalProjects: pRes.count || 0,
+      totalMeasurements: mRes.count || 0,
+      systemHealth: navigator.onLine ? 'Optimal' : 'Offline'
+    };
+  },
+  
+  getAllProfiles: async () => {
+    const { data: profiles, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .order('updated_at', { ascending: false });
+    
+    if (error) throw error;
+    return profiles;
+  },
+
+  getAllProjects: async () => {
+    const { data, error } = await supabase
+      .from('projects')
+      .select(`*, profiles:user_id (username)`)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data.map((p: any) => ({
+      ...p,
+      username: p.profiles?.username || 'Authorized Node'
+    }));
+  },
+
+  updateRole: async (userId: string, newRole: UserRole) => {
+    const { error } = await supabase.from('profiles').update({ role: newRole }).eq('id', userId);
+    if (error) throw error;
+    await db.profiles.update(userId, { role: newRole });
+  },
+
+  deleteProject: async (projectId: string) => {
+    const { error } = await supabase.from('projects').delete().eq('id', projectId);
+    if (error) throw error;
+    await db.projects.delete(projectId);
   }
 };
