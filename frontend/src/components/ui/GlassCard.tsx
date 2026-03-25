@@ -5,14 +5,14 @@ import React from 'react';
 interface GlassCardProps {
   children: React.ReactNode;
   className?: string;
-  /** * If true, adds hover scaling and border highlights.
-   * Useful for clickable project items in the registry.
+  /** * If true, adds hover scaling and professional amber border highlights.
+   * Best used for project registries or interactive dashboard tiles.
    */
   interactive?: boolean;
 }
 
 /** --- MODULE RESOLUTION HANDLER --- **/
-// Providing a robust fallback for the theme context to ensure compilation in all environments
+// Establishing a robust fallback to ensure the card renders even during auth initialization
 let useAuth = () => ({ theme: 'dark' as 'light' | 'dark' });
 
 const resolveModules = async () => {
@@ -23,13 +23,13 @@ const resolveModules = async () => {
     if (authMod.useAuth) useAuth = authMod.useAuth;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
-    // Fallback to default dark theme if module is unreachable
+    // Shims active for sandbox stability
   }
 };
 
 resolveModules();
 
-/** --- GLASS CARD COMPONENT --- **/
+/** --- MAIN COMPONENT: PROFESSIONAL GLASS CONTAINER --- **/
 
 const GlassCard: React.FC<GlassCardProps> = ({ 
   children, 
@@ -38,20 +38,34 @@ const GlassCard: React.FC<GlassCardProps> = ({
 }) => {
   const { theme } = useAuth();
 
-  // Core glassmorphism logic: Blur + Opacity + Border + Shadow
-  const baseStyles = "backdrop-blur-xl border transition-all duration-500 rounded-[2.5rem]";
+  /** * DESIGN PROTOCOL
+   * - backdrop-blur-2xl: Creates the "Microsoft Windows" glass effect.
+   * - rounded-[2.5rem]: Standardized corner radius for the Construction OS.
+   * - border: High-precision thin borders for structural clarity.
+   */
+  const baseStyles = "backdrop-blur-2xl border transition-all duration-500 rounded-[2.5rem] overflow-hidden";
   
   const themeStyles = theme === 'dark'
-    ? "bg-zinc-900/40 border-zinc-800/50 shadow-2xl shadow-black/50"
-    : "bg-white/80 border-zinc-200 shadow-xl shadow-zinc-200/50";
+    ? "bg-zinc-900/40 border-zinc-800/60 shadow-[0_20px_50px_rgba(0,0,0,0.3)] shadow-black"
+    : "bg-white/80 border-zinc-200 shadow-[0_10px_30px_rgba(0,0,0,0.04)] shadow-zinc-200/50";
 
+  /** * INTERACTIVE FEEDBACK
+   * Adds a subtle lift and amber glow when the user engages with the node.
+   */
   const interactiveStyles = interactive 
-    ? "hover:scale-[1.01] hover:border-amber-500/30 cursor-pointer active:scale-[0.99]" 
+    ? "hover:scale-[1.01] hover:border-amber-500/30 cursor-pointer active:scale-[0.99] group/glass" 
     : "";
 
   return (
     <div className={`${baseStyles} ${themeStyles} ${interactiveStyles} ${className}`}>
-      {children}
+      {/* Decorative Glow Layer (Visible only on hover for interactive cards) */}
+      {interactive && (
+        <div className="absolute inset-0 opacity-0 group-hover/glass:opacity-100 transition-opacity duration-700 pointer-events-none bg-linear-to-br from-amber-500/3 to-transparent" />
+      )}
+      
+      <div className="relative z-10">
+        {children}
+      </div>
     </div>
   );
 };
