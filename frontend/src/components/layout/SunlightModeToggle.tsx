@@ -2,8 +2,12 @@ import React, { useState, useEffect } from 'react';
 import {
   SunMedium,
   Zap,
-  Highlighter
+  Eye
 } from 'lucide-react';
+
+/* ======================================================
+    OFFICE MODULE RESOLUTION
+   ====================================================== */
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let useAuth: any = () => ({
@@ -13,29 +17,32 @@ let useAuth: any = () => ({
 
 const resolveModules = async () => {
   try {
-    // Attempt to resolve real project modules
     const authMod = await import("../../features/auth/AuthContext");
     if (authMod.useAuth) useAuth = authMod.useAuth;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
-    // Fallback to mock for stability
+    // Sandbox shims active
   }
 };
 
 resolveModules();
 
+/** --- MAIN COMPONENT: SITE VISIBILITY ENGINE --- **/
+
 const SunlightModeToggle: React.FC = () => {
   const { theme, toggleTheme } = useAuth();
   const [isSunlightMode, setIsSunlightMode] = useState(false);
 
-  // When Outdoor Mode is active, we apply a high-contrast style 
-  // to make the screen visible in direct sunlight.
+  /** * SITE VISIBILITY LOGIC
+   * When 'Sunlight Mode' is active, we force a high-contrast white background.
+   * This is critical for reading BoQ numbers and drawings in direct sunlight.
+   */
   useEffect(() => {
     if (isSunlightMode) {
       document.documentElement.classList.add('sunlight-optimized');
 
-      // If the user is in Dark Mode, we force a switch to Light Mode
-      // as it provides better contrast outdoors.
+      // Force switch to Light Mode if currently in Dark Mode
+      // Dark mode is impossible to read in high-glare environments.
       if (theme === 'dark') {
         toggleTheme();
       }
@@ -54,48 +61,49 @@ const SunlightModeToggle: React.FC = () => {
         type="button"
         onClick={toggleVisibilityMode}
         className={`
-          relative flex items-center gap-3 px-4 py-2 sm:px-6 sm:py-3 rounded-2xl border transition-all duration-500 group overflow-hidden
+          relative flex items-center gap-3 px-5 py-2.5 sm:px-8 sm:py-4 rounded-2xl border transition-all duration-500 group overflow-hidden active:scale-95
           ${isSunlightMode
-            ? 'bg-amber-500 border-amber-600 text-black shadow-[0_0_30px_rgba(245,158,11,0.4)]'
+            ? 'bg-amber-500 border-amber-600 text-black shadow-[0_0_30px_rgba(245,158,11,0.3)]'
             : theme === 'dark'
               ? 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:border-amber-500/50 hover:text-amber-500'
               : 'bg-white border-zinc-200 text-zinc-400 hover:border-amber-500/50 hover:text-amber-600 shadow-sm'}
         `}
         title="Optimize screen for direct sunlight"
       >
-        {/* Visual Pulse for Active State */}
+        {/* Visual Pulse: Signals that a visibility modifier is active */}
         {isSunlightMode && (
           <span className="absolute inset-0 bg-white/20 animate-pulse" />
         )}
 
         <div className="relative z-10 flex items-center gap-3">
           {isSunlightMode ? (
-            <Zap size={16} className="fill-current animate-bounce" />
+            <Zap size={18} className="fill-current animate-bounce" />
           ) : (
-            <SunMedium size={16} className="group-hover:rotate-90 transition-transform duration-700" />
+            <SunMedium size={18} className="group-hover:rotate-90 transition-transform duration-700" />
           )}
 
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] leading-none">
-            {isSunlightMode ? 'Outdoor Mode Active' : 'Outdoor Visibility'}
+          <span className="text-[10px] font-black uppercase tracking-[0.25em] leading-none">
+            {isSunlightMode ? 'Sunlight Mode Active' : 'Sunlight Boost'}
           </span>
         </div>
       </button>
 
-      {/* Visibility Status (Desktop only) */}
+      {/* Visibility Badge: Confirms the hardware-level contrast change */}
       {isSunlightMode && (
-        <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 animate-in fade-in slide-in-from-right-4">
-          <Highlighter size={12} className="text-amber-500" />
-          <p className="text-[8px] font-black uppercase tracking-widest text-zinc-500 leading-none">
-            Contrast Boost: ON
+        <div className="hidden md:flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-zinc-950 border border-zinc-800 animate-in fade-in slide-in-from-right-4 duration-500 shadow-2xl">
+          <Eye size={14} className="text-amber-500" />
+          <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 leading-none">
+            High Contrast: <span className="text-emerald-500">Engaged</span>
           </p>
         </div>
       )}
 
-      {/* Styles for High-Glare Environments */}
+      {/* GLOBAL CSS OVERRIDES: THE "PAPER-WHITE" PROTOCOL */}
       <style>{`
         .sunlight-optimized {
           --sunlight-bg: #ffffff;
           --sunlight-text: #000000;
+          --sunlight-border: #000000;
         }
 
         .sunlight-optimized body {
@@ -103,26 +111,32 @@ const SunlightModeToggle: React.FC = () => {
           color: var(--sunlight-text) !important;
         }
 
-        /* Remove transparency and blurs to ensure text is readable outside */
+        /* Kill all transparency and blur - these are hard to see outdoors */
         .sunlight-optimized .backdrop-blur-3xl,
+        .sunlight-optimized .backdrop-blur-2xl,
         .sunlight-optimized .backdrop-blur-md {
           backdrop-filter: none !important;
           background-color: var(--sunlight-bg) !important;
         }
 
+        /* Heavy black borders for structural clarity */
         .sunlight-optimized .border-zinc-800,
+        .sunlight-optimized .border-zinc-700,
         .sunlight-optimized .border-zinc-200 {
-          border-color: #000000 !important;
+          border-color: var(--sunlight-border) !important;
           border-width: 2px !important;
         }
 
+        /* Force pure black text for readability */
         .sunlight-optimized .text-zinc-400,
         .sunlight-optimized .text-zinc-500,
         .sunlight-optimized .text-zinc-600 {
-          color: #000000 !important;
+          color: var(--sunlight-text) !important;
           font-weight: 900 !important;
+          opacity: 1 !important;
         }
 
+        /* Adjust buttons that aren't the primary amber ones */
         .sunlight-optimized button:not(.bg-amber-500) {
           background-color: #ffffff !important;
           border: 2px solid #000000 !important;

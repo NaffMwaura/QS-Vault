@@ -5,14 +5,17 @@ import {
   Search, 
   Plus, 
   MapPin, 
-  ExternalLink,  
-  Loader2,
+  ExternalLink,
   X,
   CheckCircle2,
   AlertCircle,
   Briefcase,
   Trash2
 } from 'lucide-react';
+
+/* ======================================================
+    OFFICE MODULE RESOLUTION (OFFLINE-FIRST)
+   ====================================================== */
 
 let useAuth: any = () => ({ 
   user: { id: 'dev-surveyor-001' }, 
@@ -21,6 +24,9 @@ let useAuth: any = () => ({
 
 let db: any = null;
 let syncEngine: any = null;
+let Button: any = ({ children, onClick, className, }: any) => (
+  <button onClick={onClick} className={className}>{children}</button>
+);
 
 const resolveModules = async () => {
   try {
@@ -30,8 +36,11 @@ const resolveModules = async () => {
     const dbMod = await import("../../../lib/database/database");
     if (dbMod.db) db = dbMod.db; 
     if (dbMod.syncEngine) syncEngine = dbMod.syncEngine;
+
+    const btnMod = await import("../../../components/ui/Button");
+    if (btnMod.default) Button = btnMod.default;
   } catch (e) {
-    // Standalone fallback
+    // Sandbox fallback
   }
 };
 
@@ -53,10 +62,11 @@ interface VaultRegistryProps {
   projects: Project[];
   setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
   navigate: (path: string) => void;
-  onDeleteProject: (id: string) => void; // INTEGRATION: Prop for deletion
+  onDeleteProject: (id: string) => void; 
 }
 
-//Main Component
+/** --- MAIN COMPONENT: PROJECT PORTFOLIO --- **/
+
 const VaultRegistry: React.FC<VaultRegistryProps> = ({ projects, setProjects, navigate, onDeleteProject }) => {
   const { user, theme } = useAuth();
   
@@ -72,6 +82,11 @@ const VaultRegistry: React.FC<VaultRegistryProps> = ({ projects, setProjects, na
     location: "" 
   });
 
+  /** * CREATE PROJECT (LOCAL-FIRST)
+   * 1. Generates a unique node ID.
+   * 2. Commits to the local device vault (Dexie).
+   * 3. Queues the change for cloud synchronization.
+   */
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newProject.name || !user || !db) return;
@@ -91,15 +106,19 @@ const VaultRegistry: React.FC<VaultRegistryProps> = ({ projects, setProjects, na
     };
 
     try {
+      // SAVE TO LOCAL DEVICE (Immediate Feedback)
       await db.projects.add({ ...projectData, contract_sum: 0, updated_at: timestamp });
+      
+      // QUEUE FOR CLOUD (Background Sync)
       if (syncEngine?.queueChange) {
         await syncEngine.queueChange('projects', projectId, 'INSERT', projectData);
       }
+
       setProjects(prev => [projectData, ...prev]);
       setIsCreating(false);
       setNewProject({ name: "", client_name: "", location: "" });
     } catch (err) {
-      console.error("Local save failed:", err);
+      console.error("Office Registry: Local save failed.", err);
     } finally {
       setIsSubmitting(false);
     }
@@ -139,12 +158,14 @@ const VaultRegistry: React.FC<VaultRegistryProps> = ({ projects, setProjects, na
                   : 'bg-zinc-50 border-zinc-200 text-zinc-900 focus:border-amber-500/40'}`} 
             />
           </div>
-          <button 
+          
+          <Button 
+            variant="primary"
             onClick={() => setIsCreating(true)} 
-            className="flex items-center justify-center gap-3 px-8 py-4 bg-amber-500 text-black rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl hover:bg-amber-400 active:scale-95 transition-all shadow-amber-500/10"
+            leftIcon={<Plus size={16} className="stroke-[3px]" />}
           >
-            <Plus size={16} className="stroke-[3px]" /> New Project
-          </button>
+            New Project
+          </Button>
         </div>
       </div>
 
@@ -152,43 +173,46 @@ const VaultRegistry: React.FC<VaultRegistryProps> = ({ projects, setProjects, na
       {isCreating && (
         <form 
           onSubmit={handleCreateProject} 
-          className="p-8 sm:p-12 bg-amber-500/5 border-b border-amber-500/20 animate-in slide-in-from-top-4 flex flex-col md:flex-row gap-6 items-end"
+          className="p-8 sm:p-12 bg-amber-500/5 border-b border-amber-500/20 animate-in slide-in-from-top-4 space-y-8"
         >
-          <div className="flex-1 w-full space-y-2 text-left">
-             <label className="text-[10px] font-black uppercase text-zinc-500 italic ml-1">Project Name</label>
-             <input 
-               required 
-               placeholder="e.g. Nairobi Office Complex"
-               value={newProject.name} 
-               onChange={e => setNewProject({...newProject, name: e.target.value})} 
-               className={`w-full p-5 rounded-2xl border font-bold text-sm outline-none transition-all
-                 ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800 text-white focus:border-amber-500' : 'bg-white border-zinc-200 text-zinc-900'}`} 
-             />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2 text-left">
+               <label className="text-[10px] font-black uppercase text-zinc-500 italic ml-1">Project Name</label>
+               <input 
+                 required 
+                 placeholder="e.g. Nairobi Office Complex"
+                 value={newProject.name} 
+                 onChange={e => setNewProject({...newProject, name: e.target.value})} 
+                 className={`w-full p-5 rounded-2xl border font-bold text-sm outline-none transition-all
+                   ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800 text-white focus:border-amber-500' : 'bg-white border-zinc-200 text-zinc-900'}`} 
+               />
+            </div>
+            <div className="space-y-2 text-left">
+               <label className="text-[10px] font-black uppercase text-zinc-500 italic ml-1">Client Name</label>
+               <input 
+                 required 
+                 placeholder="Client / Stakeholder..."
+                 value={newProject.client_name} 
+                 onChange={e => setNewProject({...newProject, client_name: e.target.value})} 
+                 className={`w-full p-5 rounded-2xl border font-bold text-sm outline-none transition-all
+                   ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800 text-white focus:border-amber-500' : 'bg-white border-zinc-200 text-zinc-900'}`} 
+               />
+            </div>
           </div>
-          <div className="flex-1 w-full space-y-2 text-left">
-             <label className="text-[10px] font-black uppercase text-zinc-500 italic ml-1">Client Name</label>
-             <input 
-               required 
-               placeholder="Client / Stakeholder..."
-               value={newProject.client_name} 
-               onChange={e => setNewProject({...newProject, client_name: e.target.value})} 
-               className={`w-full p-5 rounded-2xl border font-bold text-sm outline-none transition-all
-                 ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800 text-white focus:border-amber-500' : 'bg-white border-zinc-200 text-zinc-900'}`} 
-             />
-          </div>
-          <div className="flex gap-3 w-full md:w-auto">
-             <button 
+          
+          <div className="flex gap-4">
+             <Button 
                type="submit" 
-               disabled={isSubmitting} 
-               className="flex-1 md:flex-none px-10 py-5 bg-amber-500 text-black font-black uppercase text-[10px] rounded-2xl hover:bg-amber-400 active:scale-95 transition-all shadow-lg flex items-center justify-center gap-3"
+               isLoading={isSubmitting} 
+               className="flex-1 py-6 italic"
+               leftIcon={<CheckCircle2 size={18} />}
              >
-               {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
                Save Project
-             </button>
+             </Button>
              <button 
                type="button" 
                onClick={() => setIsCreating(false)} 
-               className={`p-5 rounded-2xl border transition-all ${theme === 'dark' ? 'border-zinc-800 text-zinc-500 hover:text-white' : 'border-zinc-200 text-zinc-400 hover:text-zinc-900'}`}
+               className={`px-10 rounded-2xl border transition-all ${theme === 'dark' ? 'border-zinc-800 text-zinc-500 hover:text-white' : 'border-zinc-200 text-zinc-400 hover:text-zinc-900'}`}
              >
                <X size={20} />
              </button>
@@ -202,9 +226,9 @@ const VaultRegistry: React.FC<VaultRegistryProps> = ({ projects, setProjects, na
           <thead className={`text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 italic border-b
             ${theme === 'dark' ? 'bg-zinc-900/50 border-zinc-800' : 'bg-zinc-50 border-zinc-200'}`}>
             <tr>
-              <th className="p-8 sm:p-10 text-left">Project Details</th>
-              <th className="p-8 sm:p-10 hidden sm:table-cell text-left">Primary Client</th>
-              <th className="p-8 sm:p-10 text-right">Actions</th>
+              <th className="p-8 sm:p-10 text-left">Project Identity</th>
+              <th className="p-8 sm:p-10 hidden sm:table-cell text-left">Main Client</th>
+              <th className="p-8 sm:p-10 text-right">Technical Controls</th>
             </tr>
           </thead>
           <tbody className={`divide-y ${theme === 'dark' ? 'divide-zinc-800/40' : 'divide-zinc-200'}`}>
@@ -222,34 +246,32 @@ const VaultRegistry: React.FC<VaultRegistryProps> = ({ projects, setProjects, na
                          {p.client_name}
                        </span>
                     </div>
-                    <span className="text-[9px] font-mono text-zinc-600 mt-2 tracking-widest hidden sm:block leading-none">
-                      REF: {p.id.slice(0,12).toUpperCase()}
+                    <span className="text-[9px] font-mono text-zinc-600 mt-2 tracking-widest hidden sm:block leading-none uppercase">
+                      REF: {p.id.slice(0,12)}
                     </span>
                   </div>
                 </td>
                 <td className="p-8 sm:p-10 hidden sm:table-cell text-left">
                   <div className="flex items-center gap-3 text-sm font-bold text-zinc-400 uppercase tracking-tight">
                     <MapPin size={14} className="text-amber-500/60" /> 
-                    {p.client_name || 'Generic Site Hub'}
+                    {p.client_name || 'Project Node'}
                   </div>
                 </td>
                 <td className="p-8 sm:p-10 text-right">
-                  <div className="flex gap-3 justify-end">
-                    {/* OPEN BUTTON */}
-                    <button 
-                      onClick={() => navigate(`/projects/${p.id}`)} 
-                      title="Open Technical Workspace"
-                      className="p-4 bg-zinc-900/60 border border-zinc-800 text-zinc-500 rounded-2xl hover:bg-amber-500 hover:text-black hover:border-amber-500 transition-all active:scale-90 shadow-xl shadow-black/40"
-                    >
-                      <ExternalLink size={20}/>
-                    </button>
-                    {/* DELETE BUTTON (IMPLEMENTED) */}
+                  <div className="flex gap-4 justify-end">
                     <button 
                       onClick={() => onDeleteProject(p.id)} 
-                      title="Delete Project Node"
-                      className="p-4 bg-zinc-900/60 border border-zinc-800 text-zinc-500 rounded-2xl hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all active:scale-90 shadow-xl shadow-black/40"
+                      title="Purge Project Node"
+                      className="p-4 bg-zinc-900/60 border border-zinc-800 text-zinc-700 hover:text-rose-500 hover:border-rose-500 transition-all active:scale-90 shadow-xl"
                     >
                       <Trash2 size={20}/>
+                    </button>
+                    <button 
+                      onClick={() => navigate(`/projects/${p.id}`)} 
+                      title="Open Workspace"
+                      className="p-4 bg-zinc-900/60 border border-zinc-800 text-zinc-500 rounded-2xl hover:bg-amber-500 hover:text-black hover:border-amber-500 transition-all active:scale-90 shadow-xl"
+                    >
+                      <ExternalLink size={20}/>
                     </button>
                   </div>
                 </td>
@@ -259,9 +281,9 @@ const VaultRegistry: React.FC<VaultRegistryProps> = ({ projects, setProjects, na
                 <td colSpan={3} className="p-32 text-center opacity-20">
                   <Briefcase size={64} className="mx-auto mb-6 text-zinc-700 animate-pulse" />
                   <div className="space-y-2">
-                    <p className="font-black uppercase text-sm tracking-[0.5em] italic">Portfolio is Empty</p>
+                    <p className="font-black uppercase text-sm tracking-[0.5em] italic">Registry is Empty</p>
                     <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest leading-none">
-                      Create a new project to begin your measurement takeoff.
+                      Launch a new project to start site measurements.
                     </p>
                   </div>
                 </td>
@@ -276,11 +298,11 @@ const VaultRegistry: React.FC<VaultRegistryProps> = ({ projects, setProjects, na
         <div className="flex items-center gap-3">
           <AlertCircle size={12} className="text-amber-500" />
           <p className="text-[8px] font-black uppercase tracking-widest text-zinc-500">
-            Professional Compliance Monitoring Active
+            Professional SMM Monitoring Active
           </p>
         </div>
         <p className="text-[8px] font-mono text-zinc-600 uppercase">
-          DATA_SOURCE: LOCAL_OFFICE_RECORD_V1
+          SECURE_VAULT_PROTOCOL_V4
         </p>
       </div>
     </div>

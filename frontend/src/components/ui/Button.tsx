@@ -13,7 +13,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   rightIcon?: React.ReactNode;
 }
 
-/** --- BUTTON COMPONENT --- **/
+/** --- MAIN COMPONENT: PROFESSIONAL UI BUTTON --- **/
 
 const Button: React.FC<ButtonProps> = ({ 
   children, 
@@ -26,10 +26,15 @@ const Button: React.FC<ButtonProps> = ({
   ...props 
 }) => {
   
-  // Base architectural styles for the QS Vault Design System
-  const baseStyles = "px-6 py-3.5 rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3 cursor-pointer";
+  /** * DESIGN TOKENS
+   * These base styles create the "Microsoft-tier" professional feel:
+   * - rounded-2xl: Soft but modern industrial corners.
+   * - font-black: Maximum readability.
+   * - tracking-[0.2em]: Professional letter spacing.
+   */
+  const baseStyles = "px-6 py-3.5 rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 cursor-pointer select-none";
   
-  // Variant Logic (Light/Dark compliant)
+  // High-Contrast Variant Logic
   const variants: Record<ButtonVariant, string> = {
     primary: "bg-amber-500 hover:bg-amber-400 text-black shadow-lg shadow-amber-500/20 border border-amber-500/10",
     
@@ -49,12 +54,15 @@ const Button: React.FC<ButtonProps> = ({
       className={`${baseStyles} ${variants[variant]} ${className}`}
     >
       {isLoading ? (
-        <Loader2 className="w-4 h-4 animate-spin stroke-[3px]" />
+        <div className="flex items-center gap-2">
+          <Loader2 className="w-4 h-4 animate-spin stroke-[3px]" />
+          <span className="opacity-70 italic">Processing...</span>
+        </div>
       ) : (
         <>
-          {leftIcon && <span className="shrink-0">{leftIcon}</span>}
+          {leftIcon && <span className="shrink-0 transition-transform group-hover:scale-110">{leftIcon}</span>}
           <span className="leading-none">{children}</span>
-          {rightIcon && <span className="shrink-0">{rightIcon}</span>}
+          {rightIcon && <span className="shrink-0 transition-transform group-hover:scale-110">{rightIcon}</span>}
         </>
       )}
     </button>

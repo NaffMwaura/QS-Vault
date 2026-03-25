@@ -8,7 +8,7 @@ import { type Session, type User, type AuthChangeEvent } from "@supabase/supabas
 
 export type Theme = "light" | "dark";
 export type UserRole = 'user' | 'editor' | 'admin' | 'super-admin';
-export type DashboardView = 'projects' | 'rates' | 'settings' | 'profile';
+export type DashboardView = 'projects' | 'rates' | 'settings' | 'profile' | 'diary' | 'resources' | 'collab';
 
 export interface AuthContextType {
   session: Session | null;
@@ -25,45 +25,54 @@ export interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-    // SUPABASE CLIENT INITIALIZATION
+/* ======================================================
+    SYSTEM INITIALIZATION
+   ====================================================== */
 
 let supabase: any = null;
+let db: any = null;
 
-const initializeSupabase = async () => {
+const initializeSystem = async () => {
   try {
-    // Dynamic import to support both Sandbox and Local environments
-    const mod = await import("../../lib/database/database");
-    if (mod.supabase) supabase = mod.supabase;
+    const dbMod = await import("../../lib/database/database");
+    if (dbMod.supabase) supabase = dbMod.supabase;
+    if (dbMod.db) db = dbMod.db;
   } catch (e) {
-    console.warn("Office Security: Connection to database pending...");
+    console.warn("Vault Security: Establishing local node connection...");
   }
 };
 
-  // UI components: Loading
+const SESSION_EXPIRY_MS = 12 * 60 * 60 * 1000; // 12 Hours
+
+/** --- UI: HIGH-PRECISION LOADING WORKSPACE --- **/
+
 const LoadingWorkspace = () => (
   <div className="min-h-screen bg-[#09090b] flex flex-col items-center justify-center p-6 text-center">
-    <div className="relative w-24 h-24 mb-10">
-      {/* Outer Decorative Ring */}
+    <div className="relative w-32 h-32 mb-12">
       <div className="absolute inset-0 border-4 border-zinc-900 rounded-full"></div>
-      <div className="absolute inset-0 border-4 border-amber-500 rounded-full border-t-transparent animate-[spin_3s_linear_infinite]"></div>
-      
-      {/* Precision Measuring Ring */}
+      <div className="absolute inset-0 border-4 border-amber-500 rounded-full border-t-transparent animate-[spin_2s_linear_infinite]"></div>
       <div className="absolute inset-4 border-2 border-zinc-800 rounded-full"></div>
-      <div className="absolute inset-4 border-2 border-amber-400 rounded-full border-b-transparent animate-[spin_2s_linear_infinite_reverse]"></div>
-      
-      {/* Core Heartbeat Pulse */}
-      <div className="absolute inset-8 border border-amber-500/10 rounded-full animate-pulse shadow-[0_0_20px_rgba(245,158,11,0.2)]"></div>
+      <div className="absolute inset-4 border-2 border-amber-400 rounded-full border-b-transparent animate-[spin_3s_linear_infinite_reverse]"></div>
+      <div className="absolute inset-10 border border-amber-500/20 rounded-full animate-pulse shadow-[0_0_30px_rgba(245,158,11,0.15)]"></div>
     </div>
-    <div className="space-y-2">
-      <h2 className="text-amber-500 font-black uppercase tracking-[0.5em] text-lg italic leading-none">
-        QS POCKET KNIFE
+    
+    <div className="space-y-3">
+      <h2 className="text-amber-500 font-black uppercase tracking-[0.6em] text-lg italic leading-none">
+        QS VAULT
       </h2>
-      <p className="text-zinc-600 text-[10px] font-black uppercase tracking-widest animate-pulse italic">
-        Preparing your office workspace...
+      <div className="flex items-center justify-center gap-2">
+         <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-bounce [animation-delay:-0.3s]" />
+         <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-bounce [animation-delay:-0.15s]" />
+         <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-bounce" />
+      </div>
+      <p className="text-zinc-600 text-[9px] font-black uppercase tracking-[0.4em] italic">
+        Authorized Access Only • Preparing Nodes
       </p>
     </div>
   </div>
 );
+
+/** --- PROVIDER IMPLEMENTATION --- **/
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
@@ -72,24 +81,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   
-  // Master Navigation State
   const [activeView, setActiveView] = useState<DashboardView>(() => {
     if (typeof window === 'undefined') return 'projects';
     return (localStorage.getItem("qs_active_view") as DashboardView) || 'projects';
   });
 
-  // Theme Management
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window === 'undefined') return "dark";
     return (localStorage.getItem("qs_theme") as Theme) || "dark";
   });
 
-  // 1. Persist Navigation View
-  useEffect(() => {
-    localStorage.setItem("qs_active_view", activeView);
-  }, [activeView]);
+  /* --------------------------------------------------
+      CORE ACTIONS: IMMEDIATE RESPONSE SIGN-OUT
+     -------------------------------------------------- */
 
-  // 2. Connectivity Listener
+  const signOut = useCallback(async () => {
+    // 1. OPTIMISTIC CLEAR: We kill the UI state immediately so user sees "Login" right away
+    setSession(null);
+    setUser(null);
+    setRole(null);
+    localStorage.removeItem("qs_login_timestamp");
+
+    // 2. BACKGROUND CLEANUP: Let Supabase handle the cloud token in the background
+    if (supabase) {
+      try {
+        await supabase.auth.signOut();
+      } catch (e) {
+        console.warn("Auth: Cloud sign-out background task deferred (Offline).");
+      }
+    }
+  }, []);
+
+  // 1. Connectivity Check
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
@@ -101,81 +124,90 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  // 3. Theme Sync
-  useEffect(() => {
-    const root = window.document.documentElement;
-    root.classList.remove("light", "dark");
-    root.classList.add(theme);
-    localStorage.setItem("qs_theme", theme);
-  }, [theme]);
-
-  const toggleTheme = () => setTheme((prev) => (prev === "light" ? "dark" : "light"));
-
-  // 4. Optimized Role Fetcher
-  const fetchUserRole = useCallback(async (userId: string): Promise<UserRole> => {
-    if (!supabase) return 'user';
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', userId)
-        .maybeSingle();
-      
-      if (error) {
-        return 'user'; 
-      }
-      return (data?.role as UserRole) || 'user';
-    } catch (e) {
-      return 'user';
+  // 2. Role Fetcher (With Offline Cache Support)
+  const resolveUserRole = useCallback(async (userId: string): Promise<UserRole> => {
+    if (isOnline && supabase) {
+      try {
+        const { data } = await supabase.from('profiles').select('role').eq('id', userId).maybeSingle();
+        if (data?.role) {
+          if (db) await db.profiles.put({ id: userId, role: data.role, updated_at: new Date().toISOString() });
+          return data.role as UserRole;
+        }
+      } catch (e) { /* Local fallback */ }
     }
-  }, []);
 
-  // 5. Main Authentication Process
+    if (db) {
+      const localProfile = await db.profiles.get(userId);
+      if (localProfile?.role) return localProfile.role as UserRole;
+    }
+
+    return 'user';
+  }, [isOnline]);
+
+  // 3. Security: Check Session Expiry (12 Hour Limit)
+  const checkSessionSecurity = useCallback(() => {
+    const loginTime = localStorage.getItem("qs_login_timestamp");
+    if (loginTime) {
+      const elapsed = Date.now() - parseInt(loginTime);
+      if (elapsed > SESSION_EXPIRY_MS) {
+        console.warn("Security: Session expired. Enforcing Re-authentication.");
+        signOut();
+        return false;
+      }
+    }
+    return true;
+  }, [signOut]);
+
+  // 4. Initialization Handshake
   useEffect(() => {
     let mounted = true;
 
-    const startAuthProcess = async () => {
-      await initializeSupabase();
+    const initializeAuth = async () => {
+      await initializeSystem();
       
+      if (!mounted) return;
       if (!supabase) {
-        if (mounted) setIsLoading(false);
+        setIsLoading(false);
         return;
       }
 
-      try {
-        const { data: { session: initialSession } } = await supabase.auth.getSession();
-        
-        if (mounted) {
-          setSession(initialSession);
-          setUser(initialSession?.user ?? null);
-          
-          if (initialSession?.user) {
-            const userRole = await fetchUserRole(initialSession.user.id);
-            if (mounted) setRole(userRole);
-          }
-        }
-      } catch (err) {
-        console.error("Office Security: Connection Failure", err);
-      } finally {
-        if (mounted) setIsLoading(false);
+      // Check for current session
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      
+      if (currentSession && checkSessionSecurity()) {
+        setSession(currentSession);
+        setUser(currentSession.user);
+        const userRole = await resolveUserRole(currentSession.user.id);
+        if (mounted) setRole(userRole);
+      } else if (!currentSession) {
+        // If no cloud session exists, we ensure local state is clean
+        setSession(null);
+        setUser(null);
       }
 
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event: AuthChangeEvent, currentSession: Session | null) => {
+      // Sync logins/logouts via Supabase Listener
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, newSession: Session | null) => {
         if (!mounted) return;
 
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-        
-        if (currentSession?.user) {
-          const userRole = await fetchUserRole(currentSession.user.id);
-          if (mounted) setRole(userRole);
-        } else {
-          setRole(null);
-          setActiveView('projects'); // Reset view on logout
+        if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+          if (!localStorage.getItem("qs_login_timestamp")) {
+            localStorage.setItem("qs_login_timestamp", Date.now().toString());
+          }
+          setSession(newSession);
+          setUser(newSession?.user ?? null);
+          if (newSession?.user) {
+            const r = await resolveUserRole(newSession.user.id);
+            if (mounted) setRole(r);
+          }
+        } else if (event === 'SIGNED_OUT') {
+          // Trigger the immediate state clear if not already cleared
+          signOut();
         }
-        
+
         setIsLoading(false);
       });
+
+      setIsLoading(false);
 
       return () => {
         mounted = false;
@@ -183,28 +215,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
     };
 
-    startAuthProcess();
-  }, [fetchUserRole]);
-  const signOut = async () => {
-    if (supabase) {
-      await supabase.auth.signOut();
-      // The onAuthStateChange listener above will trigger and set user to null,
-      // which causes the App.tsx router to automatically show the login page.
-    }
-  };
+    initializeAuth();
+  }, [resolveUserRole, checkSessionSecurity, signOut]);
+
+  // 5. Persistence Handlers
+  useEffect(() => {
+    localStorage.setItem("qs_active_view", activeView);
+    localStorage.setItem("qs_theme", theme);
+    document.documentElement.classList.remove("light", "dark");
+    document.documentElement.classList.add(theme);
+  }, [activeView, theme]);
 
   const value = useMemo(() => ({ 
-    session, 
-    user, 
-    role, 
-    isLoading, 
-    signOut, 
-    theme, 
-    toggleTheme, 
-    isOnline,
-    activeView, 
-    setActiveView
-  }), [session, user, role, isLoading, theme, isOnline, activeView]);
+    session, user, role, isLoading, signOut, 
+    theme, toggleTheme: () => setTheme(t => t === 'light' ? 'dark' : 'light'), 
+    isOnline, activeView, setActiveView
+  }), [session, user, role, isLoading, theme, isOnline, activeView, signOut]);
 
   return (
     <AuthContext.Provider value={value}>
@@ -215,8 +241,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 };

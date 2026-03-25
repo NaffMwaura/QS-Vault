@@ -1,26 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, {  } from 'react';
 import { useLocation } from "react-router-dom";
-import { ShieldCheck, } from "lucide-react";
+import { ShieldCheck, HardHat,  } from "lucide-react";
 
+/* ======================================================
+    OFFICE MODULE RESOLUTION (OFFLINE-FIRST)
+    This section ensures the frame can boot even if 
+    individual nodes are loading or offline.
+   ====================================================== */
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let useAuth: any = () => ({
-  user: { id: 'dev-surveyor-001', user_metadata: { full_name: 'Naftaly Mwaura' } },
+  user: { id: 'dev-node-001', user_metadata: { full_name: 'Naftaly Mwaura' } },
   isLoading: false,
   theme: 'dark',
   isOnline: true,
   activeView: 'projects',
-  setActiveView: (view: string) => console.log("Office View Shift:", view)
+  setActiveView: (view: string) => console.log("Navigation:", view)
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-let HUDHeader: any = () => <div className="h-20 border-b border-zinc-800 flex items-center px-8 text-[10px] font-black uppercase text-zinc-600 tracking-[0.4em]">HUD_HEADER_ACTIVE</div>;
+let HUDHeader: any = () => null;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-let SidebarCommand: any = () => <div className="w-20 lg:w-72 border-r border-zinc-800 p-8 text-[10px] font-black uppercase text-zinc-600 tracking-[0.4em]">SIDEBAR_ACTIVE</div>;
+let SidebarCommand: any = () => null;
 
 const resolveModules = async () => {
   try {
-    // Attempt to resolve real project modules from your folders
     const authMod = await import("../../features/auth/AuthContext");
     if (authMod.useAuth) useAuth = authMod.useAuth;
 
@@ -29,75 +33,85 @@ const resolveModules = async () => {
 
     const sidebarMod = await import("./SidebarCommand");
     SidebarCommand = sidebarMod.default;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
-    // Technical shims active in the previewer
+    // Shims active for sandbox stability
   }
 };
 
 resolveModules();
 
+/** --- TYPES --- **/
 interface AppShellProps {
   children?: React.ReactNode;
 }
 
+/** --- UI: PRECISION OFFICE LOADER --- **/
 const OfficeLoader = ({ isOnline }: { isOnline: boolean }) => (
   <div className="min-h-screen bg-[#09090b] flex flex-col items-center justify-center p-6 text-center z-100] fixed inset-0">
-    <div className="relative w-24 h-24 sm:w-32 sm:h-32 mb-12">
-      {/* Visual representation of an active database link */}
+    <div className="relative w-28 h-28 mb-12">
+      {/* Outer Rotating Ring */}
       <div className="absolute inset-0 border-4 border-zinc-900 rounded-full"></div>
-      <div className="absolute inset-0 border-4 border-amber-500 rounded-full border-t-transparent animate-[spin_3s_linear_infinite]"></div>
-      <div className="absolute inset-10 border border-amber-500/20 rounded-full animate-pulse shadow-[0_0_60px_rgba(245,158,11,0.2)]"></div>
+      <div className="absolute inset-0 border-4 border-amber-500 rounded-full border-t-transparent animate-[spin_2s_linear_infinite]"></div>
+      
+      {/* Inner Precision Ring */}
+      <div className="absolute inset-4 border-2 border-zinc-800 rounded-full"></div>
+      <div className="absolute inset-4 border-2 border-amber-400 rounded-full border-b-transparent animate-[spin_1.5s_linear_infinite_reverse]"></div>
+      
+      {/* Center Pulse */}
+      <div className="absolute inset-10 border border-amber-500/10 rounded-full animate-pulse shadow-[0_0_40px_rgba(245,158,11,0.15)]"></div>
     </div>
-    <div className="space-y-4">
-      <h2 className="text-amber-500 font-black uppercase tracking-[0.5em] text-xs italic">
-        OPENING PROJECT FILES...
+    <div className="space-y-3">
+      <h2 className="text-amber-500 font-black uppercase tracking-[0.6em] text-sm italic">
+        QS VAULT
       </h2>
-      <p className="text-zinc-600 text-[10px] font-black uppercase tracking-[0.3em] animate-pulse">
-        {isOnline ? "Syncing with Cloud Database..." : "Accessing Local Device Memory..."}
+      <p className="text-zinc-600 text-[10px] font-black uppercase tracking-[0.4em] animate-pulse italic">
+        {isOnline ? "Syncing with Cloud..." : "Opening Local Database..."}
       </p>
     </div>
   </div>
 );
 
+/** --- MAIN APP SHELL: CONSTRUCTION OS FRAME --- **/
 const AppShell: React.FC<AppShellProps> = ({ children }) => {
-  const { isLoading: authLoading, theme, isOnline, activeView, setActiveView } = useAuth();
+  const { isLoading: authLoading, theme, isOnline, activeView, setActiveView, user } = useAuth();
   const location = useLocation();
-  const [isTransitioning, setIsTransitioning] = useState(false);
 
-  // Transition Logic to smooth out page switches
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setIsTransitioning(true);
-    const timer = setTimeout(() => setIsTransitioning(false), 500);
-    return () => clearTimeout(timer);
-  }, [location.pathname]);
+  /** * PRO DEV OPTIMIZATION:
+   * We removed the manual 'isTransitioning' state that caused the cascading render error.
+   * Instead, we use 'location.key' as a unique identifier for the main workspace.
+   * When the key changes, the browser automatically re-triggers the CSS animations 
+   * defined in the <style> block, creating the same smooth transition effect 
+   * with zero performance penalty.
+   */
 
-  if (authLoading || isTransitioning) {
+  // Defensive Loading Guard: Only shows the full loader if we truly lack user data.
+  if (authLoading && !user) {
     return <OfficeLoader isOnline={isOnline} />;
   }
 
   return (
     <div className={`min-h-screen flex font-sans transition-colors duration-500 overflow-hidden selection:bg-amber-500/30
       ${theme === 'dark' ? 'bg-[#09090b] text-zinc-100' : 'bg-zinc-100 text-zinc-900'}`}>
-
-      {/* 1. PRIMARY SIDEBAR NAVIGATION */}
-      <SidebarCommand
-        activeView={activeView || 'projects'}
-        setActiveView={setActiveView}
+      
+      {/* 1. SIDEBAR COMMAND CENTER */}
+      <SidebarCommand 
+        activeView={activeView || 'projects'} 
+        setActiveView={setActiveView} 
       />
 
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-
-        {/* 2. GLOBAL HUD HEADER ( Connectivity & User Profile ) */}
-        <HUDHeader
-          activeView={activeView || 'projects'}
-          setActiveView={setActiveView}
+        
+        {/* 2. HUD HEADER: NETWORK & PROFILE MONITOR */}
+        <HUDHeader 
+          activeView={activeView || 'projects'} 
+          setActiveView={setActiveView} 
         />
 
-        {/* 3. MAIN SCROLLABLE WORKSPACE */}
+        {/* 3. MAIN WORKSPACE: SCROLLABLE CORE */}
         <main className="flex-1 overflow-y-auto relative custom-scrollbar scroll-smooth">
-          {/* Visual Aesthetic Overlays (Only for Dark Mode) */}
+          
+          {/* Aesthetic High-End Background Fills */}
           {theme === 'dark' && (
             <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-30">
               <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-amber-500/5 rounded-full blur-[140px] translate-x-1/4 -translate-y-1/4" />
@@ -106,44 +120,55 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
           )}
 
           <section className="relative z-10 p-6 sm:p-10 max-w-7xl mx-auto min-h-full flex flex-col">
-            <div className="flex-1 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            
+            {/* WORKSPACE CONTENT: 
+                Using 'key={location.pathname}' ensures that every time the route changes,
+                React treats this as a fresh mount, triggering the 'animate-workspace' 
+                CSS animation perfectly without manual state management.
+            */}
+            <div 
+              key={location.pathname}
+              className="flex-1 animate-workspace"
+            >
               {children || (
                 <div className="min-h-[60vh] flex flex-col items-center justify-center opacity-20">
                   <ShieldCheck size={48} className="mb-4 text-amber-500" />
-                  <p className="font-black text-xs uppercase tracking-[0.5em] italic">Local Workspace Active</p>
+                  <p className="font-black text-xs uppercase tracking-[0.5em] italic">Workspace Ready</p>
                 </div>
               )}
             </div>
-
-            {/* Professional Compliance Footer */}
-            <footer className="pt-24 pb-12 text-center opacity-20 hidden md:block mt-auto">
-              <div className="flex items-center justify-center gap-8 mb-4">
-                <div className="h-px w-20 bg-zinc-800" />
-                <p className="text-[10px] font-black uppercase tracking-[0.8em] italic">
-                  QS VAULT PRECISION OS V2.0
-                </p>
-                <div className="h-px w-20 bg-zinc-800" />
-              </div>
-              <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-zinc-600">
-                CERTIFIED PROFESSIONAL ACCESS • SMM-KE COMPLIANT ENGINE
-              </p>
+            
+            {/* Professional Legal & Compliance Branding */}
+            <footer className="pt-24 pb-12 text-center opacity-10 hidden md:block mt-auto select-none">
+               <div className="flex items-center justify-center gap-8 mb-4">
+                  <div className="h-px w-24 bg-zinc-800" />
+                  <HardHat size={14} className="text-zinc-500" />
+                  <div className="h-px w-24 bg-zinc-800" />
+               </div>
+               <p className="text-[9px] font-black uppercase tracking-[0.8em] text-zinc-600 italic">
+                 QS VAULT • SMM-KE COMPLIANT PRECISION OS
+               </p>
             </footer>
           </section>
         </main>
       </div>
 
       <style>{`
-        /* Global Thin Professional Scrollbar */
+        /* Professional Slim UI Scrollbars */
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 20px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 20px; transition: background 0.3s; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
         
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(6px); }
-          to { opacity: 1; transform: translateY(0); }
+        /* High-speed animations for Microsoft-level polish */
+        @keyframes workspace-entry {
+          0% { opacity: 0; transform: translateY(10px) scale(0.99); filter: blur(4px); }
+          100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
         }
-        .animate-in { animation: fade-in 0.5s ease-out forwards; }
+        
+        .animate-workspace { 
+          animation: workspace-entry 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; 
+        }
       `}</style>
     </div>
   );
