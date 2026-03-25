@@ -1,30 +1,47 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
-import {
-  MessageSquare,
-  Share2,
-  Send,
-  CheckCircle2,
+import { 
+  MessageSquare, 
+  Share2, 
+  Send, 
+  CheckCircle2, 
   Copy,
   Smartphone,
-  ShieldCheck
+  ShieldCheck,
+  Zap
 } from 'lucide-react';
 
-let useAuth: any = () => ({
-  theme: 'dark',
-});
+/* ======================================================
+    OFFICE MODULE RESOLUTION (PRO-DEV SETUP)
+   ====================================================== */
+
+let useAuth: any = () => ({ theme: 'dark' });
+let Button: any = ({ children, onClick, className}: any) => (
+  <button onClick={onClick} className={className}>{children}</button>
+);
+let GlassCard: any = ({ children, className }: any) => (
+  <div className={className}>{children}</div>
+);
 
 const resolveModules = async () => {
   try {
     const authMod = await import("../../../features/auth/AuthContext");
     if (authMod.useAuth) useAuth = authMod.useAuth;
+
+    const btnMod = await import("../../../components/ui/Button");
+    if (btnMod.default) Button = btnMod.default;
+
+    const glassMod = await import("../../../components/ui/GlassCard");
+    if (glassMod.default) GlassCard = glassMod.default;
   } catch (e) {
     // Sandbox fallback active
   }
 };
 
 resolveModules();
+
+/** --- TYPES --- **/
 
 interface IPCData {
   certNumber: string;
@@ -41,36 +58,37 @@ interface WhatsAppExportProps {
   projectName: string;
 }
 
-// Main Project -> The project share
+/** --- MAIN COMPONENT: QUICK PROJECT SHARE --- **/
+
 const WhatsAppExport: React.FC<WhatsAppExportProps> = ({ data, projectName }) => {
   const { theme } = useAuth();
   const [copied, setCopied] = useState(false);
 
-  // Financial computation for the summary text
+  /** * FINANCIAL HANDSHAKE
+   * Calculations aligned with the main Canvas valuation engine.
+   */
   const netDue = (data.workExecuted + data.materialsOnSite) * (1 - data.retentionPercent / 100) - data.previousCertified;
-  const totalWithVat = netDue * 1.16;
+  const totalWithVat = netDue * 1.16; // Standard 16% Kenya VAT
 
   /** * MESSAGE GENERATOR
-   * Uses standard template strings with newlines. 
-   * We avoid manual %0A encoding here to prevent decode URI errors.
+   * Formats the site data into a professional industrial bulletin.
    */
   const generatePlainMessage = () => {
-    return `QS VAULT: VALUATION UPDATE\n` +
-      `----------------------------------------\n` +
-      `Project: ${projectName.toUpperCase()}\n` +
-      `Cert No: ${data.certNumber}\n` +
-      `Date: ${data.valuationDate}\n\n` +
-      `Measured Value: KES ${data.workExecuted.toLocaleString()}\n` +
-      `Retention (${data.retentionPercent}%): KES ${(data.workExecuted * data.retentionPercent / 100).toLocaleString()}\n` +
-      `----------------------------------------\n` +
-      `NET AMOUNT DUE: KES ${netDue.toLocaleString()}\n` +
-      `TOTAL (INC. VAT): KES ${totalWithVat.toLocaleString()}\n` +
-      `----------------------------------------\n` +
-      `Shared via QS Vault Construction OS v2.0`;
+    return `QS VAULT: VALUATION SUMMARY\n` +
+           `--------------------------------\n` +
+           `PROJECT: ${projectName.toUpperCase()}\n` +
+           `CERT NO: ${data.certNumber}\n` +
+           `DATE: ${data.valuationDate}\n\n` +
+           `WORK VALUE: KES ${data.workExecuted.toLocaleString()}\n` +
+           `RETENTION (${data.retentionPercent}%): KES ${(data.workExecuted * data.retentionPercent / 100).toLocaleString()}\n` +
+           `--------------------------------\n` +
+           `NET PAYABLE: KES ${netDue.toLocaleString()}\n` +
+           `TOTAL (INC. VAT): KES ${totalWithVat.toLocaleString()}\n` +
+           `--------------------------------\n` +
+           `Sent via QS Vault Precision OS`;
   };
 
   const handleWhatsAppTrigger = () => {
-    // We encode the entire string at the point of transmission
     const encodedText = encodeURIComponent(generatePlainMessage());
     const url = `https://wa.me/?text=${encodedText}`;
     window.open(url, '_blank');
@@ -84,24 +102,24 @@ const WhatsAppExport: React.FC<WhatsAppExportProps> = ({ data, projectName }) =>
     dummy.select();
     document.execCommand("copy");
     document.body.removeChild(dummy);
-
+    
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <div className={`p-8 rounded-[3rem] border backdrop-blur-3xl transition-all duration-500
-      ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800 shadow-2xl shadow-black/40' : 'bg-white border-zinc-200 shadow-xl'}`}>
-
+    <GlassCard className="p-8 sm:p-10 border text-left">
+      
       <div className="space-y-8">
+        {/* 1. Module Header */}
         <div className="flex justify-between items-start">
           <div className="text-left space-y-1">
             <h4 className={`text-xl font-black uppercase italic tracking-tighter leading-none
               ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
-              Quick Share
+              Instant Update
             </h4>
             <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500">
-              Construction Update Protocol
+              Site Transmittal Protocol
             </p>
           </div>
           <div className={`p-3 rounded-2xl ${theme === 'dark' ? 'bg-zinc-950 border border-zinc-800' : 'bg-zinc-50 border border-zinc-100'}`}>
@@ -109,7 +127,7 @@ const WhatsAppExport: React.FC<WhatsAppExportProps> = ({ data, projectName }) =>
           </div>
         </div>
 
-        {/* Message Preview Box */}
+        {/* 2. Message Preview Area */}
         <div className={`p-6 rounded-4xl border relative group text-left
           ${theme === 'dark' ? 'bg-zinc-950/60 border-zinc-800 shadow-inner' : 'bg-zinc-50 border-zinc-200 shadow-inner'}`}>
           <div className="absolute top-4 right-4 opacity-20 group-hover:opacity-100 transition-opacity">
@@ -121,47 +139,45 @@ const WhatsAppExport: React.FC<WhatsAppExportProps> = ({ data, projectName }) =>
           </p>
         </div>
 
+        {/* 3. Action Buttons */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <button
-            type="button"
+          <Button 
+            variant="outline"
             onClick={handleCopyText}
-            className={`flex items-center justify-center gap-3 py-5 rounded-2xl border transition-all active:scale-95
-              ${copied
-                ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500'
-                : theme === 'dark'
-                  ? 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:text-white'
-                  : 'bg-zinc-100 border-zinc-200 text-zinc-500 hover:text-zinc-900'}`}
+            className="py-5"
+            leftIcon={copied ? <CheckCircle2 size={16} className="text-emerald-500" /> : <Copy size={16} />}
           >
-            {copied ? <CheckCircle2 size={16} /> : <Copy size={16} />}
-            <span className="text-[10px] font-black uppercase tracking-widest">
-              {copied ? 'Copied' : 'Copy Text'}
-            </span>
-          </button>
+            {copied ? 'Copied to Clipboard' : 'Copy Message'}
+          </Button>
 
-          <button
-            type="button"
+          <Button 
+            variant="primary"
             onClick={handleWhatsAppTrigger}
-            className="flex items-center justify-center gap-3 py-5 bg-[#25D366] text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl hover:scale-[1.02] active:scale-95 transition-all shadow-[#25D366]/20"
+            className="py-5 bg-[#25D366]! text-white! hover:bg-[#22c35e]! border-none shadow-[#25D366]/20"
+            leftIcon={<Send size={16} className="fill-current" />}
           >
-            <Send size={16} className="fill-current" />
-            WhatsApp
-          </button>
+            Share via WhatsApp
+          </Button>
         </div>
 
-        <div className="flex items-center justify-between pt-4 border-t border-zinc-800/40 opacity-40">
+        {/* 4. Security Footnote */}
+        <div className="flex items-center justify-between pt-6 border-t border-zinc-800/40 opacity-40">
           <div className="flex items-center gap-2">
-            <ShieldCheck size={12} className="text-emerald-500" />
-            <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500 italic">
-              Authorized Transmittal
+            <ShieldCheck size={14} className="text-emerald-500" />
+            <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500 italic">
+              Verified Distribution
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <Share2 size={12} className="text-zinc-500" />
-            <span className="text-[8px] font-bold uppercase text-zinc-500">Live Secure Share</span>
+          <div className="flex items-center gap-3">
+             <div className="flex items-center gap-2">
+               <Zap size={10} className="text-amber-500" />
+               <span className="text-[8px] font-black uppercase text-zinc-500">Fast Export</span>
+             </div>
+             <Share2 size={12} className="text-zinc-500" />
           </div>
         </div>
       </div>
-    </div>
+    </GlassCard>
   );
 };
 
