@@ -110,7 +110,6 @@ interface FeatureItemProps {
   icon: React.ElementType;
   title: string;
   description: string;
-  theme: "light" | "dark";
 }
 
 let useAuth: () => AuthContextValue = () => ({
@@ -164,19 +163,13 @@ const FeatureItem: React.FC<FeatureItemProps> = ({
   icon: Icon,
   title,
   description,
-  theme,
 }) => (
   <div className="flex items-start gap-4 group">
-    <div
-      className={`p-2.5 rounded-xl border transition-all duration-500 group-hover:scale-110 
-      ${theme === "dark" ? "bg-amber-500/10 border-amber-500/20 text-amber-500" : "bg-amber-500/5 border-amber-500/10 text-amber-600"}`}
-    >
+    <div className="theme-surface-accent p-2.5 rounded-xl border transition-all duration-500 group-hover:scale-110 text-amber-500">
       <Icon size={18} />
     </div>
     <div className="text-left">
-      <h4
-        className={`text-[10px] font-black uppercase tracking-widest ${theme === "dark" ? "text-zinc-200" : "text-zinc-900"}`}
-      >
+      <h4 className="theme-title text-[10px] font-black uppercase tracking-widest">
         {title}
       </h4>
       <p className="text-[9px] text-zinc-500 font-bold leading-relaxed mt-0.5">
@@ -299,20 +292,14 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div
-      className={`h-screen w-screen flex flex-col lg:flex-row font-sans selection:bg-amber-500/30 overflow-hidden transition-colors duration-500 
-      ${theme === "dark" ? "bg-[#09090b]" : "bg-zinc-100"}`}
-    >
+    <div className="theme-page h-screen w-screen flex flex-col lg:flex-row font-sans selection:bg-amber-500/30 overflow-hidden transition-colors duration-500">
       {/* 1. LEFT SECTION: BRANDING & SPECS */}
       <div
-        className={`relative flex-1 p-8 md:p-12 lg:p-16 flex flex-col justify-between border-r transition-all duration-500
+        className={`theme-surface-overlay relative flex-1 p-8 md:p-12 lg:p-16 flex flex-col justify-between border-r transition-all duration-500
         ${mobileView === "branding" ? "flex fixed inset-0 z-50 bg-inherit" : "hidden lg:flex"}
-        ${theme === "dark" ? "border-zinc-800/40 bg-zinc-950/40" : "border-zinc-200 bg-white"}`}
+        `}
       >
-        <div
-          className={`absolute top-[-5%] left-[-5%] w-[50%] h-[50%] rounded-full blur-[100px] animate-pulse 
-          ${theme === "dark" ? "bg-amber-500/5" : "bg-amber-500/3"}`}
-        />
+        <div className="theme-glow-amber absolute top-[-5%] left-[-5%] w-[50%] h-[50%] rounded-full blur-[100px] animate-pulse" />
 
         <div className="relative z-10 flex justify-between items-center">
           <button
@@ -354,18 +341,14 @@ const LoginPage: React.FC = () => {
                 <HardHat size={28} className="text-black" />
               </div>
               <div
-                className={`h-6 w-px rotate-12 mx-1 ${theme === "dark" ? "bg-zinc-800" : "bg-zinc-200"}`}
+              className="theme-divider h-6 w-px rotate-12 mx-1"
               />
-              <h1
-                className={`text-2xl font-black uppercase tracking-tighter italic ${theme === "dark" ? "text-white" : "text-zinc-900"}`}
-              >
+              <h1 className="theme-title text-2xl font-black uppercase tracking-tighter italic">
                 QS Vault
               </h1>
             </div>
 
-            <h2
-              className={`text-3xl md:text-4xl lg:text-5xl font-black uppercase tracking-tighter leading-[0.95] italic ${theme === "dark" ? "text-white" : "text-zinc-900"}`}
-            >
+            <h2 className="theme-title text-3xl md:text-4xl lg:text-5xl font-black uppercase tracking-tighter leading-[0.95] italic">
               Precision Takeoff
               <br />
               <span className="text-amber-500 underline decoration-amber-500/20 underline-offset-8">
@@ -375,30 +358,12 @@ const LoginPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 gap-4 max-w-lg">
-            <FeatureItem
-              icon={Zap}
-              title="Millimetric Precision"
-              description="Digital takeoff tools optimized for site work."
-              theme={theme}
-            />
-            <FeatureItem
-              icon={ShieldCheck}
-              title="Local SMM Sync"
-              description="Fully compliant with regional standards."
-              theme={theme}
-            />
-            <FeatureItem
-              icon={Database}
-              title="Secure Data Vault"
-              description="AES-256 encryption for project data."
-              theme={theme}
-            />
+            <FeatureItem icon={Zap} title="Millimetric Precision" description="Digital takeoff tools optimized for site work." />
+            <FeatureItem icon={ShieldCheck} title="Local SMM Sync" description="Fully compliant with regional standards." />
+            <FeatureItem icon={Database} title="Secure Data Vault" description="AES-256 encryption for project data." />
           </div>
 
-          <div
-            className={`p-5 rounded-3xl font-mono text-[9px] space-y-1 backdrop-blur-md border transition-all duration-500 max-w-sm
-            ${theme === "dark" ? "bg-zinc-950/40 border-zinc-800/50 hover:border-amber-500/30" : "bg-zinc-50 border-zinc-200 hover:border-amber-500/40"}`}
-          >
+          <div className="theme-surface-overlay p-5 rounded-3xl font-mono text-[9px] space-y-1 backdrop-blur-md border transition-all duration-500 max-w-sm hover:border-amber-500/30">
             <p className="text-zinc-600">// Vault Security Protocol</p>
             <p className="text-zinc-400">
               <span className="text-amber-500">const</span>{" "}
@@ -452,15 +417,10 @@ const LoginPage: React.FC = () => {
         />
 
         <div className="w-full max-w-lg relative z-10">
-          <div
-            className={`backdrop-blur-3xl p-8 md:p-10 rounded-[3.5rem] border shadow-2xl space-y-6 transition-all 
-            ${theme === "dark" ? "bg-zinc-900/40 border-zinc-800/60 shadow-black/40" : "bg-white/80 border-zinc-200"}`}
-          >
+          <div className="theme-surface-overlay backdrop-blur-3xl p-8 md:p-10 rounded-[3.5rem] border shadow-2xl space-y-6 transition-all">
             <div className="flex justify-between items-start">
               <div className="space-y-1">
-                <h3
-                  className={`text-2xl font-black uppercase tracking-tighter ${theme === "dark" ? "text-white" : "text-zinc-900"}`}
-                >
+                <h3 className="theme-title text-2xl font-black uppercase tracking-tighter">
                   {isRegistering ? "Register" : "Identity"}
                   <span className="text-amber-500 italic">.</span>
                 </h3>
@@ -511,8 +471,7 @@ const LoginPage: React.FC = () => {
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       placeholder="surveyor_01"
-                      className={`w-full pl-14 pr-6 py-3.5 rounded-2xl text-xs font-bold border outline-none transition-all focus:ring-4 ring-amber-500/10
-                        ${theme === "dark" ? "bg-zinc-950/60 border-zinc-800 text-white placeholder-zinc-800" : "bg-zinc-50 border-zinc-200"}`}
+                      className="theme-input w-full pl-14 pr-6 py-3.5 rounded-2xl text-xs font-bold border outline-none transition-all focus:ring-4 ring-amber-500/10"
                     />
                   </div>
                 </div>
@@ -533,8 +492,7 @@ const LoginPage: React.FC = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="surveyor@vault.co"
-                    className={`w-full pl-14 pr-6 py-3.5 rounded-2xl text-xs font-bold border outline-none transition-all focus:ring-4 ring-amber-500/10
-                      ${theme === "dark" ? "bg-zinc-950/60 border-zinc-800 text-white placeholder-zinc-800" : "bg-zinc-50 border-zinc-200"}`}
+                    className="theme-input w-full pl-14 pr-6 py-3.5 rounded-2xl text-xs font-bold border outline-none transition-all focus:ring-4 ring-amber-500/10"
                   />
                 </div>
               </div>
@@ -554,8 +512,7 @@ const LoginPage: React.FC = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className={`w-full pl-14 pr-14 py-3.5 rounded-2xl text-xs font-bold border outline-none transition-all focus:ring-4 ring-amber-500/10
-                      ${theme === "dark" ? "bg-zinc-950/60 border-zinc-800 text-white placeholder-zinc-800" : "bg-zinc-50 border-zinc-200"}`}
+                    className="theme-input w-full pl-14 pr-14 py-3.5 rounded-2xl text-xs font-bold border outline-none transition-all focus:ring-4 ring-amber-500/10"
                   />
                   <button
                     type="button"

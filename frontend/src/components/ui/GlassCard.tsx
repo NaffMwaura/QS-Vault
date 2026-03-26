@@ -36,7 +36,7 @@ const GlassCard: React.FC<GlassCardProps> = ({
   className = "", 
   interactive = false 
 }) => {
-  const { theme } = useAuth();
+  useAuth();
 
   /** * DESIGN PROTOCOL
    * - backdrop-blur-2xl: Creates the "Microsoft Windows" glass effect.
@@ -44,10 +44,7 @@ const GlassCard: React.FC<GlassCardProps> = ({
    * - border: High-precision thin borders for structural clarity.
    */
   const baseStyles = "backdrop-blur-2xl border transition-all duration-500 rounded-[2.5rem] overflow-hidden";
-  
-  const themeStyles = theme === 'dark'
-    ? "bg-zinc-900/40 border-zinc-800/60 shadow-[0_20px_50px_rgba(0,0,0,0.3)] shadow-black"
-    : "bg-white/80 border-zinc-200 shadow-[0_10px_30px_rgba(0,0,0,0.04)] shadow-zinc-200/50";
+  const themeStyles = "theme-surface-overlay";
 
   /** * INTERACTIVE FEEDBACK
    * Adds a subtle lift and amber glow when the user engages with the node.
