@@ -1,31 +1,35 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect, } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ArrowLeft,
   Wifi,
   WifiOff,
   ChevronLeft,
   ChevronRight,
-  FileText,
-  Layout,
   Loader2,
-  CheckCircle2
+  Zap,
+  ShieldCheck,
+  Maximize2
 } from 'lucide-react';
 
-// Refined Modular Components
-import BlueprintViewport from '../takeoff/components/BlueprintViewport';
-import GeometricRegistry from '../takeoff/components/GeometricRegistry';
-import CalibrationNode from '../takeoff/components/CalibrationNode';
-import SMMWorkSections from '../takeoff/components/SMMWorkSections';
-import SMMTemplates from '../takeoff/components/SMMTemplates';
+// --- FIXED COMPONENT PATHS ---
+import BlueprintViewport from './components/BlueprintViewport';
+import GeometricRegistry from './components/GeometricRegistry';
+import CalibrationNode from './components/CalibrationNode';
+import SMMWorkSections from './components/SMMWorkSections';
+import SMMTemplates from './components/SMMTemplates';
 
-// Report Engines
-import BoQGenerator from '../../features/boq/components/BoQGenerator';
-import CertificateGenerator from '../../features/reports/components/CertificateGenerator';
-import WhatsAppExport from '../../features/reports/components/WhatsAppExport';
+// --- REPORT ENGINES ---
+import BoQGenerator from '../boq/components/BoQGenerator';
+import CertificateGenerator from '../reports/components/CertificateGenerator';
+import WhatsAppExport from '../reports/components/WhatsAppExport';
 
-let useAuth: any = () => ({ user: { id: 'dev-node' }, theme: 'dark' });
+/* ======================================================
+    OFFICE MODULE RESOLUTION
+   ====================================================== */
+
+let useAuth: any = () => ({ user: { id: 'dev-node-001' }, theme: 'dark' });
 let db: any = null;
 let syncEngine: any = null;
 
@@ -33,13 +37,10 @@ const resolveModules = async () => {
   try {
     const authMod = await import("../../features/auth/AuthContext");
     if (authMod.useAuth) useAuth = authMod.useAuth;
-
     const dbMod = await import("../../lib/database/database");
     if (dbMod.db) db = dbMod.db;
     if (dbMod.syncEngine) syncEngine = dbMod.syncEngine;
-  } catch (e) {
-    // Shims active
-  }
+  } catch (e) { /* empty */ }
 };
 
 resolveModules();
@@ -67,18 +68,16 @@ interface ProjectTakeoffPageProps {
 const ProjectTakeoffPage: React.FC<ProjectTakeoffPageProps> = ({ projectId, projectName, onBack }) => {
   const { theme, user } = useAuth();
 
-  // 1. WORKSPACE STATE
+  // Workspace States
   const [activeWorkspace, setActiveWorkspace] = useState<'takeoff' | 'reports'>('takeoff');
-  const [isOnline] = useState(navigator.onLine);
+  const [isOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [, setIsLoading] = useState(true);
 
-  // Drafting Engine
+  // Takeoff Parameters
   const [pdfDoc, setPdfDoc] = useState<any>(null);
   const [scale, setScale] = useState(1.0);
-  const [scaleFactor, setScaleFactor] = useState(0.01); // Default 1:100
+  const [scaleFactor, setScaleFactor] = useState(0.01);
   const [unit, setUnit] = useState<'m' | 'mm'>('m');
-
-  // Takeoff Data
   const [activeSection, setActiveSection] = useState('Concrete Work');
   const [activeTool, setActiveTool] = useState<'length' | 'area' | 'count'>('area');
   const [isMeasuring, setIsMeasuring] = useState(false);
@@ -87,27 +86,20 @@ const ProjectTakeoffPage: React.FC<ProjectTakeoffPageProps> = ({ projectId, proj
   const [measurements, setMeasurements] = useState<Measurement[]>([]);
   const [smmParams, setSmmParams] = useState({ depth: 0.150, height: 3.0, waste: 5 });
 
-  // UI States
-  const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
-  const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
+  // Sidebar Controls
+  const [leftOpen, setLeftOpen] = useState(true);
+  const [rightOpen, setRightOpen] = useState(true);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
   useEffect(() => {
-    const loadData = async () => {
-      if (!db || !projectId) {
-        setIsLoading(false);
-        return;
-      }
+    const loadVault = async () => {
+      if (!db || !projectId) { setIsLoading(false); return; }
       try {
         const stored = await db.measurements.where('project_id').equals(projectId).toArray();
         setMeasurements(stored);
-      } catch (err) {
-        console.error("Takeoff Error: Local records unreachable.", err);
-      } finally {
-        setIsLoading(false);
-      }
+      } finally { setIsLoading(false); }
     };
-    loadData();
+    loadVault();
   }, [projectId]);
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -115,211 +107,136 @@ const ProjectTakeoffPage: React.FC<ProjectTakeoffPageProps> = ({ projectId, proj
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    const newPoints = [...currentPoints, { x, y }];
-    setCurrentPoints(newPoints);
-
-    if (activeTool === 'count') commitMeasurement(newPoints);
+    const nextPoints = [...currentPoints, { x, y }];
+    setCurrentPoints(nextPoints);
+    if (activeTool === 'count') commitMeasurement(nextPoints);
   };
 
   const commitMeasurement = async (points: Point[]) => {
     if (!db || !user) return;
     setSaveStatus('saving');
-
     const id = crypto.randomUUID();
-    const rawValue = points.length * scaleFactor; // Basic pixel-to-meter simulation
+    const rawVal = points.length * scaleFactor;
+    let finalVal = rawVal;
+    if (activeSection.includes('Concrete')) finalVal = rawVal * smmParams.depth;
+    if (activeSection.includes('Walling')) finalVal = rawVal * smmParams.height;
 
-    // Apply SMM Rules (m2 for area, m3 for concrete depth etc)
-    let calculatedValue = rawValue;
-    if (activeSection.includes('Concrete')) calculatedValue = rawValue * smmParams.depth;
-    if (activeSection.includes('Walling')) calculatedValue = rawValue * smmParams.height;
-
-    const newEntry: Measurement = {
-      id,
-      project_id: projectId,
-      label: `${activeSection} Item ${measurements.length + 1}`,
-      type: activeTool,
-      value: calculatedValue * (1 + smmParams.waste / 100) * (isDeductionMode ? -1 : 1),
+    const entry: Measurement = {
+      id, project_id: projectId, label: `${activeSection} Node #${measurements.length + 1}`,
+      type: activeTool, value: finalVal * (1 + smmParams.waste / 100) * (isDeductionMode ? -1 : 1),
       unit: activeSection.includes('Concrete') ? 'm³' : activeTool === 'area' ? 'm²' : 'm',
-      sectionCode: activeSection,
-      points,
-      timestamp: new Date().toISOString()
+      sectionCode: activeSection, points, timestamp: new Date().toISOString()
     };
 
     try {
-      // SAVE TO OFFICE DEVICE
-      await db.measurements.add(newEntry);
-
-      // QUEUE FOR OFFICE CLOUD
-      if (syncEngine?.queueChange) {
-        await syncEngine.queueChange('measurements', id, 'INSERT', newEntry);
-      }
-
-      setMeasurements([newEntry, ...measurements]);
+      await db.measurements.add(entry);
+      if (syncEngine) await syncEngine.queueChange('measurements', id, 'INSERT', entry);
+      setMeasurements([entry, ...measurements]);
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
-    } catch (err) {
-      console.error("Critical: Measurement save failed:", err);
-      setSaveStatus('idle');
-    }
-
+    } catch (e) { setSaveStatus('idle'); }
     setCurrentPoints([]);
     if (activeTool !== 'count') setIsMeasuring(false);
   };
 
   return (
     <div className={`flex flex-col h-screen w-full overflow-hidden transition-colors duration-500
-      ${theme === 'dark' ? 'bg-[#09090b] text-zinc-100' : 'bg-zinc-50 text-zinc-900'}`}>
+      ${theme === 'dark' ? 'bg-[#050505] text-zinc-100' : 'bg-zinc-100 text-zinc-900'}`}>
 
-      {/* 1. MASTER WORKSPACE HEADER */}
-      <header className={`h-20 flex items-center justify-between px-6 border-b shrink-0 z-30 backdrop-blur-md
-        ${theme === 'dark' ? 'bg-[#09090b]/90 border-zinc-800/60' : 'bg-white/90 border-zinc-200 shadow-sm'}`}>
-
+      {/* 1. TOP COMMAND BAR */}
+      <header className={`h-20 flex items-center justify-between px-6 border-b shrink-0 z-40 backdrop-blur-2xl
+        ${theme === 'dark' ? 'bg-black/60 border-zinc-800' : 'bg-white/90 border-zinc-200 shadow-sm'}`}>
+        
         <div className="flex items-center gap-6">
-          <button onClick={onBack} className="p-3 rounded-xl hover:bg-zinc-800 text-zinc-500 transition-all active:scale-90">
+          <button onClick={onBack} className="p-3 rounded-xl border border-zinc-800 hover:bg-zinc-800 text-zinc-500 transition-all active:scale-90">
             <ArrowLeft size={20} />
           </button>
-
           <div className="text-left">
-            <p className="text-[9px] font-black uppercase text-amber-500 tracking-[0.2em] leading-none mb-1 italic">
-              Project Workspace
-            </p>
-            <h2 className="text-sm font-black uppercase tracking-tight leading-none truncate max-w-200px]">
-              {projectName}
-            </h2>
+            <p className="text-[9px] font-black uppercase text-amber-500 tracking-[0.2em] leading-none mb-1">Technical Workspace</p>
+            <h2 className="text-sm font-black uppercase tracking-tight leading-none truncate max-w-200px]">{projectName}</h2>
           </div>
-
-          <div className="h-8 w-px bg-zinc-800 hidden md:block" />
-
-          {/* WORKSPACE TOGGLE */}
-          <div className="hidden md:flex bg-zinc-950 p-1 rounded-2xl border border-zinc-800">
-            <button
-              onClick={() => setActiveWorkspace('takeoff')}
-              className={`px-6 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2
-                ${activeWorkspace === 'takeoff' ? 'bg-amber-500 text-black shadow-lg' : 'text-zinc-500 hover:text-zinc-300'}`}
-            >
-              <Layout size={12} /> Takeoff Mode
-            </button>
-            <button
-              onClick={() => setActiveWorkspace('reports')}
-              className={`px-6 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2
-                ${activeWorkspace === 'reports' ? 'bg-amber-500 text-black shadow-lg' : 'text-zinc-500 hover:text-zinc-300'}`}
-            >
-              <FileText size={12} /> Report Mode
-            </button>
+          <div className="hidden md:flex bg-zinc-950/40 p-1.5 rounded-2xl border border-zinc-800/60 ml-4">
+            <button onClick={() => setActiveWorkspace('takeoff')} className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all ${activeWorkspace === 'takeoff' ? 'bg-amber-500 text-black shadow-lg' : 'text-zinc-500 hover:text-zinc-200'}`}>Takeoff</button>
+            <button onClick={() => setActiveWorkspace('reports')} className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all ${activeWorkspace === 'reports' ? 'bg-amber-500 text-black shadow-lg' : 'text-zinc-500 hover:text-zinc-200'}`}>Reports</button>
           </div>
         </div>
 
-        {/* STATUS & ACTIONS */}
         <div className="flex items-center gap-4">
-          <div className={`px-4 py-2 rounded-full border flex items-center gap-3 transition-all
-            ${isOnline ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-500' : 'bg-amber-500/5 border-amber-500/20 text-amber-500'}`}>
-            {isOnline ? <Wifi size={12} /> : <WifiOff size={12} />}
-            <span className="text-[8px] font-black uppercase tracking-widest">
-              {isOnline ? 'Office Online' : 'Device Storage Active'}
-            </span>
+          <div className={`px-4 py-2.5 rounded-2xl border flex items-center gap-3 transition-all ${isOnline ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-500' : 'bg-rose-500/10 border-rose-500/20 text-rose-500 animate-pulse'}`}>
+            {isOnline ? <Wifi size={14} /> : <WifiOff size={14} />}
+            <span className="text-[9px] font-black uppercase hidden sm:block">{isOnline ? 'Synced' : 'Offline'}</span>
           </div>
-
-          <div className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-[10px] uppercase transition-all
-            ${saveStatus === 'saved' ? 'bg-emerald-500 text-black' : 'bg-zinc-800 text-zinc-400'}`}>
-            {saveStatus === 'saving' ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
-            {saveStatus === 'saving' ? 'Recording...' : saveStatus === 'saved' ? 'Work Secured' : 'System Ready'}
+          <div className={`flex items-center gap-3 px-6 py-2.5 rounded-2xl border font-black text-[10px] uppercase shadow-xl ${saveStatus === 'saved' ? 'bg-emerald-500 border-emerald-600 text-black' : 'bg-zinc-900 border-zinc-800 text-zinc-500'}`}>
+            {saveStatus === 'saving' ? <Loader2 size={14} className="animate-spin" /> : <ShieldCheck size={14} />}
+            <span>{saveStatus === 'saving' ? 'Vaulting...' : saveStatus === 'saved' ? 'Secured' : 'Armed'}</span>
           </div>
         </div>
       </header>
 
       {/* 2. DYNAMIC WORKSPACE CONTENT */}
       <div className="flex-1 flex overflow-hidden relative">
-
         {activeWorkspace === 'takeoff' ? (
           <>
-            {/* TAKEOFF SIDEBAR (LEFT): Tools & Scale */}
-            <div className={`relative transition-all duration-500 border-r z-20 ${leftSidebarOpen ? 'w-80' : 'w-0'} bg-zinc-950/80 backdrop-blur-xl`}>
-              <div className={`w-80 h-full flex flex-col overflow-y-auto custom-scrollbar ${!leftSidebarOpen && 'invisible opacity-0'}`}>
-                <SMMWorkSections
-                  activeSection={activeSection}
-                  setActiveSection={setActiveSection}
-                  activeTool={activeTool}
-                  setActiveTool={setActiveTool}
-                />
-                <div className="p-6 border-t border-zinc-800/40 bg-zinc-900/10 mt-auto">
+            {/* LEFT SIDEBAR: TOOLS */}
+            <div className={`relative transition-all duration-500 border-r z-30 ${leftOpen ? 'w-80' : 'w-0'} bg-zinc-950/60 backdrop-blur-3xl`}>
+              <div className={`w-80 h-full flex flex-col overflow-y-auto custom-scrollbar ${!leftOpen && 'invisible opacity-0'}`}>
+                <SMMWorkSections activeSection={activeSection} setActiveSection={setActiveSection} activeTool={activeTool} setActiveTool={setActiveTool} />
+                <div className="p-8 border-t border-zinc-800/40 bg-white/1 mt-auto">
                   <CalibrationNode currentScale={scaleFactor} onScaleChange={setScaleFactor} unit={unit} onUnitToggle={setUnit} />
                 </div>
               </div>
-              <button onClick={() => setLeftSidebarOpen(!leftSidebarOpen)} className="absolute top-1/2 -right-3 -translate-y-1/2 p-1.5 rounded-full border bg-zinc-950 border-zinc-800 text-zinc-500 z-50">
-                {leftSidebarOpen ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
+              <button onClick={() => setLeftOpen(!leftOpen)} className="absolute top-1/2 -right-3.5 -translate-y-1/2 w-7 h-7 rounded-full border bg-zinc-950 border-zinc-800 text-zinc-500 z-50 flex items-center justify-center hover:text-amber-500 shadow-2xl">
+                {leftOpen ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
               </button>
             </div>
 
-            {/* VIEWPORT (CENTER) */}
-            <main className="flex-1 relative bg-black flex flex-col overflow-hidden">
+            {/* VIEWPORT: THE CANVAS */}
+            <main className="flex-1 relative bg-black overflow-hidden flex flex-col">
               <BlueprintViewport
                 pdfDoc={pdfDoc} setPdfDoc={setPdfDoc} pageNum={1} scale={scale} setScale={setScale}
                 isMeasuring={isMeasuring} setIsMeasuring={setIsMeasuring} activeTool={activeTool}
                 currentPoints={currentPoints} setCurrentPoints={setCurrentPoints} measurements={measurements}
                 onCanvasClick={handleCanvasClick}
               />
+              {isMeasuring && (
+                <div className="absolute top-8 left-1/2 -translate-x-1/2 px-8 py-4 bg-amber-500 rounded-2xl border-2 border-amber-600 shadow-2xl animate-in slide-in-from-top-4">
+                  <p className="text-[11px] font-black uppercase tracking-widest text-black flex items-center gap-3">
+                    <Zap size={16} className="fill-current animate-pulse" /> Define {activeTool} on drawing
+                  </p>
+                </div>
+              )}
             </main>
 
-            {/* TAKEOFF SIDEBAR (RIGHT): Ledger & Parameters */}
-            <div className={`relative transition-all duration-500 border-l z-20 ${rightSidebarOpen ? 'w-96' : 'w-0'} bg-zinc-950/80 backdrop-blur-xl`}>
-              <div className={`w-96 h-full flex flex-col overflow-hidden ${!rightSidebarOpen && 'invisible opacity-0'}`}>
+            {/* RIGHT SIDEBAR: LEDGER */}
+            <div className={`relative transition-all duration-500 border-l z-30 ${rightOpen ? 'w-96' : 'w-0'} bg-zinc-950/60 backdrop-blur-3xl`}>
+              <div className={`w-96 h-full flex flex-col overflow-hidden ${!rightOpen && 'invisible opacity-0'}`}>
                 <div className="flex-1 overflow-hidden">
-                  <GeometricRegistry
-                    measurements={measurements}
-                    onDelete={(id) => setMeasurements(measurements.filter(m => m.id !== id))}
-                    activeSection={activeSection}
-                  />
+                  <GeometricRegistry measurements={measurements} onDelete={(id) => setMeasurements(measurements.filter(m => m.id !== id))} activeSection={activeSection} />
                 </div>
-                <div className="p-6 border-t border-zinc-800/40 bg-black/20">
-                  <SMMTemplates
-                    activeSection={activeSection}
-                    isDeductionMode={isDeductionMode}
-                    setIsDeductionMode={setIsDeductionMode}
-                    onParameterChange={setSmmParams}
-                  />
+                <div className="p-8 border-t border-zinc-800/40 bg-white/1">
+                  <SMMTemplates activeSection={activeSection} isDeductionMode={isDeductionMode} setIsDeductionMode={setIsDeductionMode} onParameterChange={setSmmParams} />
                 </div>
               </div>
-              <button onClick={() => setRightSidebarOpen(!rightSidebarOpen)} className="absolute top-1/2 -left-3 -translate-y-1/2 p-1.5 rounded-full border bg-zinc-950 border-zinc-800 text-zinc-500 z-50">
-                {rightSidebarOpen ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+              <button onClick={() => setRightOpen(!rightOpen)} className="absolute top-1/2 -left-3.5 -translate-y-1/2 w-7 h-7 rounded-full border bg-zinc-950 border-zinc-800 text-zinc-500 z-50 flex items-center justify-center hover:text-amber-500 shadow-2xl">
+                {rightOpen ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
               </button>
             </div>
           </>
         ) : (
-          /* REPORT MODE: Integrated BoQ, Certificate, and Sharing */
-          <div className="flex-1 flex flex-col overflow-y-auto custom-scrollbar bg-zinc-950 p-6 sm:p-12 space-y-12 animate-in slide-in-from-bottom-4">
-
-            <div className="grid lg:grid-cols-3 gap-10">
-              {/* 1. The Professional BoQ Output */}
-              <div className="lg:col-span-2">
-                <BoQGenerator projectId={projectId} projectName={projectName} />
+          /* REPORT MODE: CENTERED BREATHING ROOM */
+          <div className="flex-1 flex flex-col overflow-y-auto custom-scrollbar bg-[#050505] p-6 sm:p-14 space-y-20 animate-in slide-in-from-bottom-6">
+            <div className="max-w-7xl mx-auto w-full grid lg:grid-cols-3 gap-16">
+              <div className="lg:col-span-2 space-y-8">
+                 <div className="flex items-center gap-4 px-6 opacity-40"><Maximize2 size={16} /><h4 className="text-[10px] font-black uppercase tracking-widest">Bill Calculation Engine</h4></div>
+                 <BoQGenerator projectId={projectId} projectName={projectName} />
               </div>
-
-              {/* 2. Certificate and Instant Sharing */}
-              <div className="space-y-10">
-                <div className="space-y-4 text-left px-4">
-                  <h4 className="text-[10px] font-black uppercase tracking-widest text-amber-500 italic">Instant Submission</h4>
-                  <p className="text-xl font-black text-white uppercase tracking-tighter">Office Share</p>
-                </div>
-                <WhatsAppExport projectName={projectName} data={{
-                  certNumber: "IPC/001",
-                  valuationDate: new Date().toLocaleDateString(),
-                  contractSum: 0,
-                  workExecuted: measurements.reduce((acc, m) => acc + m.value, 0) * 1000, // Simulated rate multiplier
-                  materialsOnSite: 0,
-                  previousCertified: 0,
-                  retentionPercent: 10
-                }} />
-
-                <div className="space-y-4 text-left px-4 pt-10 border-t border-zinc-800/40">
-                  <h4 className="text-[10px] font-black uppercase tracking-widest text-emerald-500 italic">Valuation Registry</h4>
-                  <p className="text-xl font-black text-white uppercase tracking-tighter">Draft Certificate</p>
-                </div>
+              <div className="space-y-12">
+                <WhatsAppExport projectName={projectName} data={{ certNumber: "IPC/001", valuationDate: new Date().toLocaleDateString(), contractSum: 0, workExecuted: measurements.reduce((acc, m) => acc + (Math.abs(m.value) * 1000), 0), materialsOnSite: 0, previousCertified: 0, retentionPercent: 10 }} />
                 <CertificateGenerator projectId={projectId} projectName={projectName} />
               </div>
             </div>
-
-            <footer className="py-20 text-center opacity-10">
-              <p className="text-[10px] font-black uppercase tracking-[0.6em]">Professional Report Export Module v2.0</p>
+            <footer className="pt-32 pb-10 text-center opacity-10">
+               <p className="text-[10px] font-black uppercase tracking-[1em]">END OF TECHNICAL RECORD</p>
             </footer>
           </div>
         )}
