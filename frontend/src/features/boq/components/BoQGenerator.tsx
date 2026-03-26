@@ -50,7 +50,7 @@ interface BoQGeneratorProps {
 }
 
 const BoQGenerator: React.FC<BoQGeneratorProps> = ({ projectId, projectName, initialItems = [] }) => {
-  const { theme } = useAuth();
+  useAuth();
   const [items, setItems] = useState<BoQItem[]>(initialItems);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -103,8 +103,7 @@ const BoQGenerator: React.FC<BoQGeneratorProps> = ({ projectId, projectName, ini
       {/* 1. Valuation Summary Header */}
       <header className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 shrink-0">
         <div className="text-left space-y-2">
-          <h2 className={`text-4xl sm:text-6xl font-black uppercase italic tracking-tighter leading-none
-            ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
+          <h2 className="theme-title text-4xl sm:text-6xl font-black uppercase italic tracking-tighter leading-none">
             Bill of <span className="text-amber-500">Quantities.</span>
           </h2>
           <p className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-500 italic">
@@ -113,8 +112,7 @@ const BoQGenerator: React.FC<BoQGeneratorProps> = ({ projectId, projectName, ini
         </div>
 
         <div className="flex flex-wrap gap-4">
-          <button className={`flex items-center gap-3 px-8 py-5 rounded-3xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95
-            ${theme === 'dark' ? 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'}`}>
+          <button className="theme-button-muted theme-muted flex items-center gap-3 px-8 py-5 rounded-3xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95">
             <Printer size={16} /> Print Draft
           </button>
           <button className="flex items-center gap-3 px-10 py-5 bg-amber-500 text-black rounded-3xl font-black uppercase text-[10px] tracking-widest shadow-2xl shadow-amber-500/20 hover:bg-amber-400 active:scale-95 transition-all">
@@ -124,8 +122,7 @@ const BoQGenerator: React.FC<BoQGeneratorProps> = ({ projectId, projectName, ini
       </header>
 
       {/* 2. Professional BoQ Ledger Table */}
-      <div className={`flex-1 rounded-[3.5rem] border backdrop-blur-3xl overflow-hidden flex flex-col transition-all duration-500
-        ${theme === 'dark' ? 'bg-zinc-900/20 border-zinc-800 shadow-2xl shadow-black' : 'bg-white border-zinc-200 shadow-xl'}`}>
+      <div className="theme-surface-overlay flex-1 rounded-[3.5rem] border backdrop-blur-3xl overflow-hidden flex flex-col transition-all duration-500">
         
         {isLoading ? (
           <div className="flex-1 flex flex-col items-center justify-center p-20 opacity-20">
@@ -135,7 +132,7 @@ const BoQGenerator: React.FC<BoQGeneratorProps> = ({ projectId, projectName, ini
         ) : (
           <div className="flex-1 overflow-auto custom-scrollbar">
             <table className="w-full text-left border-collapse">
-              <thead className={`sticky top-0 z-10 border-b ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-zinc-50 border-zinc-200'}`}>
+              <thead className="theme-surface-inset theme-divider sticky top-0 z-10 border-b">
                 <tr className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 italic">
                   <th className="p-10">Item Code</th>
                   <th className="p-10">Description of Works</th>
@@ -145,7 +142,7 @@ const BoQGenerator: React.FC<BoQGeneratorProps> = ({ projectId, projectName, ini
                   <th className="p-10 text-right">Amount (KES)</th>
                 </tr>
               </thead>
-              <tbody className={`divide-y ${theme === 'dark' ? 'divide-zinc-800/40' : 'divide-zinc-200'}`}>
+              <tbody className="divide-y divide-[color:var(--app-divider)]">
                 {items.length > 0 ? items.map((item) => (
                   <tr key={item.id} className="group hover:bg-amber-500/5 transition-colors">
                     <td className="p-10">
@@ -154,19 +151,17 @@ const BoQGenerator: React.FC<BoQGeneratorProps> = ({ projectId, projectName, ini
                       </span>
                     </td>
                     <td className="p-10 max-w-xl">
-                      <p className={`text-sm font-bold uppercase tracking-tight leading-relaxed group-hover:text-amber-500 transition-colors
-                        ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-700'}`}>
+                      <p className="theme-subtle text-sm font-bold uppercase tracking-tight leading-relaxed group-hover:text-amber-500 transition-colors">
                         {item.description}
                       </p>
                     </td>
                     <td className="p-8 text-center">
-                      <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase border
-                        ${theme === 'dark' ? 'bg-zinc-800 text-zinc-500 border-zinc-700' : 'bg-zinc-50 text-zinc-400 border-zinc-200'}`}>
+                      <span className="theme-surface-inset theme-muted px-3 py-1 rounded-lg text-[9px] font-black uppercase border">
                         {item.unit}
                       </span>
                     </td>
                     <td className="p-10 text-right">
-                      <p className={`text-xl font-black tracking-tighter leading-none ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
+                      <p className="theme-title text-xl font-black tracking-tighter leading-none">
                         {item.qty.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </p>
                     </td>
@@ -193,8 +188,7 @@ const BoQGenerator: React.FC<BoQGeneratorProps> = ({ projectId, projectName, ini
         )}
 
         {/* 3. Financial Summary Footer */}
-        <div className={`p-10 sm:p-14 border-t flex flex-col md:flex-row justify-end items-center gap-12
-          ${theme === 'dark' ? 'bg-zinc-950/60 border-zinc-800' : 'bg-zinc-50 border-zinc-200 shadow-inner'}`}>
+        <div className="theme-surface-inset theme-divider p-10 sm:p-14 border-t flex flex-col md:flex-row justify-end items-center gap-12 shadow-inner">
           
           <div className="w-full md:w-96 space-y-6">
             <div className="flex justify-between items-center opacity-40">
@@ -217,8 +211,7 @@ const BoQGenerator: React.FC<BoQGeneratorProps> = ({ projectId, projectName, ini
                 <p className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest leading-none text-left">Professional Valuation Finalized</p>
               </div>
               <div className="text-right">
-                <p className={`text-4xl sm:text-5xl font-black italic tracking-tighter group-hover:scale-105 transition-transform duration-500
-                  ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
+                <p className="theme-title text-4xl sm:text-5xl font-black italic tracking-tighter group-hover:scale-105 transition-transform duration-500">
                   KES {totals.total.toLocaleString()}
                 </p>
               </div>

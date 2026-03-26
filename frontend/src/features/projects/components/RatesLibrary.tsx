@@ -54,7 +54,7 @@ export interface RateItem {
 /** --- MAIN COMPONENT: PRICES & RATES LIBRARY --- **/
 
 const RatesLibrary: React.FC = () => {
-  const { theme } = useAuth();
+  useAuth();
   const [rateSearch, setRateSearch] = useState("");
   const [activeRateCategory, setActiveRateCategory] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
@@ -141,14 +141,12 @@ const RatesLibrary: React.FC = () => {
   }, [rateSearch, activeRateCategory, rates]);
 
   return (
-    <div className={`p-8 sm:p-12 rounded-[4rem] border backdrop-blur-3xl transition-all duration-500 relative
-      ${theme === 'dark' ? 'bg-zinc-900/20 border-zinc-800 shadow-2xl shadow-black/40' : 'bg-white border-zinc-200 shadow-xl'}`}>
+    <div className="theme-surface-overlay p-8 sm:p-12 rounded-[4rem] border backdrop-blur-3xl transition-all duration-500 relative">
       
       {/* 1. Price Book Header */}
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-10 mb-16 text-left">
         <div className="text-left space-y-1">
-          <h3 className={`text-4xl font-black uppercase italic tracking-tighter leading-none 
-            ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
+          <h3 className="theme-title text-4xl font-black uppercase italic tracking-tighter leading-none">
             Price Book<span className="text-amber-500">.</span>
           </h3>
           <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 mt-3 italic leading-none">
@@ -163,10 +161,7 @@ const RatesLibrary: React.FC = () => {
             placeholder="Search Item or SMM Code..." 
             value={rateSearch} 
             onChange={e => setRateSearch(e.target.value)}
-            className={`w-full pl-16 pr-8 py-6 rounded-3xl outline-none font-bold text-sm transition-all shadow-inner border
-              ${theme === 'dark' 
-                ? 'bg-zinc-950/60 border-zinc-800 text-white focus:border-amber-500/40' 
-                : 'bg-zinc-50 border-zinc-200 text-zinc-900 focus:border-amber-500/40'}`} 
+            className="theme-input w-full pl-16 pr-8 py-6 rounded-3xl outline-none font-bold text-sm transition-all shadow-inner border focus:border-amber-500/40" 
           />
         </div>
       </header>
@@ -185,9 +180,7 @@ const RatesLibrary: React.FC = () => {
             className={`flex items-center gap-3 px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border shrink-0
               ${activeRateCategory === cat.id 
                 ? 'bg-amber-500 text-black border-amber-500 shadow-2xl shadow-amber-500/10' 
-                : theme === 'dark' 
-                  ? 'bg-zinc-900/40 text-zinc-500 border-zinc-800 hover:border-zinc-500' 
-                  : 'bg-zinc-100 text-zinc-500 border-zinc-200 hover:border-zinc-400'}`}
+                : 'theme-surface-card theme-muted hover:border-zinc-500'}`}
           >
             <cat.icon size={14} />
             {cat.label}
@@ -204,26 +197,22 @@ const RatesLibrary: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
           {filteredRates.length > 0 ? filteredRates.map(r => (
-            <div key={r.id} className={`p-10 rounded-[3.5rem] border shadow-2xl group hover:border-amber-500/30 transition-all flex flex-col justify-between h-85 text-left
-              ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800' : 'bg-white border-zinc-100'}`}>
+            <div key={r.id} className="theme-surface-card p-10 rounded-[3.5rem] border shadow-2xl group hover:border-amber-500/30 transition-all flex flex-col justify-between h-85 text-left">
               
               <div className="flex justify-between items-start mb-10 text-left">
                 <div className="space-y-1 text-left">
-                  <span className={`px-3 py-1 rounded-lg text-[10px] font-mono font-black border transition-colors leading-none
-                    ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800 text-zinc-600 group-hover:text-amber-500' : 'bg-zinc-50 border-zinc-200 text-zinc-400 group-hover:text-amber-600'}`}>
+                  <span className="theme-surface-inset theme-muted px-3 py-1 rounded-lg text-[10px] font-mono font-black border transition-colors leading-none group-hover:text-amber-500">
                     {r.code}
                   </span>
                   <p className="text-[9px] font-black uppercase text-zinc-700 tracking-widest mt-2">{r.category}</p>
                 </div>
-                <div className={`p-4 rounded-3xl transition-all shadow-lg
-                  ${theme === 'dark' ? 'bg-zinc-800 text-zinc-600 group-hover:text-amber-500 group-hover:bg-amber-500/10' : 'bg-zinc-100 text-zinc-400 group-hover:text-amber-600 group-hover:bg-amber-500/5'}`}>
+                <div className="theme-button-muted theme-muted p-4 rounded-3xl transition-all shadow-lg group-hover:text-amber-500 group-hover:bg-amber-500/10">
                   {r.category === 'labor' ? <HardHat size={20}/> : r.category === 'plant' ? <Truck size={20}/> : <Package size={20}/>}
                 </div>
               </div>
 
               <div className="text-left flex-1">
-                <h4 className={`font-black text-xl uppercase tracking-tight mb-3 transition-colors leading-tight
-                  ${theme === 'dark' ? 'text-zinc-300 group-hover:text-white' : 'text-zinc-700 group-hover:text-zinc-900'}`}>
+                <h4 className="theme-subtle font-black text-xl uppercase tracking-tight mb-3 transition-colors leading-tight group-hover:text-[var(--app-fg)]">
                   {r.name}
                 </h4>
                 <p className="text-[11px] font-black text-zinc-600 uppercase tracking-widest leading-none italic">
@@ -231,10 +220,10 @@ const RatesLibrary: React.FC = () => {
                 </p>
               </div>
 
-              <div className={`pt-8 border-t flex justify-between items-center ${theme === 'dark' ? 'border-zinc-800/60' : 'border-zinc-100'}`}>
+              <div className="theme-divider pt-8 border-t flex justify-between items-center">
                 <div className="text-left">
                   <p className="text-[8px] font-black uppercase text-zinc-500 mb-1 leading-none tracking-widest text-left">Standard Rate</p>
-                  <span className={`text-3xl sm:text-4xl font-black italic tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
+                  <span className="theme-title text-3xl sm:text-4xl font-black italic tracking-tighter">
                     <span className="text-sm font-bold text-amber-500 mr-1 opacity-60 not-italic">KES</span>
                     {r.rate.toLocaleString()}
                   </span>
@@ -244,8 +233,7 @@ const RatesLibrary: React.FC = () => {
                 <div className="relative group/tooltip">
                   <button 
                     onClick={() => { setEditingRate(r); setNewRateValue(r.rate.toString()); }}
-                    className={`p-4 rounded-2xl transition-all shadow-xl active:scale-90
-                      ${theme === 'dark' ? 'bg-zinc-800 text-zinc-600 hover:text-amber-500' : 'bg-zinc-100 text-zinc-400 hover:text-amber-600'}`}
+                    className="theme-button-muted theme-muted p-4 rounded-2xl transition-all shadow-xl active:scale-90 hover:text-amber-500"
                   >
                     <Edit3 size={18}/>
                   </button>
@@ -270,8 +258,7 @@ const RatesLibrary: React.FC = () => {
       {/* --- EDIT RATE MODAL OVERLAY --- */}
       {editingRate && (
         <div className="fixed inset-0 z-100 flex items-center justify-center p-6 backdrop-blur-2xl bg-black/60 animate-in fade-in duration-300">
-           <div className={`w-full max-w-xl p-10 sm:p-14 rounded-[3.5rem] border shadow-2xl transition-all duration-500 transform animate-in zoom-in-95
-             ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-white' : 'bg-white border-zinc-200 text-zinc-900'}`}>
+           <div className="theme-surface-card w-full max-w-xl p-10 sm:p-14 rounded-[3.5rem] border shadow-2xl transition-all duration-500 transform animate-in zoom-in-95">
              
              <div className="flex justify-between items-start mb-12">
                 <div className="text-left space-y-2">
@@ -281,7 +268,7 @@ const RatesLibrary: React.FC = () => {
                    </div>
                    <h3 className="text-3xl font-black uppercase italic tracking-tighter leading-none">{editingRate.name}</h3>
                 </div>
-                <button onClick={() => setEditingRate(null)} className="p-4 rounded-2xl bg-zinc-950/40 text-zinc-500 hover:text-white transition-colors"><X size={20}/></button>
+                <button onClick={() => setEditingRate(null)} className="theme-surface-inset theme-muted p-4 rounded-2xl hover:text-[var(--app-fg)] transition-colors"><X size={20}/></button>
              </div>
 
              <div className="space-y-10">
@@ -294,8 +281,7 @@ const RatesLibrary: React.FC = () => {
                         type="number"
                         value={newRateValue}
                         onChange={e => setNewRateValue(e.target.value)}
-                        className={`w-full p-8 pl-24 rounded-4xl font-black text-4xl italic tracking-tighter outline-none border transition-all
-                          ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800 text-white focus:border-amber-500' : 'bg-zinc-50 border-zinc-200 text-zinc-900 focus:border-amber-500'}`}
+                        className="theme-input w-full p-8 pl-24 rounded-4xl font-black text-4xl italic tracking-tighter outline-none border transition-all focus:border-amber-500"
                       />
                    </div>
                    <p className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest ml-4">Rate is calculated per {editingRate.unit}.</p>
@@ -312,8 +298,7 @@ const RatesLibrary: React.FC = () => {
                    </button>
                    <button 
                      onClick={() => setEditingRate(null)}
-                     className={`px-10 rounded-4xl border font-black uppercase text-[10px] tracking-widest transition-all
-                       ${theme === 'dark' ? 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:text-white' : 'bg-zinc-100 border-zinc-200 text-zinc-500 hover:text-zinc-900'}`}
+                     className="theme-button-muted theme-muted px-10 rounded-4xl border font-black uppercase text-[10px] tracking-widest transition-all hover:text-[var(--app-fg)]"
                    >
                      Cancel
                    </button>

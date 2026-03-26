@@ -54,17 +54,14 @@ const SidebarLink: React.FC<{
   label: string; 
   active: boolean; 
   onClick: () => void; 
-  theme: 'light' | 'dark' 
-}> = ({ icon: Icon, label, active, onClick, theme }) => (
+}> = ({ icon: Icon, label, active, onClick }) => (
   <button 
     type="button"
     onClick={onClick} 
     className={`w-full flex items-center gap-5 p-4 lg:p-5 rounded-3xl transition-all duration-300 group relative 
       ${active 
         ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-xl shadow-amber-500/5' 
-        : theme === 'dark' 
-          ? 'text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800/30 border border-transparent' 
-          : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 border border-transparent'}`}
+        : 'theme-muted hover:text-[var(--app-fg)] hover:bg-zinc-500/5 border border-transparent'}`}
   >
     {active && (
       <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-amber-500 rounded-full blur-[1px]" />
@@ -101,10 +98,7 @@ const SidebarCommand: React.FC<SidebarCommandProps> = ({ activeView, setActiveVi
   ];
 
   return (
-    <aside className={`relative z-50 w-20 lg:w-72 flex flex-col transition-all duration-500 ease-in-out border-r shrink-0
-      ${theme === 'dark' 
-        ? 'bg-zinc-950/70 backdrop-blur-3xl border-zinc-800/40 shadow-2xl shadow-black' 
-        : 'bg-white border-zinc-200 shadow-xl'}`}>
+    <aside className="theme-surface-overlay relative z-50 w-20 lg:w-72 flex flex-col transition-all duration-500 ease-in-out border-r shrink-0 backdrop-blur-3xl">
       
       {/* 1. BRANDING: THE VAULT NODE */}
       <div className="p-6 lg:p-8 flex items-center gap-4 cursor-pointer group" onClick={() => setActiveView('projects')}>
@@ -112,7 +106,7 @@ const SidebarCommand: React.FC<SidebarCommandProps> = ({ activeView, setActiveVi
           <HardHat size={24} className="text-black" />
         </div>
         <div className="hidden lg:block text-left overflow-hidden">
-          <span className={`block font-black uppercase tracking-tighter italic text-xl leading-none ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
+          <span className="theme-title block font-black uppercase tracking-tighter italic text-xl leading-none">
             QS VAULT<span className="text-amber-500">.</span>
           </span>
           <span className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500 mt-1 block leading-none">
@@ -130,23 +124,21 @@ const SidebarCommand: React.FC<SidebarCommandProps> = ({ activeView, setActiveVi
             label={link.label}
             active={activeView === link.id}
             onClick={() => setActiveView(link.id)}
-            theme={theme}
           />
         ))}
       </nav>
 
       {/* 3. SESSION & IDENTITY CONTROLS */}
-      <div className={`p-4 border-t ${theme === 'dark' ? 'border-zinc-800/30' : 'border-zinc-200'}`}>
+      <div className="theme-divider p-4 border-t">
         <div 
           onClick={() => setActiveView('profile')}
-          className={`mb-4 hidden lg:flex items-center gap-3 p-3 rounded-2xl border cursor-pointer transition-all hover:border-amber-500/30
-          ${theme === 'dark' ? 'bg-zinc-500/5 border-zinc-500/10' : 'bg-zinc-50 border-zinc-100'}`}
+          className="theme-surface-inset mb-4 hidden lg:flex items-center gap-3 p-3 rounded-2xl border cursor-pointer transition-all hover:border-amber-500/30"
         >
           <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/20 flex items-center justify-center font-black text-[10px] text-amber-500 shrink-0 uppercase italic shadow-inner">
             {getInitials()}
           </div>
           <div className="overflow-hidden flex-1 text-left">
-            <p className={`text-[10px] font-black uppercase tracking-tight truncate leading-none ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
+            <p className="theme-title text-[10px] font-black uppercase tracking-tight truncate leading-none">
               {user?.user_metadata?.full_name?.split(' ')[0] || 'Surveyor'}
             </p>
             <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest mt-1 leading-none">Verified ID</p>
@@ -159,8 +151,7 @@ const SidebarCommand: React.FC<SidebarCommandProps> = ({ activeView, setActiveVi
         <button 
           type="button"
           onClick={signOut}
-          className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all group
-            ${theme === 'dark' ? 'text-zinc-500 hover:text-rose-500 hover:bg-rose-500/10' : 'text-zinc-500 hover:text-rose-600 hover:bg-rose-50'}`}
+          className="theme-muted w-full flex items-center gap-4 p-4 rounded-2xl transition-all group hover:text-rose-500 hover:bg-rose-500/10"
         >
           <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
           <span className="hidden lg:block text-[10px] font-black uppercase tracking-widest text-left leading-none">

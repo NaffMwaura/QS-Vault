@@ -74,7 +74,7 @@ resolveModules();
 /** --- MASTER DASHBOARD: CONSTRUCTION OS v2.0 --- **/
 
 const DashboardPage: React.FC = () => {
-  const { activeView, setActiveView, user, theme } = useAuth();
+  const { activeView, setActiveView, user } = useAuth();
   const navigate = useNavigate();
 
   const [projects, setProjects] = useState<any[]>([]);
@@ -155,7 +155,7 @@ const DashboardPage: React.FC = () => {
                   <div className="space-y-8">
                     <div className="px-4 border-l-4 border-amber-500">
                        <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-500 mb-2 italic">Active Infrastructure Registry</h4>
-                       <p className={`text-4xl font-black uppercase italic tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>Current Portfolio</p>
+                       <p className="theme-title text-4xl font-black uppercase italic tracking-tighter">Current Portfolio</p>
                     </div>
                     <VaultRegistry 
                       projects={projects} 
@@ -171,8 +171,7 @@ const DashboardPage: React.FC = () => {
 
                 {/* Dashboard Sidebar: Live Takeoff Feed */}
                 <div className="space-y-8 hidden lg:block">
-                  <div className={`p-8 rounded-[3rem] border transition-all duration-500
-                    ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800 shadow-black' : 'bg-white border-zinc-200 shadow-xl'}`}>
+                  <div className="theme-surface-card p-8 rounded-[3rem] border transition-all duration-500">
                     <div className="flex items-center gap-3 mb-8">
                       <Zap size={18} className="text-amber-500 animate-pulse" />
                       <h5 className="text-[11px] font-black uppercase tracking-widest text-zinc-500">Recent Takeoffs</h5>

@@ -1,1 +1,176 @@
 @import "tailwindcss";
+
+:root {
+  --app-bg: #f4f4f5;
+  --app-fg: #18181b;
+  --app-bg-soft: #fafafa;
+  --app-surface-card: #ffffff;
+  --app-surface-card-soft: #f9fafb;
+  --app-surface-inset: #fafafa;
+  --app-surface-overlay: rgba(255, 255, 255, 0.8);
+  --app-border: #e4e4e7;
+  --app-border-soft: rgba(228, 228, 231, 0.7);
+  --app-divider: rgba(228, 228, 231, 0.8);
+  --app-text-muted: #71717a;
+  --app-text-subtle: #52525b;
+  --app-nav-bg: rgba(255, 255, 255, 0.9);
+  --app-nav-border: rgba(228, 228, 231, 0.55);
+  --app-overlay: rgba(255, 255, 255, 0.95);
+  --app-glow-amber: rgba(245, 158, 11, 0.05);
+  --app-glow-neutral: rgba(113, 113, 122, 0.08);
+  --app-accent-surface: rgba(245, 158, 11, 0.05);
+  --app-accent-border: rgba(245, 158, 11, 0.1);
+  --app-hero-gradient: linear-gradient(to bottom, #18181b, #71717a);
+  --app-shadow-card: 0 20px 45px rgba(15, 23, 42, 0.08);
+  --app-shadow-card-soft: 0 8px 24px rgba(15, 23, 42, 0.06);
+  --app-shadow-nav: 0 18px 40px rgba(15, 23, 42, 0.08);
+  --app-avatar-neutral-bg: #27272a;
+  --app-avatar-neutral-border: #3f3f46;
+  --app-avatar-neutral-fg: #f59e0b;
+  --app-button-muted-bg: #e4e4e7;
+  --app-button-muted-fg: #52525b;
+  --app-button-muted-hover: #d4d4d8;
+  --app-grid-opacity: 0.03;
+}
+
+.dark {
+  --app-bg: #09090b;
+  --app-fg: #ffffff;
+  --app-bg-soft: rgba(24, 24, 27, 0.5);
+  --app-surface-card: rgba(24, 24, 27, 0.4);
+  --app-surface-card-soft: rgba(24, 24, 27, 0.6);
+  --app-surface-inset: #09090b;
+  --app-surface-overlay: rgba(9, 9, 11, 0.8);
+  --app-border: #27272a;
+  --app-border-soft: rgba(39, 39, 42, 0.5);
+  --app-divider: rgba(39, 39, 42, 0.75);
+  --app-text-muted: #a1a1aa;
+  --app-text-subtle: #d4d4d8;
+  --app-nav-bg: rgba(9, 9, 11, 0.9);
+  --app-nav-border: rgba(39, 39, 42, 0.5);
+  --app-overlay: rgba(9, 9, 11, 0.95);
+  --app-glow-amber: rgba(245, 158, 11, 0.1);
+  --app-glow-neutral: rgba(113, 113, 122, 0.1);
+  --app-accent-surface: rgba(245, 158, 11, 0.1);
+  --app-accent-border: rgba(245, 158, 11, 0.2);
+  --app-hero-gradient: linear-gradient(to bottom, #ffffff, #52525b);
+  --app-shadow-card: 0 24px 60px rgba(0, 0, 0, 0.45);
+  --app-shadow-card-soft: 0 10px 32px rgba(0, 0, 0, 0.22);
+  --app-shadow-nav: 0 24px 60px rgba(0, 0, 0, 0.35);
+  --app-button-muted-bg: #18181b;
+  --app-button-muted-fg: #a1a1aa;
+  --app-button-muted-hover: #27272a;
+  --app-grid-opacity: 0.07;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  background-color: var(--app-bg);
+  color: var(--app-fg);
+}
+
+@layer utilities {
+  .theme-page {
+    background-color: var(--app-bg);
+    color: var(--app-fg);
+  }
+
+  .theme-surface-muted {
+    background-color: var(--app-bg-soft);
+  }
+
+  .theme-surface-card {
+    background-color: var(--app-surface-card);
+    border-color: var(--app-border);
+    box-shadow: var(--app-shadow-card);
+  }
+
+  .theme-surface-card-soft {
+    background-color: var(--app-surface-card-soft);
+    border-color: var(--app-border);
+    box-shadow: var(--app-shadow-card-soft);
+  }
+
+  .theme-surface-overlay {
+    background-color: var(--app-surface-overlay);
+    border-color: var(--app-border-soft);
+  }
+
+  .theme-surface-inset {
+    background-color: var(--app-surface-inset);
+    border-color: var(--app-border);
+  }
+
+  .theme-surface-accent {
+    background-color: var(--app-accent-surface);
+    border-color: var(--app-accent-border);
+  }
+
+  .theme-nav-solid {
+    background-color: var(--app-nav-bg);
+    border-color: var(--app-nav-border);
+    box-shadow: var(--app-shadow-nav);
+  }
+
+  .theme-overlay {
+    background-color: var(--app-overlay);
+  }
+
+  .theme-title {
+    color: var(--app-fg);
+  }
+
+  .theme-muted {
+    color: var(--app-text-muted);
+  }
+
+  .theme-subtle {
+    color: var(--app-text-subtle);
+  }
+
+  .theme-divider {
+    border-color: var(--app-divider);
+  }
+
+  .theme-hero-gradient {
+    background-image: var(--app-hero-gradient);
+  }
+
+  .theme-glow-amber {
+    background-color: var(--app-glow-amber);
+  }
+
+  .theme-glow-neutral {
+    background-color: var(--app-glow-neutral);
+  }
+
+  .theme-avatar-neutral {
+    background-color: var(--app-avatar-neutral-bg);
+    border-color: var(--app-avatar-neutral-border);
+    color: var(--app-avatar-neutral-fg);
+  }
+
+  .theme-button-muted {
+    background-color: var(--app-button-muted-bg);
+    color: var(--app-button-muted-fg);
+  }
+
+  .theme-button-muted:hover {
+    background-color: var(--app-button-muted-hover);
+  }
+
+  .theme-input {
+    background-color: var(--app-surface-inset);
+    border-color: var(--app-border);
+    color: var(--app-fg);
+  }
+
+  .theme-grid-overlay {
+    opacity: var(--app-grid-opacity);
+  }
+}

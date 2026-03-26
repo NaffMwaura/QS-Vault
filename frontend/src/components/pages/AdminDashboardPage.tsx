@@ -65,9 +65,8 @@ const resolveModules = async () => {
 
 resolveModules();
 
-const StatCard = ({ label, value, icon: Icon, color, theme }: any) => (
-  <div className={`p-8 rounded-[2.5rem] border backdrop-blur-2xl transition-all duration-500 hover:scale-[1.02] group
-    ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800/60 shadow-black' : 'bg-white border-zinc-200 shadow-sm shadow-zinc-200/50'}`}>
+const StatCard = ({ label, value, icon: Icon, color }: any) => (
+  <div className="theme-surface-overlay p-8 rounded-[2.5rem] border backdrop-blur-2xl transition-all duration-500 hover:scale-[1.02] group">
     <div className="flex justify-between items-start mb-6 text-left">
       <div className={`p-4 rounded-2xl ${color} bg-opacity-10 border border-current border-opacity-20 group-hover:scale-110 transition-transform`}>
         <Icon size={24} />
@@ -79,7 +78,7 @@ const StatCard = ({ label, value, icon: Icon, color, theme }: any) => (
 );
 
 const AdminDashboardPage: React.FC = () => {
-  const { theme, isOnline, role, isLoading: authLoading, activeView, setActiveView, signOut } = useAuth();
+  const { isOnline, role, isLoading: authLoading, activeView, setActiveView, signOut } = useAuth();
   const navigate = useNavigate();
 
   // Admin Sub-Views (Registry vs Inventory)
@@ -204,10 +203,10 @@ const AdminDashboardPage: React.FC = () => {
           <div className="space-y-10 animate-in fade-in duration-500">
             {/* PLATFORM STATS */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatCard label="Authorized Surveyors" value={stats.totalUsers} icon={Users} color="text-blue-500" theme={theme} />
-              <StatCard label="Global Projects" value={stats.totalProjects} icon={Database} color="text-amber-500" theme={theme} />
-              <StatCard label="Total Takeoffs" value={stats.totalMeasurements} icon={TrendingUp} color="text-emerald-500" theme={theme} />
-              <StatCard label="Cloud Status" value={isOnline ? 'Active' : 'Offline'} icon={ShieldCheck} color="text-rose-500" theme={theme} />
+              <StatCard label="Authorized Surveyors" value={stats.totalUsers} icon={Users} color="text-blue-500" />
+              <StatCard label="Global Projects" value={stats.totalProjects} icon={Database} color="text-amber-500" />
+              <StatCard label="Total Takeoffs" value={stats.totalMeasurements} icon={TrendingUp} color="text-emerald-500" />
+              <StatCard label="Cloud Status" value={isOnline ? 'Active' : 'Offline'} icon={ShieldCheck} color="text-rose-500" />
             </div>
 
             {/* ADMIN TABS */}
@@ -232,8 +231,7 @@ const AdminDashboardPage: React.FC = () => {
             </div>
 
             {/* MASTER REGISTRY / INVENTORY TABLE */}
-            <div className={`rounded-[3.5rem] border backdrop-blur-3xl overflow-hidden transition-all duration-500
-              ${theme === 'dark' ? 'bg-zinc-900/30 border-zinc-800 shadow-black' : 'bg-white border-zinc-200 shadow-xl'}`}>
+            <div className="theme-surface-overlay rounded-[3.5rem] border backdrop-blur-3xl overflow-hidden transition-all duration-500">
 
               <div className="p-8 sm:p-12 border-b border-zinc-800/30 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white/2">
                 <div className="text-left">
@@ -248,8 +246,7 @@ const AdminDashboardPage: React.FC = () => {
                   <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-amber-500 transition-colors" size={18} />
                   <input
                     type="text" placeholder="Search registry..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                    className={`w-full pl-16 pr-8 py-5 rounded-2xl border outline-none font-bold text-xs transition-all
-                      ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800 text-white' : 'bg-zinc-50 border-zinc-200'}`}
+                    className="theme-input w-full pl-16 pr-8 py-5 rounded-2xl border outline-none font-bold text-xs transition-all"
                   />
                 </div>
               </div>
@@ -257,7 +254,7 @@ const AdminDashboardPage: React.FC = () => {
               <div className="overflow-x-auto custom-scrollbar">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className={`${theme === 'dark' ? 'bg-zinc-900/50 border-zinc-800' : 'bg-zinc-100 border-zinc-200'} border-b`}>
+                    <tr className="theme-surface-inset theme-divider border-b">
                       <th className="p-10 text-[10px] font-black uppercase text-zinc-500 italic text-left">Identification</th>
                       <th className="p-10 text-[10px] font-black uppercase text-zinc-500 italic text-left">Clearance / Stats</th>
                       <th className="p-10 text-[10px] font-black uppercase text-zinc-500 italic text-right">Actions</th>
@@ -309,7 +306,7 @@ const AdminDashboardPage: React.FC = () => {
                         <tr key={proj.id} className="group hover:bg-rose-500/5 transition-colors">
                           <td className="p-10 text-left">
                             <div className="flex flex-col text-left">
-                              <span className={`font-black text-xl uppercase tracking-tighter transition-colors group-hover:text-white ${theme === 'dark' ? 'text-zinc-200' : 'text-zinc-900'}`}>{proj.name}</span>
+                              <span className="theme-title font-black text-xl uppercase tracking-tighter transition-colors group-hover:text-[var(--app-fg)]">{proj.name}</span>
                               <span className="text-[9px] font-mono text-zinc-600 mt-1 uppercase leading-none">LOC: {proj.location || 'SITE_NODE'}</span>
                             </div>
                           </td>
@@ -364,7 +361,7 @@ const AdminDashboardPage: React.FC = () => {
 
               {/* SYSTEM OVERRIDES & AUDITS */}
               <div className="lg:col-span-2 space-y-10">
-                <div className={`p-10 rounded-[3.5rem] border ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800' : 'bg-white border-zinc-200 shadow-xl'} text-left`}>
+                <div className="theme-surface-card p-10 rounded-[3.5rem] border text-left">
                   <div className="flex items-center gap-3 mb-6">
                     <ShieldAlert size={20} className="text-rose-500" />
                     <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 text-left">Root System Overrides</h4>

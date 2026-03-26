@@ -66,7 +66,7 @@ interface ProjectTakeoffPageProps {
 }
 
 const ProjectTakeoffPage: React.FC<ProjectTakeoffPageProps> = ({ projectId, projectName, onBack }) => {
-  const { theme, user } = useAuth();
+  const { user } = useAuth();
 
   // Workspace States
   const [activeWorkspace, setActiveWorkspace] = useState<'takeoff' | 'reports'>('takeoff');
@@ -140,12 +140,10 @@ const ProjectTakeoffPage: React.FC<ProjectTakeoffPageProps> = ({ projectId, proj
   };
 
   return (
-    <div className={`flex flex-col h-screen w-full overflow-hidden transition-colors duration-500
-      ${theme === 'dark' ? 'bg-[#050505] text-zinc-100' : 'bg-zinc-100 text-zinc-900'}`}>
+    <div className="theme-page flex flex-col h-screen w-full overflow-hidden transition-colors duration-500">
 
       {/* 1. TOP COMMAND BAR */}
-      <header className={`h-20 flex items-center justify-between px-6 border-b shrink-0 z-40 backdrop-blur-2xl
-        ${theme === 'dark' ? 'bg-black/60 border-zinc-800' : 'bg-white/90 border-zinc-200 shadow-sm'}`}>
+      <header className="theme-surface-overlay h-20 flex items-center justify-between px-6 border-b shrink-0 z-40 backdrop-blur-2xl">
         
         <div className="flex items-center gap-6">
           <button onClick={onBack} className="p-3 rounded-xl border border-zinc-800 hover:bg-zinc-800 text-zinc-500 transition-all active:scale-90">

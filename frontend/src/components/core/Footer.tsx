@@ -2,19 +2,14 @@ import { HardHat } from "lucide-react";
 import { useAuth } from "../../features/auth/AuthContext";
 
 const Footer = () => {
-  const { theme } = useAuth();
+  useAuth();
   return (
-    <footer
-      className={`py-16 sm:py-32 text-center border-t transition-colors duration-500
-        ${theme === "dark" ? "bg-[#09090b] border-zinc-800" : "bg-zinc-50 border-zinc-200"}`}
-    >
+    <footer className="theme-surface-muted py-16 sm:py-32 text-center border-t border-[color:var(--app-border)] transition-colors duration-500">
       <div className="mb-10 flex items-center justify-center gap-3">
         <div className="bg-amber-500 p-2 rounded-xl shadow-xl shadow-amber-500/20">
           <HardHat size={24} className="text-black" />
         </div>
-        <span
-          className={`text-3xl sm:text-4xl font-black uppercase tracking-tighter italic ${theme === "dark" ? "text-white" : "text-zinc-900"}`}
-        >
+        <span className="theme-title text-3xl sm:text-4xl font-black uppercase tracking-tighter italic">
           QS VAULT<span className="text-amber-500">.</span>
         </span>
       </div>

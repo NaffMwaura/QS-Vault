@@ -74,7 +74,7 @@ const OfficeLoader = ({ isOnline }: { isOnline: boolean }) => (
 
 /** --- MAIN APP SHELL: CONSTRUCTION OS FRAME --- **/
 const AppShell: React.FC<AppShellProps> = ({ children }) => {
-  const { isLoading: authLoading, theme, isOnline, activeView, setActiveView, user } = useAuth();
+  const { isLoading: authLoading, isOnline, activeView, setActiveView, user } = useAuth();
   const location = useLocation();
 
   /** * PRO DEV OPTIMIZATION:
@@ -91,8 +91,7 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
   }
 
   return (
-    <div className={`min-h-screen flex font-sans transition-colors duration-500 overflow-hidden selection:bg-amber-500/30
-      ${theme === 'dark' ? 'bg-[#09090b] text-zinc-100' : 'bg-zinc-100 text-zinc-900'}`}>
+    <div className="theme-page min-h-screen flex font-sans transition-colors duration-500 overflow-hidden selection:bg-amber-500/30">
       
       {/* 1. SIDEBAR COMMAND CENTER */}
       <SidebarCommand 
@@ -112,12 +111,10 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
         <main className="flex-1 overflow-y-auto relative custom-scrollbar scroll-smooth">
           
           {/* Aesthetic High-End Background Fills */}
-          {theme === 'dark' && (
-            <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-30">
-              <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-amber-500/5 rounded-full blur-[140px] translate-x-1/4 -translate-y-1/4" />
-              <div className="absolute bottom-0 left-0 w-[30%] h-[30%] bg-zinc-500/5 rounded-full blur-[120px] -translate-x-1/4 translate-y-1/4" />
-            </div>
-          )}
+          <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-30">
+            <div className="theme-glow-amber absolute top-0 right-0 w-1/2 h-1/2 rounded-full blur-[140px] translate-x-1/4 -translate-y-1/4" />
+            <div className="theme-glow-neutral absolute bottom-0 left-0 w-[30%] h-[30%] rounded-full blur-[120px] -translate-x-1/4 translate-y-1/4" />
+          </div>
 
           <section className="relative z-10 p-6 sm:p-10 max-w-7xl mx-auto min-h-full flex flex-col">
             

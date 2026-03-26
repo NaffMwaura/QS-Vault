@@ -17,6 +17,7 @@ export interface AuthContextType {
   isLoading: boolean;
   signOut: () => Promise<void>;
   theme: Theme;
+  setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
   isOnline: boolean;
   activeView: DashboardView;
@@ -24,6 +25,16 @@ export interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const SYSTEM_THEME_QUERY = "(prefers-color-scheme: dark)";
+
+const getSystemTheme = (): Theme => {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return "dark";
+  }
+
+  return window.matchMedia(SYSTEM_THEME_QUERY).matches ? "dark" : "light";
+};
 
 /* ======================================================
     SYSTEM INITIALIZATION
@@ -86,10 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return (localStorage.getItem("qs_active_view") as DashboardView) || 'projects';
   });
 
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === 'undefined') return "dark";
-    return (localStorage.getItem("qs_theme") as Theme) || "dark";
-  });
+  const [theme, setTheme] = useState<Theme>(getSystemTheme);
 
   /* --------------------------------------------------
       CORE ACTIONS: IMMEDIATE RESPONSE SIGN-OUT
@@ -221,14 +229,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // 5. Persistence Handlers
   useEffect(() => {
     localStorage.setItem("qs_active_view", activeView);
-    localStorage.setItem("qs_theme", theme);
     document.documentElement.classList.remove("light", "dark");
     document.documentElement.classList.add(theme);
   }, [activeView, theme]);
 
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia(SYSTEM_THEME_QUERY);
+    const syncTheme = (event?: MediaQueryListEvent) => {
+      setTheme(event?.matches ?? mediaQuery.matches ? "dark" : "light");
+    };
+
+    syncTheme();
+
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", syncTheme);
+
+      return () => {
+        mediaQuery.removeEventListener("change", syncTheme);
+      };
+    }
+
+    mediaQuery.addListener(syncTheme);
+
+    return () => {
+      mediaQuery.removeListener(syncTheme);
+    };
+  }, []);
+
   const value = useMemo(() => ({ 
     session, user, role, isLoading, signOut, 
-    theme, toggleTheme: () => setTheme(t => t === 'light' ? 'dark' : 'light'), 
+    theme, setTheme, toggleTheme: () => setTheme(t => t === 'light' ? 'dark' : 'light'), 
     isOnline, activeView, setActiveView
   }), [session, user, role, isLoading, theme, isOnline, activeView, signOut]);
 

@@ -43,7 +43,7 @@ interface SiteDiaryEngineProps {
 }
 
 const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId }) => {
-  const { theme } = useAuth();
+  useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
@@ -148,8 +148,7 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId }) => {
       
       {/* 1. MAIN ENTRY FORM */}
       <div className="lg:col-span-2 space-y-8">
-        <div className={`p-8 sm:p-12 rounded-[3.5rem] border backdrop-blur-3xl shadow-2xl transition-all duration-500
-          ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800' : 'bg-white border-zinc-200'}`}>
+        <div className="theme-surface-overlay p-8 sm:p-12 rounded-[3.5rem] border backdrop-blur-3xl shadow-2xl transition-all duration-500">
           
           <div className="flex justify-between items-start mb-12">
             <div className="space-y-2">
@@ -183,7 +182,7 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId }) => {
                     className={`flex flex-col items-center gap-4 p-8 rounded-4xl border transition-all duration-300
                       ${diaryData.weather === opt.id 
                         ? 'bg-amber-500 border-amber-500 text-black shadow-xl' 
-                        : 'bg-zinc-950/40 border-zinc-800 text-zinc-600 hover:border-zinc-600'}`}
+                        : 'theme-surface-inset theme-muted hover:border-zinc-600'}`}
                   >
                     <opt.icon size={28} />
                     <span className="text-[10px] font-black uppercase tracking-widest">{opt.label}</span>
@@ -202,7 +201,7 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId }) => {
                   placeholder="Enter total headcount..."
                   value={diaryData.headcount || ''}
                   onChange={(e) => setDiaryData({...diaryData, headcount: parseInt(e.target.value) || 0})}
-                  className="w-full p-8 pl-20 rounded-2rem] bg-zinc-950/60 border border-zinc-800 text-white outline-none focus:border-amber-500/50 transition-all font-black text-3xl italic tracking-tighter"
+                  className="theme-input w-full p-8 pl-20 rounded-2rem] border outline-none focus:border-amber-500/50 transition-all font-black text-3xl italic tracking-tighter"
                 />
               </div>
             </div>
@@ -215,7 +214,7 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId }) => {
                 placeholder="List the main tasks completed or any delays experienced..."
                 value={diaryData.progress_summary}
                 onChange={(e) => setDiaryData({...diaryData, progress_summary: e.target.value})}
-                className="w-full p-10 rounded-[2.5rem] bg-zinc-950/60 border border-zinc-800 text-zinc-300 outline-none focus:border-amber-500/50 transition-all text-base leading-relaxed font-medium"
+                className="theme-input theme-muted w-full p-10 rounded-[2.5rem] border outline-none focus:border-amber-500/50 transition-all text-base leading-relaxed font-medium"
               />
             </div>
           </div>
@@ -235,8 +234,7 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId }) => {
 
       {/* 2. SITE PHOTOS & ALERTS */}
       <div className="space-y-8 flex flex-col">
-        <div className={`p-10 rounded-[3.5rem] border shadow-2xl flex flex-col flex-1
-          ${theme === 'dark' ? 'bg-zinc-900/20 border-zinc-800' : 'bg-white border-zinc-200'}`}>
+        <div className="theme-surface-overlay p-10 rounded-[3.5rem] border shadow-2xl flex flex-col flex-1">
           
           <div className="flex justify-between items-center mb-10">
             <div className="flex items-center gap-4 text-left">

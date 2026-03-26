@@ -3,7 +3,7 @@ import { ChevronRight } from "lucide-react";
 import { useTypewriter } from "../../hooks/useTypewriter";
 
 const Hero = ({ onGetStarted }: { onGetStarted: () => void }) => {
-  const { theme } = useAuth();
+  useAuth();
   const typewriterText = useTypewriter([
     "Precision Cost Control.",
     "Automated BoQ Generation.",
@@ -14,14 +14,10 @@ const Hero = ({ onGetStarted }: { onGetStarted: () => void }) => {
   return (
     <header className="relative min-h-[90vh] sm:min-h-screen flex items-center justify-center px-4 sm:px-6 pt-24 overflow-hidden">
       <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="theme-glow-amber absolute top-0 right-0 w-2/3 h-2/3 rounded-full blur-[140px] -translate-y-1/2 translate-x-1/4" />
+        <div className="theme-glow-neutral absolute bottom-0 left-0 w-1/2 h-1/2 rounded-full blur-[120px] translate-y-1/4 -translate-x-1/4" />
         <div
-          className={`absolute top-0 right-0 w-2/3 h-2/3 rounded-full blur-[140px] -translate-y-1/2 translate-x-1/4 ${theme === "dark" ? "bg-amber-500/10" : "bg-amber-500/5"}`}
-        />
-        <div
-          className={`absolute bottom-0 left-0 w-1/2 h-1/2 rounded-full blur-[120px] translate-y-1/4 -translate-x-1/4 ${theme === "dark" ? "bg-zinc-500/10" : "bg-zinc-500/5"}`}
-        />
-        <div
-          className={`absolute inset-0 ${theme === "dark" ? "opacity-[0.07]" : "opacity-[0.03]"}`}
+          className="theme-grid-overlay absolute inset-0"
           style={{
             backgroundImage: "radial-gradient(#f59e0b 1px, transparent 1px)",
             backgroundSize: "40px 40px",
@@ -30,23 +26,16 @@ const Hero = ({ onGetStarted }: { onGetStarted: () => void }) => {
       </div>
 
       <div className="relative z-10 max-w-6xl mx-auto text-center px-4">
-        <div
-          className={`inline-flex items-center gap-3 px-5 sm:px-6 py-2 sm:py-2.5 rounded-full border mb-8 sm:mb-12 shadow-inner
-              ${theme === "dark" ? "bg-amber-500/10 border-amber-500/20" : "bg-amber-500/5 border-amber-500/10"}`}
-        >
+        <div className="theme-surface-accent inline-flex items-center gap-3 px-5 sm:px-6 py-2 sm:py-2.5 rounded-full border mb-8 sm:mb-12 shadow-inner">
           <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
           <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.4em] text-amber-500 leading-none">
             The Professional standard for East African QS
           </span>
         </div>
 
-        <h1
-          className={`text-lg md:text-2xl lg:text-5xl font-black mb-8 sm:mb-10 leading-[0.9] sm:leading-[0.85] tracking-tighter transition-colors
-              ${theme === "dark" ? "text-white" : "text-zinc-900"}`}
-        >
+        <h1 className="theme-title text-lg md:text-2xl lg:text-5xl font-black mb-8 sm:mb-10 leading-[0.9] sm:leading-[0.85] tracking-tighter transition-colors">
           <span
-            className={`block min-h-[1.1em] text-transparent bg-clip-text transition-all duration-1000
-                ${theme === "dark" ? "bg-linear-to-b from-white to-zinc-600" : "bg-linear-to-b from-zinc-900 to-zinc-500"}`}
+            className="theme-hero-gradient block min-h-[1.1em] text-transparent bg-clip-text transition-all duration-1000"
           >
             {typewriterText}
             <span className="animate-pulse text-amber-500">_</span>
@@ -56,10 +45,7 @@ const Hero = ({ onGetStarted }: { onGetStarted: () => void }) => {
           </span>
         </h1>
 
-        <p
-          className={`text-base sm:text-xl md:text-2xl mb-12 sm:mb-16 max-w-4xl mx-auto font-medium leading-relaxed px-4
-              ${theme === "dark" ? "text-zinc-400" : "text-zinc-500"}`}
-        >
+        <p className="theme-muted text-base sm:text-xl md:text-2xl mb-12 sm:mb-16 max-w-4xl mx-auto font-medium leading-relaxed px-4">
           Eliminate errors in takeoffs and valuations. Fully compliant with
           local SMM standards, operating at peak performance even in the most
           remote site nodes.
@@ -76,14 +62,7 @@ const Hero = ({ onGetStarted }: { onGetStarted: () => void }) => {
               className="group-hover:translate-x-1 transition-transform"
             />
           </button>
-          <button
-            className={`w-full sm:w-auto px-5 lg:px-12 py-5  rounded-2xl sm:rounded-[2.5rem] text-xs font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] transition-all
-                ${
-                  theme === "dark"
-                    ? "border border-zinc-800 text-white hover:bg-zinc-900"
-                    : "border border-zinc-300 text-zinc-900 hover:bg-white shadow-sm"
-                }`}
-          >
+          <button className="theme-title theme-surface-inset w-full sm:w-auto px-5 lg:px-12 py-5 rounded-2xl sm:rounded-[2.5rem] text-xs font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] transition-all border hover:border-amber-500/30">
             View Technical Specs
           </button>
         </div>
