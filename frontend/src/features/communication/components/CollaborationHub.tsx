@@ -83,7 +83,7 @@ interface CollaborationHubProps {
 /** --- MAIN COMPONENT: COMMUNICATION NODE --- **/
 
 const CollaborationHub: React.FC<CollaborationHubProps> = ({ projectId }) => {
-  const { user, theme } = useAuth();
+  const { user } = useAuth();
   
   // Navigation & UI State
   const [activeTab, setActiveTab] = useState<'chat' | 'rfi'>('chat');
@@ -255,8 +255,7 @@ const CollaborationHub: React.FC<CollaborationHubProps> = ({ projectId }) => {
       </div>
 
       {/* 2. MAIN WORKSPACE: DYNAMIC CONTENT HUB */}
-      <div className={`flex-1 rounded-[3.5rem] border backdrop-blur-3xl overflow-hidden flex flex-col transition-all duration-500
-        ${theme === 'dark' ? 'bg-zinc-900/20 border-zinc-800 shadow-2xl shadow-black' : 'bg-white border-zinc-200 shadow-xl'}`}>
+      <div className="theme-surface-overlay flex-1 rounded-[3.5rem] border backdrop-blur-3xl overflow-hidden flex flex-col transition-all duration-500">
         
         {activeTab === 'chat' ? (
           <div className="flex-1 flex flex-col overflow-hidden">
@@ -434,8 +433,7 @@ const CollaborationHub: React.FC<CollaborationHubProps> = ({ projectId }) => {
         )}
 
         {/* SECURITY INTEGRITY FOOTER */}
-        <div className={`p-8 border-t flex items-center justify-between opacity-30
-          ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800' : 'bg-zinc-50 border-zinc-200'}`}>
+        <div className="theme-surface-inset theme-divider p-8 border-t flex items-center justify-between opacity-30">
           <div className="flex items-center gap-4">
             <AlertCircle size={16} className="text-amber-500" />
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 italic leading-none">End-to-End Vault Encryption Active</p>

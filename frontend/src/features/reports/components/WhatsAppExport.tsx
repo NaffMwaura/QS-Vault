@@ -61,7 +61,7 @@ interface WhatsAppExportProps {
 /** --- MAIN COMPONENT: QUICK PROJECT SHARE --- **/
 
 const WhatsAppExport: React.FC<WhatsAppExportProps> = ({ data, projectName }) => {
-  const { theme } = useAuth();
+  useAuth();
   const [copied, setCopied] = useState(false);
 
   /** * FINANCIAL HANDSHAKE
@@ -114,27 +114,24 @@ const WhatsAppExport: React.FC<WhatsAppExportProps> = ({ data, projectName }) =>
         {/* 1. Module Header */}
         <div className="flex justify-between items-start">
           <div className="text-left space-y-1">
-            <h4 className={`text-xl font-black uppercase italic tracking-tighter leading-none
-              ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
+            <h4 className="theme-title text-xl font-black uppercase italic tracking-tighter leading-none">
               Instant Update
             </h4>
             <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500">
               Site Transmittal Protocol
             </p>
           </div>
-          <div className={`p-3 rounded-2xl ${theme === 'dark' ? 'bg-zinc-950 border border-zinc-800' : 'bg-zinc-50 border border-zinc-100'}`}>
+          <div className="theme-surface-inset p-3 rounded-2xl border">
             <Smartphone size={18} className="text-amber-500" />
           </div>
         </div>
 
         {/* 2. Message Preview Area */}
-        <div className={`p-6 rounded-4xl border relative group text-left
-          ${theme === 'dark' ? 'bg-zinc-950/60 border-zinc-800 shadow-inner' : 'bg-zinc-50 border-zinc-200 shadow-inner'}`}>
+        <div className="theme-surface-inset p-6 rounded-4xl border relative group text-left shadow-inner">
           <div className="absolute top-4 right-4 opacity-20 group-hover:opacity-100 transition-opacity">
             <MessageSquare size={14} className="text-amber-500" />
           </div>
-          <p className={`text-[10px] font-mono leading-relaxed whitespace-pre-wrap
-            ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'}`}>
+          <p className="theme-muted text-[10px] font-mono leading-relaxed whitespace-pre-wrap">
             {generatePlainMessage()}
           </p>
         </div>
