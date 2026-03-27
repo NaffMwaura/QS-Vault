@@ -334,4 +334,102 @@ body {
     text-transform: uppercase;
     line-height: 1;
   }
+
+  .theme-public-section {
+    padding-top: clamp(4rem, 6vw, 6.5rem);
+    padding-bottom: clamp(4rem, 6vw, 6.5rem);
+  }
+
+  .theme-public-heading {
+    color: var(--app-fg);
+    font-size: clamp(2.3rem, 1.7rem + 2.7vw, 4.9rem);
+    font-weight: 900;
+    letter-spacing: -0.05em;
+    line-height: 0.98;
+  }
+
+  .theme-public-subheading {
+    color: var(--app-fg);
+    font-size: clamp(1.15rem, 1rem + 0.55vw, 1.65rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+  }
+
+  .theme-public-body {
+    color: var(--app-text-subtle);
+    font-size: clamp(1rem, 0.94rem + 0.2vw, 1.18rem);
+    line-height: 1.7;
+  }
+
+  .theme-public-meta {
+    color: var(--app-text-muted);
+    font-size: 0.83rem;
+    font-weight: 650;
+    line-height: 1.5;
+  }
+
+  .theme-public-label {
+    color: var(--app-text-subtle);
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    line-height: 1.1;
+  }
+
+  .theme-public-chip {
+    border-radius: 9999px;
+    padding: 0.52rem 0.9rem;
+    font-size: 0.72rem;
+    font-weight: 850;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  .theme-public-button {
+    min-height: 3rem;
+    border-radius: 1rem;
+    padding: 0.8rem 1.15rem;
+    font-size: 0.76rem;
+    font-weight: 850;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  .theme-public-button-lg {
+    min-height: 3.5rem;
+    border-radius: 1.2rem;
+    padding: 0.95rem 1.4rem;
+    font-size: 0.8rem;
+    font-weight: 850;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  .theme-public-icon-button {
+    height: 3rem;
+    width: 3rem;
+    border-radius: 1rem;
+  }
+
+  .theme-public-input {
+    min-height: 3.15rem;
+    border-radius: 1rem;
+    padding: 0.9rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .theme-public-panel {
+    background-color: color-mix(in srgb, var(--app-surface-overlay) 92%, transparent);
+    border-color: color-mix(in srgb, var(--app-border-soft) 88%, transparent);
+    box-shadow: var(--app-shadow-card);
+    border-radius: 2rem;
+    backdrop-filter: blur(28px);
+  }
 }
