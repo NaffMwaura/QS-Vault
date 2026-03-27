@@ -1,140 +1,208 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React from 'react';
-import { 
-  LayoutGrid, 
-  Database, 
-  Settings, 
-  HardHat, 
-  LogOut, 
-  Sun, 
-  Moon,
-  ClipboardList,
+import {
   Calendar,
+  ClipboardList,
+  Database,
+  HardHat,
+  LayoutGrid,
+  LogOut,
   MessageSquare,
+  Moon,
+  Settings,
+  Sun,
+  X,
 } from 'lucide-react';
 import { useAuth } from "../../features/auth/AuthContext";
 
-/** --- TYPES --- **/
-// Matches the DashboardView type from HUDHeader.tsx
-export type DashboardView = 'projects' | 'rates' | 'settings' | 'profile' | 'diary' | 'resources' | 'collab';
+export type DashboardView =
+  | 'projects'
+  | 'rates'
+  | 'settings'
+  | 'profile'
+  | 'diary'
+  | 'resources'
+  | 'collab';
 
 interface SidebarCommandProps {
   activeView: DashboardView;
   setActiveView: (view: DashboardView) => void;
+  mobileOpen?: boolean;
+  onClose?: () => void;
 }
 
-/** --- SUB-COMPONENT: SIDEBAR_LINK --- **/
-const SidebarLink: React.FC<{ 
-  icon: React.ElementType; 
-  label: string; 
-  active: boolean; 
-  onClick: () => void; 
-}> = ({ icon: Icon, label, active, onClick }) => (
-  <button 
+const navLinks = [
+  { id: 'projects' as DashboardView, label: 'Overview', icon: LayoutGrid },
+  { id: 'diary' as DashboardView, label: 'Daily Record', icon: ClipboardList },
+  { id: 'resources' as DashboardView, label: 'Schedule', icon: Calendar },
+  { id: 'collab' as DashboardView, label: 'Team Chat', icon: MessageSquare },
+  { id: 'rates' as DashboardView, label: 'Rates', icon: Database },
+  { id: 'settings' as DashboardView, label: 'Reports', icon: Settings },
+];
+
+const SidebarLink = ({
+  icon: Icon,
+  label,
+  active,
+  onClick,
+}: {
+  icon: React.ElementType;
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) => (
+  <button
     type="button"
-    onClick={onClick} 
-    className={`w-full flex items-center gap-5 p-4 lg:p-5 rounded-3xl transition-all duration-300 group relative 
-      ${active 
-        ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-xl shadow-amber-500/5' 
-        : 'theme-muted hover:text-[var(--app-fg)] hover:bg-zinc-500/5 border border-transparent'}`}
+    onClick={onClick}
+    className={`flex w-full items-center gap-4 rounded-2xl border px-4 py-3 text-left transition-all ${
+      active
+        ? 'bg-amber-500 text-black border-amber-500 shadow-lg shadow-amber-500/20'
+        : 'theme-muted border-transparent hover:bg-zinc-500/5 hover:text-[var(--app-fg)]'
+    }`}
   >
-    {active && (
-      <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-amber-500 rounded-full blur-[1px]" />
-    )}
-    <Icon 
-      size={20} 
-      className={`${active ? 'scale-110 text-amber-500' : 'group-hover:scale-110 group-hover:text-amber-500'} transition-all duration-300 shrink-0`} 
-    />
-    <span className="hidden lg:block text-[11px] font-black uppercase tracking-[0.2em] text-left leading-none">
+    <Icon size={18} />
+    <span className="text-[11px] font-black uppercase tracking-[0.16em] leading-none">
       {label}
     </span>
   </button>
 );
 
-/** --- MAIN SIDEBAR COMPONENT: THE COMMAND HUB --- **/
-const SidebarCommand: React.FC<SidebarCommandProps> = ({ activeView, setActiveView }) => {
+const SidebarContent = ({
+  activeView,
+  setActiveView,
+  onClose,
+}: {
+  activeView: DashboardView;
+  setActiveView: (view: DashboardView) => void;
+  onClose?: () => void;
+}) => {
   const { user, theme, toggleTheme, signOut } = useAuth();
 
   const getInitials = () => {
     const name = user?.user_metadata?.full_name || 'User';
-    return name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+    return name
+      .split(' ')
+      .map((n: string) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   };
 
-  /** * NAVIGATION NODES
-   * Organized for high-frequency site management tasks.
-   */
-  const navLinks = [
-    { id: 'projects' as DashboardView, label: 'All Projects', icon: LayoutGrid },
-    { id: 'diary' as DashboardView, label: 'Daily Record', icon: ClipboardList },
-    { id: 'resources' as DashboardView, label: 'Work Schedule', icon: Calendar },
-    { id: 'collab' as DashboardView, label: 'Team Chat', icon: MessageSquare },
-    { id: 'rates' as DashboardView, label: 'Material Prices', icon: Database },
-    { id: 'settings' as DashboardView, label: 'Office Reports', icon: Settings },
-  ];
+  const handleNavigate = (view: DashboardView) => {
+    setActiveView(view);
+    onClose?.();
+  };
 
   return (
-    <aside className="theme-surface-overlay relative z-50 w-20 lg:w-72 flex flex-col transition-all duration-500 ease-in-out border-r shrink-0 backdrop-blur-3xl">
-      
-      {/* 1. BRANDING: THE VAULT NODE */}
-      <div className="p-6 lg:p-8 flex items-center gap-4 cursor-pointer group" onClick={() => setActiveView('projects')}>
-        <div className="bg-amber-500 p-2.5 rounded-2xl shadow-xl shadow-amber-500/20 shrink-0 group-hover:rotate-6 transition-transform">
-          <HardHat size={24} className="text-black" />
-        </div>
-        <div className="hidden lg:block text-left overflow-hidden">
-          <span className="theme-title block font-black uppercase tracking-tighter italic text-xl leading-none">
-            QS VAULT<span className="text-amber-500">.</span>
-          </span>
-          <span className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500 mt-1 block leading-none">
-            Construction OS
-          </span>
+    <div className="flex h-full flex-col">
+      <div className="flex items-center justify-between border-b border-[color:var(--app-divider)] px-5 py-5 lg:px-6 lg:py-6">
+        <button
+          type="button"
+          onClick={() => handleNavigate('projects')}
+          className="flex items-center gap-3 text-left"
+        >
+          <div className="rounded-2xl bg-amber-500 p-2.5 shadow-xl shadow-amber-500/20">
+            <HardHat size={22} className="text-black" />
+          </div>
+          <div>
+            <p className="theme-title text-lg font-black uppercase tracking-tight italic">
+              QS VAULT<span className="text-amber-500">.</span>
+            </p>
+            <p className="theme-subtle text-[10px] font-black uppercase tracking-[0.24em]">
+              Admin Workspace
+            </p>
+          </div>
+        </button>
+
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="theme-surface-inset theme-muted flex h-10 w-10 items-center justify-center rounded-2xl border lg:hidden"
+          >
+            <X size={18} />
+          </button>
+        )}
+      </div>
+
+      <div className="px-5 py-5">
+        <div className="theme-surface-inset flex items-center gap-3 rounded-2xl border p-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-amber-500/20 bg-amber-500/10 font-black italic text-amber-500">
+            {getInitials()}
+          </div>
+          <div className="min-w-0 flex-1 text-left">
+            <p className="theme-title truncate text-sm font-black">
+              {user?.user_metadata?.full_name || 'Surveyor'}
+            </p>
+            <p className="theme-subtle truncate text-xs">
+              {user?.email || 'Verified operator'}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="theme-button-muted theme-muted flex h-10 w-10 items-center justify-center rounded-xl border"
+          >
+            {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+          </button>
         </div>
       </div>
 
-      {/* 2. PRIMARY NAVIGATION NODES */}
-      <nav className="flex-1 px-4 py-8 space-y-2">
+      <nav className="flex-1 space-y-2 px-5 py-2">
         {navLinks.map((link) => (
-          <SidebarLink 
+          <SidebarLink
             key={link.id}
             icon={link.icon}
             label={link.label}
             active={activeView === link.id}
-            onClick={() => setActiveView(link.id)}
+            onClick={() => handleNavigate(link.id)}
           />
         ))}
       </nav>
 
-      {/* 3. SESSION & IDENTITY CONTROLS */}
-      <div className="theme-divider p-4 border-t">
-        <div 
-          onClick={() => setActiveView('profile')}
-          className="theme-surface-inset mb-4 hidden lg:flex items-center gap-3 p-3 rounded-2xl border cursor-pointer transition-all hover:border-amber-500/30"
-        >
-          <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/20 flex items-center justify-center font-black text-[10px] text-amber-500 shrink-0 uppercase italic shadow-inner">
-            {getInitials()}
-          </div>
-          <div className="overflow-hidden flex-1 text-left">
-            <p className="theme-title text-[10px] font-black uppercase tracking-tight truncate leading-none">
-              {user?.user_metadata?.full_name?.split(' ')[0] || 'Surveyor'}
-            </p>
-            <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest mt-1 leading-none">Verified ID</p>
-          </div>
-          <button type="button" onClick={(e) => { e.stopPropagation(); toggleTheme(); }} className="p-2 text-zinc-500 hover:text-amber-500 transition-colors">
-            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
-          </button>
-        </div>
-        
-        <button 
+      <div className="border-t border-[color:var(--app-divider)] p-5">
+        <button
           type="button"
           onClick={signOut}
-          className="theme-muted w-full flex items-center gap-4 p-4 rounded-2xl transition-all group hover:text-rose-500 hover:bg-rose-500/10"
+          className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.16em] text-rose-500 transition-all hover:bg-rose-500/10"
         >
-          <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
-          <span className="hidden lg:block text-[10px] font-black uppercase tracking-widest text-left leading-none">
-            Log Out
-          </span>
+          <LogOut size={18} />
+          Log Out
         </button>
       </div>
-    </aside>
+    </div>
+  );
+};
+
+const SidebarCommand: React.FC<SidebarCommandProps> = ({
+  activeView,
+  setActiveView,
+  mobileOpen = false,
+  onClose,
+}) => {
+  return (
+    <>
+      <aside className="theme-surface-overlay hidden w-72 shrink-0 border-r backdrop-blur-3xl lg:flex">
+        <SidebarContent activeView={activeView} setActiveView={setActiveView} />
+      </aside>
+
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            aria-label="Close navigation"
+          />
+          <aside className="theme-surface-overlay relative z-10 h-full w-[88vw] max-w-sm border-r backdrop-blur-3xl">
+            <SidebarContent
+              activeView={activeView}
+              setActiveView={setActiveView}
+              onClose={onClose}
+            />
+          </aside>
+        </div>
+      )}
+    </>
   );
 };
 
