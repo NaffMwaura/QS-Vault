@@ -2,32 +2,32 @@ import { HardHat } from "lucide-react";
 
 const Footer = () => {
   return (
-    <footer className="theme-surface-muted py-20 sm:py-28 text-center border-t border-[color:var(--app-border)] transition-colors duration-500">
-      <div className="mb-10 flex items-center justify-center gap-4">
-        <div className="bg-amber-500 p-3 rounded-xl shadow-xl shadow-amber-500/20">
-          <HardHat size={28} className="text-black" />
+    <footer className="theme-surface-muted border-t border-[color:var(--app-border)] py-16 sm:py-20 text-center transition-colors duration-500">
+      <div className="mb-8 flex items-center justify-center gap-4">
+        <div className="rounded-xl bg-amber-500 p-3 shadow-xl shadow-amber-500/20">
+          <HardHat size={24} className="text-black" />
         </div>
-        <span className="theme-title text-4xl sm:text-5xl font-black uppercase tracking-tighter italic">
+        <span className="theme-title text-3xl sm:text-4xl font-black uppercase tracking-tighter italic">
           QS VAULT<span className="text-amber-500">.</span>
         </span>
       </div>
 
-      <div className="space-y-6 px-10">
-        <p className="theme-subtle text-[11px] sm:text-[12px] font-black uppercase tracking-[0.35em] sm:tracking-[0.5em]">
-          © {new Date().getFullYear()} Precision OS / The professional standard
-          for infrastructure.
+      <div className="space-y-5 px-6 sm:px-10">
+        <p className="theme-public-meta text-[0.78rem] sm:text-[0.82rem] uppercase tracking-[0.16em] sm:tracking-[0.2em]">
+          © {new Date().getFullYear()} Precision OS / The professional standard for
+          infrastructure.
         </p>
 
-        <div className="flex justify-center gap-6 sm:gap-10 text-[10px] font-black uppercase tracking-[0.3em] theme-subtle italic">
-          <span className="hover:text-amber-500 cursor-pointer transition-colors">
+        <div className="theme-public-meta flex flex-wrap justify-center gap-4 text-[0.76rem] uppercase tracking-[0.14em] italic sm:gap-6">
+          <span className="cursor-pointer transition-colors hover:text-amber-500">
             Integrity
           </span>
           <span className="text-amber-500/30">•</span>
-          <span className="hover:text-amber-500 cursor-pointer transition-colors">
+          <span className="cursor-pointer transition-colors hover:text-amber-500">
             Accuracy
           </span>
           <span className="text-amber-500/30">•</span>
-          <span className="hover:text-amber-500 cursor-pointer transition-colors">
+          <span className="cursor-pointer transition-colors hover:text-amber-500">
             Innovation
           </span>
         </div>
