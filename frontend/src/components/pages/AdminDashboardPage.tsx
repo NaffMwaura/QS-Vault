@@ -39,7 +39,7 @@ import SunlightModeToggle from "../layout/SunlightModeToggle";
 type AdminTab = 'users' | 'inventory';
 
 const tabButtonClass = (active: boolean) =>
-  `rounded-2xl px-4 py-3 text-[11px] font-black uppercase tracking-[0.18em] transition-all ${
+  `theme-admin-control transition-all ${
     active
       ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20'
       : 'theme-surface-inset theme-muted border border-[color:var(--app-border)] hover:text-[var(--app-fg)]'
@@ -253,7 +253,7 @@ const AdminDashboardPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={loadAdminData}
-                  className="theme-surface-inset theme-muted flex h-11 w-11 items-center justify-center rounded-2xl border"
+                  className="theme-surface-inset theme-muted theme-admin-icon-button flex items-center justify-center border"
                   aria-label="Refresh admin data"
                 >
                   <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
@@ -287,10 +287,10 @@ const AdminDashboardPage: React.FC = () => {
                               {profile.username?.[0] || 'U'}
                             </div>
                             <div>
-                              <p className="theme-title text-sm font-black uppercase">
+                              <p className="theme-admin-row-title uppercase">
                                 {profile.username}
                               </p>
-                              <p className="theme-subtle mt-1 text-xs font-medium">
+                              <p className="theme-admin-row-meta mt-1">
                                 {profile.id.slice(0, 12)}
                               </p>
                             </div>
@@ -301,7 +301,7 @@ const AdminDashboardPage: React.FC = () => {
                             value={profile.role}
                             disabled={updatingId === profile.id}
                             onChange={(e) => handleRoleChange(profile.id, e.target.value as UserRole)}
-                            className="theme-input rounded-xl border px-3 py-2 text-xs font-black uppercase tracking-[0.16em] outline-none focus:border-amber-500"
+                            className="theme-input theme-admin-select border outline-none focus:border-amber-500"
                           >
                             <option value="user">Standard User</option>
                             <option value="editor">Editor</option>
@@ -310,7 +310,7 @@ const AdminDashboardPage: React.FC = () => {
                           </select>
                         </td>
                         <td className="px-4 py-4">
-                          <span className="theme-subtle text-sm font-semibold">
+                          <span className="theme-admin-meta">
                             {profile.project_count || 0} workspaces
                           </span>
                         </td>
@@ -318,7 +318,7 @@ const AdminDashboardPage: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => inspectUserWorkspaces(profile.username)}
-                            className="theme-surface-inset theme-muted inline-flex h-11 w-11 items-center justify-center rounded-2xl border transition-all hover:border-amber-500 hover:text-amber-500"
+                            className="theme-surface-inset theme-muted theme-admin-icon-button inline-flex items-center justify-center border transition-all hover:border-amber-500 hover:text-amber-500"
                             title="Inspect user workspace"
                           >
                             <ExternalLink size={16} />
@@ -337,10 +337,10 @@ const AdminDashboardPage: React.FC = () => {
                               {profile.username?.[0] || 'U'}
                             </div>
                             <div className="min-w-0 text-left">
-                              <p className="theme-title truncate text-sm font-black uppercase">
+                              <p className="theme-admin-row-title truncate uppercase">
                                 {profile.username}
                               </p>
-                              <p className="theme-subtle mt-1 truncate text-xs">
+                              <p className="theme-admin-row-meta mt-1 truncate">
                                 {profile.project_count || 0} workspaces
                               </p>
                             </div>
@@ -352,16 +352,16 @@ const AdminDashboardPage: React.FC = () => {
                         </summary>
 
                         <div className="mt-4 space-y-4 border-t border-[color:var(--app-divider)] pt-4 text-left">
-                          <div className="grid gap-2 text-sm">
+                          <div className="grid gap-2.5 text-sm">
                             <div className="flex justify-between gap-3">
                               <span className="theme-admin-label">Reference</span>
-                              <span className="theme-subtle text-right text-xs">
+                              <span className="theme-admin-row-meta text-right">
                                 {profile.id.slice(0, 12)}
                               </span>
                             </div>
                             <div className="flex justify-between gap-3">
                               <span className="theme-admin-label">Status</span>
-                              <span className="theme-subtle text-right text-xs">
+                              <span className="theme-admin-row-meta text-right">
                                 Verified identity
                               </span>
                             </div>
@@ -371,7 +371,7 @@ const AdminDashboardPage: React.FC = () => {
                             value={profile.role}
                             disabled={updatingId === profile.id}
                             onChange={(e) => handleRoleChange(profile.id, e.target.value as UserRole)}
-                            className="theme-input w-full rounded-xl border px-3 py-3 text-xs font-black uppercase tracking-[0.16em] outline-none focus:border-amber-500"
+                            className="theme-input theme-admin-select w-full border outline-none focus:border-amber-500"
                           >
                             <option value="user">Standard User</option>
                             <option value="editor">Editor</option>
@@ -382,7 +382,7 @@ const AdminDashboardPage: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => inspectUserWorkspaces(profile.username)}
-                            className="theme-surface-inset theme-muted inline-flex items-center gap-2 rounded-xl border px-4 py-3 text-xs font-black uppercase tracking-[0.16em] hover:border-amber-500 hover:text-amber-500"
+                            className="theme-surface-inset theme-muted theme-admin-control inline-flex items-center gap-2 border hover:border-amber-500 hover:text-amber-500"
                           >
                             <ExternalLink size={15} />
                             Inspect Workspace
@@ -407,17 +407,17 @@ const AdminDashboardPage: React.FC = () => {
                       className="border-b border-[color:var(--app-divider)] last:border-b-0 hover:bg-amber-500/5"
                     >
                       <td className="px-4 py-4">
-                        <p className="theme-title text-sm font-black uppercase">
+                        <p className="theme-admin-row-title uppercase">
                           {project.name}
                         </p>
                       </td>
                       <td className="px-4 py-4">
-                        <p className="theme-subtle text-sm font-semibold">
+                        <p className="theme-admin-meta">
                           {project.username || 'Unknown'}
                         </p>
                       </td>
                       <td className="px-4 py-4">
-                        <p className="theme-subtle text-sm">
+                        <p className="theme-admin-meta">
                           {project.location || 'Site node'}
                         </p>
                       </td>
@@ -426,14 +426,14 @@ const AdminDashboardPage: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => navigate(`/projects/${project.id}`)}
-                            className="theme-surface-inset theme-muted flex h-11 w-11 items-center justify-center rounded-2xl border transition-all hover:border-amber-500 hover:text-amber-500"
+                            className="theme-surface-inset theme-muted theme-admin-icon-button flex items-center justify-center border transition-all hover:border-amber-500 hover:text-amber-500"
                           >
                             <ExternalLink size={16} />
                           </button>
                           <button
                             type="button"
                             onClick={() => handleDeleteProject(project.id)}
-                            className="flex h-11 w-11 items-center justify-center rounded-2xl border border-rose-500/20 bg-rose-500/10 text-rose-500 transition-all hover:bg-rose-500 hover:text-white"
+                            className="theme-admin-icon-button flex items-center justify-center border border-rose-500/20 bg-rose-500/10 text-rose-500 transition-all hover:bg-rose-500 hover:text-white"
                           >
                             <Trash2 size={16} />
                           </button>
@@ -448,10 +448,10 @@ const AdminDashboardPage: React.FC = () => {
                     <details key={project.id} className="theme-admin-card group">
                       <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
                         <div className="min-w-0 text-left">
-                          <p className="theme-title text-sm font-black uppercase">
+                          <p className="theme-admin-row-title uppercase">
                             {project.name}
                           </p>
-                          <p className="theme-subtle mt-1 text-xs">
+                          <p className="theme-admin-row-meta mt-1">
                             {project.location || 'Site node'}
                           </p>
                         </div>
@@ -462,16 +462,16 @@ const AdminDashboardPage: React.FC = () => {
                       </summary>
 
                       <div className="mt-4 space-y-4 border-t border-[color:var(--app-divider)] pt-4 text-left">
-                        <div className="grid gap-2 text-sm">
+                        <div className="grid gap-2.5 text-sm">
                           <div className="flex justify-between gap-3">
                             <span className="theme-admin-label">Owner</span>
-                            <span className="theme-subtle text-right text-xs">
+                            <span className="theme-admin-row-meta text-right">
                               {project.username || 'Unknown'}
                             </span>
                           </div>
                           <div className="flex justify-between gap-3">
                             <span className="theme-admin-label">Location</span>
-                            <span className="theme-subtle text-right text-xs">
+                            <span className="theme-admin-row-meta text-right">
                               {project.location || 'Site node'}
                             </span>
                           </div>
@@ -481,7 +481,7 @@ const AdminDashboardPage: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => navigate(`/projects/${project.id}`)}
-                            className="theme-surface-inset theme-muted inline-flex items-center gap-2 rounded-xl border px-4 py-3 text-xs font-black uppercase tracking-[0.16em] hover:border-amber-500 hover:text-amber-500"
+                            className="theme-surface-inset theme-muted theme-admin-control inline-flex items-center gap-2 border hover:border-amber-500 hover:text-amber-500"
                           >
                             <ExternalLink size={15} />
                             Open
@@ -489,7 +489,7 @@ const AdminDashboardPage: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => handleDeleteProject(project.id)}
-                            className="inline-flex items-center gap-2 rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-xs font-black uppercase tracking-[0.16em] text-rose-500 hover:bg-rose-500 hover:text-white"
+                            className="theme-admin-control inline-flex items-center gap-2 border border-rose-500/20 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white"
                           >
                             <Trash2 size={15} />
                             Delete
@@ -503,7 +503,7 @@ const AdminDashboardPage: React.FC = () => {
             )}
 
             <div className="theme-divider mt-5 border-t pt-4">
-              <p className="theme-subtle text-sm">
+              <p className="theme-admin-meta">
                 Showing{' '}
                 <span className="theme-title font-black">
                   {adminTab === 'users' ? filteredProfiles.length : filteredProjects.length}
@@ -533,7 +533,7 @@ const AdminDashboardPage: React.FC = () => {
                 <div className="rounded-[1.8rem] border border-[color:var(--app-divider)] p-4 sm:p-5">
                   <div className="mb-4 flex items-center gap-3">
                     <Calculator size={18} className="text-amber-500" />
-                    <h3 className="theme-title text-lg font-black">Valuation Auditor</h3>
+                    <h3 className="theme-admin-subheading">Valuation Auditor</h3>
                   </div>
                   {allProjects.length > 0 ? (
                     <BoQGenerator
@@ -541,7 +541,7 @@ const AdminDashboardPage: React.FC = () => {
                       projectName={allProjects[0]?.name || "Platform Project"}
                     />
                   ) : (
-                    <p className="theme-subtle text-sm">No projects available for audit.</p>
+                    <p className="theme-admin-meta">No projects available for audit.</p>
                   )}
                 </div>
               </div>
@@ -556,7 +556,7 @@ const AdminDashboardPage: React.FC = () => {
                 <div className="rounded-[1.8rem] border border-[color:var(--app-divider)] p-4 sm:p-5">
                   <div className="mb-4 flex items-center gap-3">
                     <Share2 size={18} className="text-amber-500" />
-                    <h3 className="theme-title text-lg font-black">Admin Transmittal</h3>
+                    <h3 className="theme-admin-subheading">Admin Transmittal</h3>
                   </div>
                   <WhatsAppExport
                     projectName="Global-Admin-Audit"
@@ -575,7 +575,7 @@ const AdminDashboardPage: React.FC = () => {
                 <div className="rounded-[1.8rem] border border-[color:var(--app-divider)] p-4 sm:p-5">
                   <div className="mb-4 flex items-center gap-3">
                     <FileText size={18} className="text-emerald-500" />
-                    <h3 className="theme-title text-lg font-black">Draft Certification Auditor</h3>
+                    <h3 className="theme-admin-subheading">Draft Certification Auditor</h3>
                   </div>
                   {allProjects.length > 0 ? (
                     <CertificateGenerator
@@ -583,7 +583,7 @@ const AdminDashboardPage: React.FC = () => {
                       projectName={allProjects[0]?.name || "Select Project"}
                     />
                   ) : (
-                    <p className="theme-subtle text-sm">No project selected for certification review.</p>
+                    <p className="theme-admin-meta">No project selected for certification review.</p>
                   )}
                 </div>
               </div>
@@ -604,7 +604,7 @@ const AdminDashboardPage: React.FC = () => {
             <button
               type="button"
               onClick={handleLogout}
-              className="w-full rounded-[2rem] border border-rose-500/20 bg-rose-500/5 px-5 py-5 text-[11px] font-black uppercase tracking-[0.24em] text-rose-500 transition-all hover:bg-rose-500 hover:text-white"
+              className="theme-admin-control w-full min-h-[3.25rem] rounded-[1.4rem] border border-rose-500/20 bg-rose-500/5 text-rose-500 transition-all hover:bg-rose-500 hover:text-white"
             >
               Terminate Admin Session
             </button>

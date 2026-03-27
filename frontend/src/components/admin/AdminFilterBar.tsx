@@ -15,14 +15,14 @@ export const AdminFilterBar = ({
     <label className="relative block text-left">
       <Search
         className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500"
-        size={18}
+        size={17}
       />
       <input
         type="text"
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="theme-input w-full rounded-2xl border py-3 pl-12 pr-4 text-sm font-medium outline-none transition-all focus:border-amber-500"
+        className="theme-input theme-admin-input w-full border pl-11 pr-4 outline-none transition-all focus:border-amber-500"
       />
     </label>
   </div>

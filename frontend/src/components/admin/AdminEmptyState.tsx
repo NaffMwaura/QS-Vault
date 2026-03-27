@@ -6,7 +6,7 @@ export const AdminEmptyState = ({
   description: string;
 }) => (
   <div className="theme-admin-empty text-center">
-    <p className="theme-title text-base font-black">{title}</p>
-    <p className="theme-subtle mt-2 text-sm leading-relaxed">{description}</p>
+    <p className="theme-admin-subheading">{title}</p>
+    <p className="theme-admin-body mt-2 text-sm">{description}</p>
   </div>
 );

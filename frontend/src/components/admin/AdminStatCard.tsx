@@ -16,17 +16,17 @@ export const AdminStatCard = ({
   tone,
 }: AdminStatCardProps) => (
   <div className="theme-admin-card text-left">
-    <div className="mb-5 flex items-start justify-between gap-4">
+    <div className="mb-4 flex items-start justify-between gap-4">
       <div>
         <p className="theme-admin-label">{label}</p>
-        <p className="theme-title mt-3 text-3xl font-black tracking-tight sm:text-4xl">
+        <p className="theme-title mt-2.5 text-[1.9rem] font-black tracking-tight sm:text-[2.25rem]">
           {value}
         </p>
       </div>
-      <div className={`rounded-2xl border p-3 ${tone}`}>
-        <Icon size={20} />
+      <div className={`flex h-11 w-11 items-center justify-center rounded-2xl border ${tone}`}>
+        <Icon size={19} />
       </div>
     </div>
-    <p className="theme-subtle text-sm leading-relaxed">{description}</p>
+    <p className="theme-admin-body text-sm">{description}</p>
   </div>
 );

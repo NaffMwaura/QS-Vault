@@ -19,11 +19,9 @@ export const AdminPageSection = ({
     <div className="flex flex-col gap-4 border-b border-[color:var(--app-divider)] px-5 py-5 sm:px-6 sm:py-6 lg:flex-row lg:items-center lg:justify-between">
       <div className="text-left">
         {eyebrow && <p className="theme-admin-eyebrow">{eyebrow}</p>}
-        <h2 className="theme-title mt-2 text-2xl font-black tracking-tight sm:text-3xl">
-          {title}
-        </h2>
+        <h2 className="theme-admin-heading mt-2">{title}</h2>
         {description && (
-          <p className="theme-subtle mt-2 max-w-3xl text-sm leading-relaxed sm:text-base">
+          <p className="theme-admin-body mt-2.5 max-w-3xl text-sm sm:text-[0.98rem]">
             {description}
           </p>
         )}

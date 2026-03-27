@@ -81,14 +81,14 @@ const HUDHeader: React.FC<HUDHeaderProps> = ({
           <button
             type="button"
             onClick={onMenuClick}
-            className="theme-surface-inset theme-muted flex h-11 w-11 items-center justify-center rounded-2xl border lg:hidden"
+            className="theme-surface-inset theme-muted theme-admin-icon-button flex items-center justify-center border lg:hidden"
             aria-label="Open navigation"
           >
             <Menu size={18} />
           </button>
 
           <div
-            className={`flex items-center gap-2 rounded-2xl border px-3 py-2 text-[10px] font-black uppercase tracking-[0.2em] transition-all ${
+            className={`theme-admin-chip flex items-center gap-2 border transition-all ${
               isOnline
                 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400'
                 : 'bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400'
@@ -101,10 +101,10 @@ const HUDHeader: React.FC<HUDHeaderProps> = ({
           </div>
 
           <div className="min-w-0 text-left">
-            <p className="text-[10px] font-black uppercase tracking-[0.28em] text-amber-600 dark:text-amber-400">
+            <p className="text-[0.72rem] font-black uppercase tracking-[0.18em] text-amber-600 dark:text-amber-400">
               {getViewLabel(activeView)}
             </p>
-            <p className="theme-subtle truncate text-xs font-semibold">
+            <p className="theme-admin-meta truncate">
               {user?.email || 'Local workspace'}
             </p>
           </div>
@@ -114,7 +114,7 @@ const HUDHeader: React.FC<HUDHeaderProps> = ({
           <button
             type="button"
             onClick={toggleTheme}
-            className="theme-button-muted theme-muted flex h-11 w-11 items-center justify-center rounded-2xl border border-transparent transition-all active:scale-90 hover:border-amber-500/20 hover:text-amber-500"
+            className="theme-button-muted theme-muted theme-admin-icon-button flex items-center justify-center border border-transparent transition-all active:scale-90 hover:border-amber-500/20 hover:text-amber-500"
             title="Change appearance"
           >
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
@@ -124,17 +124,17 @@ const HUDHeader: React.FC<HUDHeaderProps> = ({
             <button
               type="button"
               onClick={() => setShowDropdown((current) => !current)}
-              className={`flex items-center gap-3 rounded-2xl border px-2 py-2 transition-all ${
+              className={`flex min-h-[2.9rem] items-center gap-3 rounded-2xl border px-2.5 py-2 transition-all ${
                 showDropdown
                   ? 'border-amber-500/30 bg-amber-500/5'
                   : 'border-transparent hover:bg-zinc-500/5'
               }`}
             >
               <div className="hidden text-right md:block">
-                <p className="theme-title text-[11px] font-black uppercase tracking-tight leading-none">
+                <p className="theme-title text-[0.76rem] font-black uppercase tracking-tight leading-none">
                   {fullName.split(' ')[0]}
                 </p>
-                <p className="theme-subtle mt-1 text-[9px] font-bold uppercase tracking-[0.2em] leading-none">
+                <p className="theme-admin-meta mt-1 text-[0.66rem] uppercase tracking-[0.14em] leading-none">
                   Verified
                 </p>
               </div>
@@ -155,10 +155,10 @@ const HUDHeader: React.FC<HUDHeaderProps> = ({
 
             {showDropdown && (
               <div className="theme-surface-overlay absolute right-0 top-full z-50 mt-3 w-64 rounded-[2rem] border p-3 shadow-2xl backdrop-blur-3xl">
-                <div className="theme-divider mb-3 border-b px-4 py-4 text-left">
-                  <p className="theme-title text-sm font-black">{fullName}</p>
-                  <p className="theme-subtle mt-1 truncate text-xs">{user?.email}</p>
-                  <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[9px] font-black uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-400">
+              <div className="theme-divider mb-3 border-b px-4 py-4 text-left">
+                  <p className="theme-admin-subheading">{fullName}</p>
+                  <p className="theme-admin-meta mt-1 truncate">{user?.email}</p>
+                  <div className="theme-admin-chip mt-3 inline-flex items-center gap-2 border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                     <ShieldCheck size={10} />
                     Verified
                   </div>
@@ -171,7 +171,7 @@ const HUDHeader: React.FC<HUDHeaderProps> = ({
                       setActiveView('settings');
                       setShowDropdown(false);
                     }}
-                    className="theme-muted flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.16em] transition-all hover:bg-zinc-500/5 hover:text-[var(--app-fg)]"
+                    className="theme-muted theme-admin-control flex w-full items-center gap-3 text-left transition-all hover:bg-zinc-500/5 hover:text-[var(--app-fg)]"
                   >
                     <Settings size={16} className="text-amber-500" />
                     Reports
@@ -183,7 +183,7 @@ const HUDHeader: React.FC<HUDHeaderProps> = ({
                       setActiveView('profile');
                       setShowDropdown(false);
                     }}
-                    className="theme-muted flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.16em] transition-all hover:bg-zinc-500/5 hover:text-[var(--app-fg)]"
+                    className="theme-muted theme-admin-control flex w-full items-center gap-3 text-left transition-all hover:bg-zinc-500/5 hover:text-[var(--app-fg)]"
                   >
                     <Edit3 size={16} className="text-amber-500" />
                     Profile
@@ -197,7 +197,7 @@ const HUDHeader: React.FC<HUDHeaderProps> = ({
                       setShowDropdown(false);
                       signOut();
                     }}
-                    className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.16em] text-rose-500 transition-all hover:bg-rose-500/10"
+                    className="theme-admin-control flex w-full items-center gap-3 text-left text-rose-500 transition-all hover:bg-rose-500/10"
                   >
                     <LogOut size={16} />
                     Log Out

@@ -53,14 +53,14 @@ const SidebarLink = ({
   <button
     type="button"
     onClick={onClick}
-    className={`flex w-full items-center gap-4 rounded-2xl border px-4 py-3 text-left transition-all ${
+    className={`theme-admin-control flex w-full items-center gap-3.5 border text-left transition-all ${
       active
         ? 'bg-amber-500 text-black border-amber-500 shadow-lg shadow-amber-500/20'
         : 'theme-muted border-transparent hover:bg-zinc-500/5 hover:text-[var(--app-fg)]'
     }`}
   >
     <Icon size={18} />
-    <span className="text-[11px] font-black uppercase tracking-[0.16em] leading-none">
+    <span className="text-[0.72rem] font-black uppercase tracking-[0.14em] leading-none">
       {label}
     </span>
   </button>
@@ -117,7 +117,7 @@ const SidebarContent = ({
           <button
             type="button"
             onClick={onClose}
-            className="theme-surface-inset theme-muted flex h-10 w-10 items-center justify-center rounded-2xl border lg:hidden"
+            className="theme-surface-inset theme-muted theme-admin-icon-button-compact flex items-center justify-center border lg:hidden"
           >
             <X size={18} />
           </button>
@@ -140,7 +140,7 @@ const SidebarContent = ({
           <button
             type="button"
             onClick={toggleTheme}
-            className="theme-button-muted theme-muted flex h-10 w-10 items-center justify-center rounded-xl border"
+            className="theme-button-muted theme-muted theme-admin-icon-button-compact flex items-center justify-center border"
           >
             {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
           </button>
@@ -161,10 +161,10 @@ const SidebarContent = ({
         <button
           type="button"
           onClick={signOut}
-          className="mt-3 flex w-full items-center gap-4 rounded-2xl border border-rose-500/15 bg-rose-500/6 px-4 py-3 text-left text-rose-500 transition-all hover:bg-rose-500/10"
+          className="theme-admin-control mt-3 flex w-full items-center gap-3.5 border border-rose-500/15 bg-rose-500/6 text-left text-rose-500 transition-all hover:bg-rose-500/10"
         >
           <LogOut size={18} />
-          <span className="text-[11px] font-black uppercase tracking-[0.16em] leading-none">
+          <span className="text-[0.72rem] font-black uppercase tracking-[0.14em] leading-none">
             Log Out
           </span>
         </button>
@@ -181,8 +181,10 @@ const SidebarCommand: React.FC<SidebarCommandProps> = ({
 }) => {
   return (
     <>
-      <aside className="theme-surface-overlay hidden w-72 shrink-0 border-r backdrop-blur-3xl lg:flex">
-        <SidebarContent activeView={activeView} setActiveView={setActiveView} />
+      <aside className="theme-surface-overlay sticky top-0 hidden h-screen w-72 shrink-0 border-r backdrop-blur-3xl lg:flex">
+        <div className="h-full w-full overflow-y-auto custom-scrollbar">
+          <SidebarContent activeView={activeView} setActiveView={setActiveView} />
+        </div>
       </aside>
 
       {mobileOpen && (

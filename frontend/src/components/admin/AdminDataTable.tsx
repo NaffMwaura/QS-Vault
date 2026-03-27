@@ -14,7 +14,7 @@ export const AdminDataTable = ({
           {headers.map((header, index) => (
             <th
               key={header}
-              className={`theme-admin-label px-4 py-4 ${index === headers.length - 1 ? 'text-right' : ''}`}
+              className={`theme-admin-label px-4 py-3.5 ${index === headers.length - 1 ? 'text-right' : ''}`}
             >
               {header}
             </th>

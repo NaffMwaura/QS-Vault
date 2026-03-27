@@ -45,8 +45,8 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
   }
 
   return (
-    <div className="theme-page min-h-screen font-sans transition-colors duration-500 selection:bg-amber-500/30">
-      <div className="flex min-h-screen">
+    <div className="theme-page h-screen overflow-hidden font-sans transition-colors duration-500 selection:bg-amber-500/30">
+      <div className="flex h-full">
         <SidebarCommand
           activeView={activeView || 'projects'}
           setActiveView={setActiveView}
@@ -54,7 +54,7 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
           onClose={() => setMobileNavOpen(false)}
         />
 
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <HUDHeader
             activeView={activeView || 'projects'}
             setActiveView={setActiveView}
