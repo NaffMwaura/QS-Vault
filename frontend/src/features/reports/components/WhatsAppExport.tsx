@@ -79,30 +79,30 @@ const WhatsAppExport: React.FC<WhatsAppExportProps> = ({ data, projectName }) =>
   };
 
   return (
-    <GlassCard className="p-8 sm:p-10 border text-left">
+    <GlassCard className="border p-5 sm:p-6 text-left">
       
-      <div className="space-y-8">
+      <div className="space-y-6">
         {/* 1. Module Header */}
         <div className="flex justify-between items-start">
           <div className="text-left space-y-1">
-            <h4 className="theme-title text-xl font-black uppercase italic tracking-tighter leading-none">
+            <h4 className="theme-admin-subheading uppercase italic">
               Instant Update
             </h4>
-            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500">
+            <p className="theme-admin-label">
               Site Transmittal Protocol
             </p>
           </div>
-          <div className="theme-surface-inset p-3 rounded-2xl border">
-            <Smartphone size={18} className="text-amber-500" />
+          <div className="theme-surface-inset flex h-11 w-11 items-center justify-center rounded-2xl border">
+            <Smartphone size={17} className="text-amber-500" />
           </div>
         </div>
 
         {/* 2. Message Preview Area */}
-        <div className="theme-surface-inset p-6 rounded-4xl border relative group text-left shadow-inner">
+        <div className="theme-surface-inset relative rounded-[1.5rem] border p-5 text-left shadow-inner group">
           <div className="absolute top-4 right-4 opacity-20 group-hover:opacity-100 transition-opacity">
             <MessageSquare size={14} className="text-amber-500" />
           </div>
-          <p className="theme-muted text-[10px] font-mono leading-relaxed whitespace-pre-wrap">
+          <p className="theme-admin-meta font-mono leading-relaxed whitespace-pre-wrap">
             {generatePlainMessage()}
           </p>
         </div>
@@ -112,7 +112,7 @@ const WhatsAppExport: React.FC<WhatsAppExportProps> = ({ data, projectName }) =>
           <Button 
             variant="outline"
             onClick={handleCopyText}
-            className="py-5"
+            className="theme-admin-control py-0"
             leftIcon={copied ? <CheckCircle2 size={16} className="text-emerald-500" /> : <Copy size={16} />}
           >
             {copied ? 'Copied to Clipboard' : 'Copy Message'}
@@ -121,7 +121,7 @@ const WhatsAppExport: React.FC<WhatsAppExportProps> = ({ data, projectName }) =>
           <Button 
             variant="primary"
             onClick={handleWhatsAppTrigger}
-            className="py-5 bg-[#25D366]! text-white! hover:bg-[#22c35e]! border-none shadow-[#25D366]/20"
+            className="theme-admin-control py-0 bg-[#25D366]! text-white! hover:bg-[#22c35e]! border-none shadow-[#25D366]/20"
             leftIcon={<Send size={16} className="fill-current" />}
           >
             Share via WhatsApp
@@ -129,17 +129,17 @@ const WhatsAppExport: React.FC<WhatsAppExportProps> = ({ data, projectName }) =>
         </div>
 
         {/* 4. Security Footnote */}
-        <div className="flex items-center justify-between pt-6 border-t border-zinc-800/40 opacity-40">
+        <div className="flex flex-col gap-3 border-t border-zinc-800/20 pt-5 opacity-60 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <ShieldCheck size={14} className="text-emerald-500" />
-            <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500 italic">
+            <span className="theme-admin-label italic">
               Verified Distribution
             </span>
           </div>
           <div className="flex items-center gap-3">
              <div className="flex items-center gap-2">
                <Zap size={10} className="text-amber-500" />
-               <span className="text-[8px] font-black uppercase text-zinc-500">Fast Export</span>
+               <span className="theme-admin-meta text-[0.72rem] uppercase">Fast Export</span>
              </div>
              <Share2 size={12} className="text-zinc-500" />
           </div>
