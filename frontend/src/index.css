@@ -173,4 +173,56 @@ body {
   .theme-grid-overlay {
     opacity: var(--app-grid-opacity);
   }
+
+  .theme-admin-panel {
+    background-color: color-mix(in srgb, var(--app-surface-overlay) 90%, transparent);
+    border-color: color-mix(in srgb, var(--app-border-soft) 85%, transparent);
+    box-shadow: var(--app-shadow-card);
+    border-radius: 2rem;
+    backdrop-filter: blur(24px);
+  }
+
+  .theme-admin-card {
+    background-color: color-mix(in srgb, var(--app-surface-card) 96%, transparent);
+    border-color: color-mix(in srgb, var(--app-border) 92%, transparent);
+    box-shadow: var(--app-shadow-card-soft);
+    border-radius: 1.5rem;
+    border-width: 1px;
+    padding: 1.25rem;
+  }
+
+  .theme-admin-label {
+    color: var(--app-text-subtle);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .theme-admin-eyebrow {
+    color: rgb(217 119 6);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+  }
+
+  .dark .theme-admin-eyebrow {
+    color: rgb(251 191 36);
+  }
+
+  .theme-admin-empty {
+    background-color: color-mix(in srgb, var(--app-surface-card-soft) 88%, transparent);
+    border-color: color-mix(in srgb, var(--app-border) 88%, transparent);
+    border-style: dashed;
+    border-width: 1px;
+    border-radius: 1.5rem;
+    padding: 2rem 1.25rem;
+  }
+
+  .theme-admin-danger {
+    background-color: color-mix(in srgb, rgb(244 63 94 / 0.08) 100%, transparent);
+    border-color: color-mix(in srgb, rgb(244 63 94 / 0.18) 100%, transparent);
+    border-width: 1px;
+  }
 }
