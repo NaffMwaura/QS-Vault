@@ -13,32 +13,7 @@ import {
   ShieldCheck,
  
 } from 'lucide-react';
-
-/* ======================================================
-    OFFICE MODULE RESOLUTION (OFFLINE-FIRST)
-   ====================================================== */
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let useAuth: any = () => ({
-  user: { id: 'dev-user-001', email: 'surveyor@vault.systems', user_metadata: { full_name: 'Naftaly Mwaura' } },
-  signOut: async () => console.log("Logging out..."),
-  theme: 'dark',
-  toggleTheme: () => console.log("Changing appearance..."),
-  isOnline: true,
-  activeView: 'projects',
-  setActiveView: (view: string) => console.log(`Switching to ${view}`)
-});
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../features/auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-  } catch (e) {
-    // Shims active for sandbox stability
-  }
-};
-
-resolveModules();
+import { useAuth } from "../../features/auth/AuthContext";
 
 /** --- TYPES --- **/
 // Expanded to include the new Sidebar-accessible engines

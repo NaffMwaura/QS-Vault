@@ -11,24 +11,6 @@ interface GlassCardProps {
   interactive?: boolean;
 }
 
-/** --- MODULE RESOLUTION HANDLER --- **/
-// Establishing a robust fallback to ensure the card renders even during auth initialization
-let useAuth = () => ({ theme: 'dark' as 'light' | 'dark' });
-
-const resolveModules = async () => {
-  try {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore - Dynamic resolution for environment compatibility
-    const authMod = await import("../../features/auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (e) {
-    // Shims active for sandbox stability
-  }
-};
-
-resolveModules();
-
 /** --- MAIN COMPONENT: PROFESSIONAL GLASS CONTAINER --- **/
 
 const GlassCard: React.FC<GlassCardProps> = ({ 
@@ -36,8 +18,6 @@ const GlassCard: React.FC<GlassCardProps> = ({
   className = "", 
   interactive = false 
 }) => {
-  useAuth();
-
   /** * DESIGN PROTOCOL
    * - backdrop-blur-2xl: Creates the "Microsoft Windows" glass effect.
    * - rounded-[2.5rem]: Standardized corner radius for the Construction OS.
