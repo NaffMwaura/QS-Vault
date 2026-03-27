@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   BarChart3, 
@@ -14,39 +13,13 @@ import {
   HardHat,
   Calculator,
 } from 'lucide-react';
+import { useAuth } from "../../auth/AuthContext";
+import Button from "../../../components/ui/Button";
+import { db, syncEngine } from "../../../lib/database/database";
 
 /* ======================================================
     OFFICE MODULE RESOLUTION (OFFLINE-FIRST)
    ====================================================== */
-
-let useAuth: any = () => ({ 
-  user: { id: 'dev-node-001' }, 
-  theme: 'dark' 
-});
-
-let db: any = null;
-let syncEngine: any = null;
-let Button: any = ({ children, onClick, className,}: any) => (
-  <button onClick={onClick} className={className}>{children}</button>
-);
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-
-    const dbMod = await import("../../../lib/database/database");
-    if (dbMod.db) db = dbMod.db; 
-    if (dbMod.syncEngine) syncEngine = dbMod.syncEngine;
-
-    const btnMod = await import("../../../components/ui/Button");
-    if (btnMod.default) Button = btnMod.default;
-  } catch (e) {
-    // Sandbox fallback
-  }
-};
-
-resolveModules();
 
 /** --- TYPES --- **/
 
@@ -122,9 +95,10 @@ const VariationBridge: React.FC<VariationBridgeProps> = ({ projectId }) => {
     const variationData = {
       id: variationId,
       project_id: projectId,
+      site_log_id: null,
       description: newVariation.description,
       estimated_cost: newVariation.estimated_cost,
-      qs_pricing_status: 'unpriced',
+      qs_pricing_status: 'unpriced' as const,
       created_at: new Date().toISOString()
     };
 

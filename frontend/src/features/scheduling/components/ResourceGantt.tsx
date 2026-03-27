@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   Calendar, 
@@ -15,37 +14,13 @@ import {
   Navigation,
   ShieldCheck
 } from 'lucide-react';
+import { useAuth } from "../../auth/AuthContext";
+import Button from "../../../components/ui/Button";
+import { db, syncEngine } from "../../../lib/database/database";
 
 /* ======================================================
     OFFICE MODULE RESOLUTION (STABILIZED)
    ====================================================== */
-
-let useAuth: any = () => ({ theme: 'dark' });
-let db: any = null;
-let syncEngine: any = null;
-let Button: any = ({ children, onClick, className }: any) => (
-  <button onClick={onClick} className={className}>{children}</button>
-);
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-
-    const dbMod = await import("../../../lib/database/database");
-    if (dbMod.db) db = dbMod.db; 
-    
-    const syncMod = await import("../../../lib/database/database");
-    if (syncMod.syncEngine) syncEngine = syncMod.syncEngine;
-
-    const btnMod = await import("../../../components/ui/Button");
-    if (btnMod.default) Button = btnMod.default;
-  } catch (e) {
-    // Sandbox shims active
-  }
-};
-
-resolveModules();
 
 /** --- TYPES --- **/
 interface GanttTask {
@@ -139,7 +114,9 @@ const ResourceGantt: React.FC<ResourceGanttProps> = ({ projectId }) => {
     const deliveryData = {
       id: deliveryId,
       project_id: projectId,
+      bill_item_id: "",
       item_name: newDelivery.item_name,
+      qty_received: 0,
       delivery_note_ref: newDelivery.delivery_note_ref,
       timestamp: new Date().toISOString()
     };

@@ -12,37 +12,8 @@ import {
   CheckCircle2,
   Lock
 } from 'lucide-react';
-
-/* ======================================================
-    PROFILE MODULE: MANAGE YOUR OFFICE IDENTITY
-    Works offline via Dexie + syncs via Supabase
-   ====================================================== */
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let useAuth: any = () => ({
-  user: { id: 'dev-user-001', email: 'surveyor@vault.systems', user_metadata: { full_name: 'Naftaly Mwaura' } },
-  theme: 'dark',
-});
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let db: any = null;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let syncEngine: any = null;
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-
-    const dbMod = await import("../../../lib/database/database");
-    if (dbMod.db) db = dbMod.db; 
-    if (dbMod.syncEngine) syncEngine = dbMod.syncEngine;
-  } catch (e) {
-    // Shims active for sandbox stability
-  }
-};
-
-resolveModules();
+import { useAuth } from "../../auth/AuthContext";
+import { db, syncEngine } from "../../../lib/database/database";
 
 /** --- TYPES --- **/
 
@@ -94,7 +65,7 @@ const IdentityNode: React.FC<IdentityNodeProps> = ({ onBack, onUpdateComplete })
 
     try {
       // 1. Save to this laptop/phone immediately
-      await db.profiles.put(profileData);
+      await db.profiles.update(user.id, profileData);
 
       // 2. Add to the "To-Do" list for the Cloud sync
       if (syncEngine?.queueChange) {

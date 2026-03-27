@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Search, 
@@ -13,32 +12,12 @@ import {
   Save,
   AlertCircle
 } from 'lucide-react';
+import { useAuth } from "../../../features/auth/AuthContext";
+import { db, syncEngine } from "../../../lib/database/database";
 
 /* ======================================================
     OFFICE DATABASE INTEGRATION (OFFLINE-READY)
    ====================================================== */
-
-let useAuth: any = () => ({
-  theme: 'dark',
-});
-
-let db: any = null;
-let syncEngine: any = null;
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../../features/auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-
-    const dbMod = await import("../../../lib/database/database");
-    if (dbMod.db) db = dbMod.db; 
-    if (dbMod.syncEngine) syncEngine = dbMod.syncEngine;
-  } catch (e) {
-    // Sandbox fallback
-  }
-};
-
-resolveModules();
 
 /** --- TYPES --- **/
 
@@ -112,8 +91,11 @@ const RatesLibrary: React.FC = () => {
       setRates(prev => prev.map(r => r.id === editingRate.id ? { ...r, rate: updatedRate } : r));
 
       // 2. Commit to Device (Dexie)
-      if (db?.rates) {
-        await db.rates.update(editingRate.id, { rate: updatedRate, updated_at: new Date().toISOString() });
+      const ratesTable = (db as typeof db & {
+        rates?: { update: (id: string, changes: Record<string, unknown>) => Promise<unknown> };
+      })?.rates;
+      if (ratesTable) {
+        await ratesTable.update(editingRate.id, { rate: updatedRate, updated_at: new Date().toISOString() });
       }
 
       // 3. Queue Cloud Sync

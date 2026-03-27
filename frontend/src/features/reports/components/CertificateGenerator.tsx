@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { 
   FileCheck, 
@@ -15,33 +14,13 @@ import {
   Wallet,
   CheckCircle2
 } from 'lucide-react';
+import { useAuth } from "../../../features/auth/AuthContext";
+import Button from "../../../components/ui/Button";
+import { db } from "../../../lib/database/database";
 
 /* ======================================================
     OFFICE MODULE RESOLUTION (OFFLINE-READY)
    ====================================================== */
-
-let useAuth: any = () => ({ theme: 'dark' });
-let db: any = null;
-let Button: any = ({ children, onClick, className}: any) => (
-  <button onClick={onClick} className={className}>{children}</button>
-);
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../../features/auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-
-    const dbMod = await import("../../../lib/database/database");
-    if (dbMod.db) db = dbMod.db;
-
-    const btnMod = await import("../../../components/ui/Button");
-    if (btnMod.default) Button = btnMod.default;
-  } catch (e) {
-    // Sandbox shims active
-  }
-};
-
-resolveModules();
 
 /** --- TYPES --- **/
 

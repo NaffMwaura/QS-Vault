@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import { 
   MessageSquare, 
@@ -11,35 +10,8 @@ import {
   ShieldCheck,
   Zap
 } from 'lucide-react';
-
-/* ======================================================
-    OFFICE MODULE RESOLUTION (PRO-DEV SETUP)
-   ====================================================== */
-
-let useAuth: any = () => ({ theme: 'dark' });
-let Button: any = ({ children, onClick, className}: any) => (
-  <button onClick={onClick} className={className}>{children}</button>
-);
-let GlassCard: any = ({ children, className }: any) => (
-  <div className={className}>{children}</div>
-);
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../../features/auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-
-    const btnMod = await import("../../../components/ui/Button");
-    if (btnMod.default) Button = btnMod.default;
-
-    const glassMod = await import("../../../components/ui/GlassCard");
-    if (glassMod.default) GlassCard = glassMod.default;
-  } catch (e) {
-    // Sandbox fallback active
-  }
-};
-
-resolveModules();
+import Button from "../../../components/ui/Button";
+import GlassCard from "../../../components/ui/GlassCard";
 
 /** --- TYPES --- **/
 
@@ -61,7 +33,6 @@ interface WhatsAppExportProps {
 /** --- MAIN COMPONENT: QUICK PROJECT SHARE --- **/
 
 const WhatsAppExport: React.FC<WhatsAppExportProps> = ({ data, projectName }) => {
-  useAuth();
   const [copied, setCopied] = useState(false);
 
   /** * FINANCIAL HANDSHAKE

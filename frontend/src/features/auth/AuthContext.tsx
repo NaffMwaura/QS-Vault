@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
 import { type Session, type User, type AuthChangeEvent } from "@supabase/supabase-js";
+import { db, supabase } from "../../lib/database/database";
 
 /** --- TYPES & INTERFACES --- **/
 
@@ -34,23 +35,6 @@ const getSystemTheme = (): Theme => {
   }
 
   return window.matchMedia(SYSTEM_THEME_QUERY).matches ? "dark" : "light";
-};
-
-/* ======================================================
-    SYSTEM INITIALIZATION
-   ====================================================== */
-
-let supabase: any = null;
-let db: any = null;
-
-const initializeSystem = async () => {
-  try {
-    const dbMod = await import("../../lib/database/database");
-    if (dbMod.supabase) supabase = dbMod.supabase;
-    if (dbMod.db) db = dbMod.db;
-  } catch (e) {
-    console.warn("Vault Security: Establishing local node connection...");
-  }
 };
 
 const SESSION_EXPIRY_MS = 12 * 60 * 60 * 1000; // 12 Hours
@@ -138,7 +122,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const { data } = await supabase.from('profiles').select('role').eq('id', userId).maybeSingle();
         if (data?.role) {
-          if (db) await db.profiles.put({ id: userId, role: data.role, updated_at: new Date().toISOString() });
+          if (db) {
+            await db.profiles.update(userId, {
+              role: data.role,
+              updated_at: new Date().toISOString(),
+            });
+          }
           return data.role as UserRole;
         }
       } catch (e) { /* Local fallback */ }
@@ -171,8 +160,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let mounted = true;
 
     const initializeAuth = async () => {
-      await initializeSystem();
-      
       if (!mounted) return;
       if (!supabase) {
         setIsLoading(false);
