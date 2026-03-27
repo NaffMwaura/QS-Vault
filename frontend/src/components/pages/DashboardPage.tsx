@@ -78,18 +78,19 @@ const DashboardPage: React.FC = () => {
     <div className={`space-y-16 animate-in fade-in duration-700 pb-20 text-left max-w-1600px] mx-auto`}>
       
       {/* 1. TOP UTILITY HUD */}
-      <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-        <div className="w-full lg:w-auto">
-          <SyncQueueMonitor />
-        </div>
-        <div className="flex items-center gap-4 w-full lg:w-auto justify-end">
-          <div className="hidden md:flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-zinc-950 border border-zinc-800 shadow-inner">
+      <header className="space-y-4">
+        <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+          <div className="inline-flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-zinc-950 border border-zinc-800 shadow-inner">
             <UserCheck size={14} className="text-emerald-500" />
-            <span className="text-[10px] font-black uppercase text-zinc-500 tracking-widest leading-none">
+            <span className="text-[10px] font-black uppercase text-zinc-400 tracking-widest leading-none">
               Officer: {user.user_metadata?.full_name || 'Naftaly Mwaura'}
             </span>
           </div>
           <SunlightModeToggle />
+        </div>
+
+        <div className="w-full">
+          <SyncQueueMonitor />
         </div>
       </header>
 

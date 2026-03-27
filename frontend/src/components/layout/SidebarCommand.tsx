@@ -157,18 +157,18 @@ const SidebarContent = ({
             onClick={() => handleNavigate(link.id)}
           />
         ))}
-      </nav>
 
-      <div className="border-t border-[color:var(--app-divider)] p-5">
         <button
           type="button"
           onClick={signOut}
-          className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.16em] text-rose-500 transition-all hover:bg-rose-500/10"
+          className="mt-3 flex w-full items-center gap-4 rounded-2xl border border-rose-500/15 bg-rose-500/6 px-4 py-3 text-left text-rose-500 transition-all hover:bg-rose-500/10"
         >
           <LogOut size={18} />
-          Log Out
+          <span className="text-[11px] font-black uppercase tracking-[0.16em] leading-none">
+            Log Out
+          </span>
         </button>
-      </div>
+      </nav>
     </div>
   );
 };
