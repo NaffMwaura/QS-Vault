@@ -19,4 +19,29 @@ export default defineConfig({
       }
     }),
     tailwindcss()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return;
+
+          if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+            return 'react-vendor';
+          }
+
+          if (id.includes('@supabase') || id.includes('dexie')) {
+            return 'data-vendor';
+          }
+
+          if (id.includes('@tanstack/react-query')) {
+            return 'query-vendor';
+          }
+
+          if (id.includes('lucide-react')) {
+            return 'icons-vendor';
+          }
+        },
+      },
+    },
+  },
 })
