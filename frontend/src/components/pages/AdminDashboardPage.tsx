@@ -18,52 +18,17 @@ import {
   Share2
 } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
-
-let useAuth: any = () => ({
-  user: { id: 'admin-node-001' },
-  theme: 'dark',
-  role: 'admin',
-  isOnline: true,
-  activeView: 'projects',
-  setActiveView: (v: string) => console.log(v),
-  signOut: async () => { /* Logic in AuthContext */ }
-});
-
-let adminService: any = null;
-
-// Modular Imports for Admin Workspace
-let RatesLibrary: any = () => null;
-let ArtifactsVault: any = () => null;
-let IdentityNode: any = () => null;
-let SyncQueueMonitor: any = () => null;
-let SunlightModeToggle: any = () => null;
-let BoQGenerator: any = () => null;
-let CertificateGenerator: any = () => null;
-let WhatsAppExport: any = () => null;
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../features/auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-
-    const dbMod = await import("../../lib/database/database");
-    if (dbMod.adminService) adminService = dbMod.adminService;
-
-    // Resolve Modular Components
-    RatesLibrary = (await import("../../features/projects/components/RatesLibrary")).default;
-    ArtifactsVault = (await import("../../features/boq/components/ArtifactsVault")).default;
-    IdentityNode = (await import("../../features/auth/components/IdentityNode")).default;
-    SyncQueueMonitor = (await import("../../features/sync/components/SyncQueueMonitor")).default;
-    SunlightModeToggle = (await import("../layout/SunlightModeToggle")).default;
-    BoQGenerator = (await import("../../features/boq/components/BoQGenerator")).default;
-    CertificateGenerator = (await import("../../features/reports/components/CertificateGenerator")).default;
-    WhatsAppExport = (await import("../../features/reports/components/WhatsAppExport")).default;
-  } catch (err) {
-    // Shims active in preview
-  }
-};
-
-resolveModules();
+import type { UserRole } from "../../features/auth/AuthContext";
+import { useAuth } from "../../features/auth/AuthContext";
+import IdentityNode from "../../features/auth/components/IdentityNode";
+import ArtifactsVault from "../../features/boq/components/ArtifactsVault";
+import BoQGenerator from "../../features/boq/components/BoQGenerator";
+import RatesLibrary from "../../features/projects/components/RatesLibrary";
+import CertificateGenerator from "../../features/reports/components/CertificateGenerator";
+import WhatsAppExport from "../../features/reports/components/WhatsAppExport";
+import SyncQueueMonitor from "../../features/sync/components/SyncQueueMonitor";
+import { adminService } from "../../lib/database/database";
+import SunlightModeToggle from "../layout/SunlightModeToggle";
 
 const StatCard = ({ label, value, icon: Icon, color }: any) => (
   <div className="theme-surface-overlay p-8 rounded-[2.5rem] border backdrop-blur-2xl transition-all duration-500 hover:scale-[1.02] group">
@@ -135,7 +100,7 @@ const AdminDashboardPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [role, authLoading, !!adminService, loadAdminData]);
 
-  const handleRoleChange = async (userId: string, newRole: string) => {
+  const handleRoleChange = async (userId: string, newRole: UserRole) => {
     if (!isOnline || !adminService) return;
     setUpdatingId(userId);
     try {
@@ -278,7 +243,7 @@ const AdminDashboardPage: React.FC = () => {
                           <td className="p-10 text-left">
                             <div className="flex items-center gap-6">
                               <select
-                                value={p.role} disabled={updatingId === p.id} onChange={(e) => handleRoleChange(p.id, e.target.value)}
+                                value={p.role} disabled={updatingId === p.id} onChange={(e) => handleRoleChange(p.id, e.target.value as UserRole)}
                                 className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-[10px] font-black uppercase text-zinc-300 outline-none focus:border-amber-500 transition-all cursor-pointer shadow-inner"
                               >
                                 <option value="user">Standard User</option>

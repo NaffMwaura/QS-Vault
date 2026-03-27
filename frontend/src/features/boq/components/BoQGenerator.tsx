@@ -10,28 +10,8 @@ import {
   Loader2,
   Database
 } from 'lucide-react';
-
-// Default shims for the preview environment
-let useAuth: any = () => ({
-  theme: 'dark',
-});
-
-let db: any = null;
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../../features/auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-
-    const dbMod = await import("../../../lib/database/database");
-    if (dbMod.db) db = dbMod.db;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (e) {
-    // Sandbox fallback
-  }
-};
-
-resolveModules();
+import { useAuth } from "../../../features/auth/AuthContext";
+import { db } from "../../../lib/database/database";
 
 interface BoQItem {
   id: string;

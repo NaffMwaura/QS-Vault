@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   ZoomIn, 
@@ -11,28 +10,12 @@ import {
   Loader2,
 } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
+import { useAuth } from "../../auth/AuthContext";
 
 /** * PDF ENGINE CONFIGURATION
  * We use a standardized worker for high-speed drawing interpretation.
  */
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://esm.sh/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
-
-/* ======================================================
-    OFFICE MODULE RESOLUTION
-   ====================================================== */
-
-let useAuth: any = () => ({ theme: 'dark' });
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../../features/auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-  } catch (e) {
-    // Sandbox fallback
-  }
-};
-
-resolveModules();
 
 /** --- TYPES --- **/
 

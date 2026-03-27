@@ -1,4 +1,3 @@
-import  { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -6,6 +5,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 // Features & Libs
 import { AuthProvider, useAuth } from "./features/auth/AuthContext";
 import { queryClient } from "./lib/queryClient";
+import { useOnlineStatus } from "./hooks/useOnlineStatus";
 import { useSync } from "./hooks/useSync";
 
 // Components & Pages
@@ -25,20 +25,9 @@ import AppShell from "./components/layout/AppShell";
 const RootComponent = () => {
   const { session, isLoading, theme, role } = useAuth();
   const navigate = useNavigate();
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const isOnline = useOnlineStatus();
 
   useSync();
-
-  useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
-    return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
-    };
-  }, []);
 
   // LOADING / SPLASH SCREEN
   if (isLoading || (session && role === null)) {

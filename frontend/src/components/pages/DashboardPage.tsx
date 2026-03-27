@@ -13,63 +13,20 @@ import {
   Zap,
   Database,
 } from 'lucide-react';
-
-/* ======================================================
-    ENGINE RESOLUTION (STABILIZED IMPORTS)
-   ====================================================== */
-
-let useAuth: any = () => ({
-  user: { id: 'dev-node-001', user_metadata: { full_name: 'Naftaly Mwaura' } },
-  theme: 'dark',
-  activeView: 'projects',
-  setActiveView: (view: string) => console.log("Workspace Shift:", view),
-  isOnline: true
-});
-
-let db: any = null;
-
-// Operational Nodes
-let StatGrid: any = () => null;
-let VaultRegistry: any = () => null;
-let RatesLibrary: any = () => null;
-let IdentityNode: any = () => null;
-let SyncQueueMonitor: any = () => null;
-let SunlightModeToggle: any = () => null;
-let GeometricRegistry: any = () => null;
-let SiteDiaryEngine: any = () => null;
-let ResourceGantt: any = () => null;
-let CollaborationHub: any = () => null;
-let ComplianceVault: any = () => null;
-let VariationBridge: any = () => null;
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../features/auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-    const dbMod = await import("../../lib/database/database");
-    if (dbMod.db) db = dbMod.db;
-
-    // Load Standard Components
-    StatGrid = (await import("../../features/projects/components/StatGrid")).default;
-    VaultRegistry = (await import("../../features/projects/components/VaultRegistry")).default;
-    RatesLibrary = (await import("../../features/projects/components/RatesLibrary")).default;
-    IdentityNode = (await import("../../features/auth/components/IdentityNode")).default;
-    SyncQueueMonitor = (await import("../../features/sync/components/SyncQueueMonitor")).default;
-    SunlightModeToggle = (await import("../layout/SunlightModeToggle")).default;
-    GeometricRegistry = (await import("../../features/takeoff/components/GeometricRegistry")).default;
-
-    // Load Field & Communication Engines
-    SiteDiaryEngine = (await import("../../features/field/components/SiteDiaryEngine")).default;
-    ResourceGantt = (await import("../../features/scheduling/components/ResourceGantt")).default;
-    CollaborationHub = (await import("../../features/communication/components/CollaborationHub")).default;
-    ComplianceVault = (await import("../../features/safety/components/ComplianceVault")).default;
-    VariationBridge = (await import("../../features/qs-bridge/components/VariationBridge")).default;
-  } catch (e) {
-    console.warn("Dashboard: Operating in fallback mode.");
-  }
-};
-
-resolveModules();
+import { useAuth } from "../../features/auth/AuthContext";
+import IdentityNode from "../../features/auth/components/IdentityNode";
+import CollaborationHub from "../../features/communication/components/CollaborationHub";
+import SiteDiaryEngine from "../../features/field/components/SiteDiaryEngine";
+import RatesLibrary from "../../features/projects/components/RatesLibrary";
+import StatGrid from "../../features/projects/components/StatGrid";
+import VaultRegistry from "../../features/projects/components/VaultRegistry";
+import VariationBridge from "../../features/qs-bridge/components/VariationBridge";
+import ComplianceVault from "../../features/safety/components/ComplianceVault";
+import ResourceGantt from "../../features/scheduling/components/ResourceGantt";
+import SyncQueueMonitor from "../../features/sync/components/SyncQueueMonitor";
+import GeometricRegistry from "../../features/takeoff/components/GeometricRegistry";
+import { db } from "../../lib/database/database";
+import SunlightModeToggle from "../layout/SunlightModeToggle";
 
 /** --- MASTER DASHBOARD: CONSTRUCTION OS v2.0 --- **/
 
@@ -275,7 +232,11 @@ const DashboardPage: React.FC = () => {
                        <Database size={18} className="text-zinc-500" />
                        <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 italic">Takeoff Audit Ledger</h4>
                     </div>
-                    <GeometricRegistry measurements={recentMeasurements} activeSection="All Sections" />
+                  <GeometricRegistry
+                    measurements={recentMeasurements}
+                    onDelete={() => undefined}
+                    activeSection="All Sections"
+                  />
                   </div>
                </div>
             )}

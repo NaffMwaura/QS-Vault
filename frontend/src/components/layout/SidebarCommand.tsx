@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import { 
   LayoutGrid, 
@@ -13,31 +12,7 @@ import {
   Calendar,
   MessageSquare,
 } from 'lucide-react';
-
-/* ======================================================
-    OFFICE MODULE RESOLUTION (OFFLINE-FIRST)
-   ====================================================== */
-
-// 1. Hook declaration with stable fallback for the environment
-let useAuth: any = () => ({
-  user: { id: 'dev-user-001', user_metadata: { full_name: 'Naftaly Mwaura' } },
-  signOut: async () => console.log("Terminating session..."),
-  theme: 'dark',
-  toggleTheme: () => console.log("Switching appearance..."),
-  activeView: 'projects',
-  setActiveView: (view: string) => console.log(`Navigating to ${view}`)
-});
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../features/auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-  } catch (e) {
-    // Sandbox fallback
-  }
-};
-
-resolveModules();
+import { useAuth } from "../../features/auth/AuthContext";
 
 /** --- TYPES --- **/
 // Matches the DashboardView type from HUDHeader.tsx

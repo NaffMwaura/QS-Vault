@@ -4,28 +4,7 @@ import {
   Zap,
   Eye
 } from 'lucide-react';
-
-/* ======================================================
-    OFFICE MODULE RESOLUTION
-   ====================================================== */
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let useAuth: any = () => ({
-  theme: 'dark',
-  toggleTheme: () => console.log("Appearance change requested"),
-});
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../features/auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (e) {
-    // Sandbox shims active
-  }
-};
-
-resolveModules();
+import { useAuth } from "../../features/auth/AuthContext";
 
 /** --- MAIN COMPONENT: SITE VISIBILITY ENGINE --- **/
 

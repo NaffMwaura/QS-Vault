@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import { 
   Hash, 
@@ -14,25 +13,7 @@ import {
   Info,
   Zap
 } from 'lucide-react';
-
-/* ======================================================
-    OFFICE MODULE RESOLUTION (PRO-DEV SETUP)
-   ====================================================== */
-
-let useAuth: any = () => ({
-  theme: 'dark',
-});
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../../features/auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-  } catch (e) {
-    // Sandbox shims active
-  }
-};
-
-resolveModules();
+import { useAuth } from "../../auth/AuthContext";
 
 /** --- TYPES --- **/
 

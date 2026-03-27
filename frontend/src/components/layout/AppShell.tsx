@@ -1,45 +1,9 @@
 import React, {  } from 'react';
 import { useLocation } from "react-router-dom";
 import { ShieldCheck, HardHat,  } from "lucide-react";
-
-/* ======================================================
-    OFFICE MODULE RESOLUTION (OFFLINE-FIRST)
-    This section ensures the frame can boot even if 
-    individual nodes are loading or offline.
-   ====================================================== */
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let useAuth: any = () => ({
-  user: { id: 'dev-node-001', user_metadata: { full_name: 'Naftaly Mwaura' } },
-  isLoading: false,
-  theme: 'dark',
-  isOnline: true,
-  activeView: 'projects',
-  setActiveView: (view: string) => console.log("Navigation:", view)
-});
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let HUDHeader: any = () => null;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let SidebarCommand: any = () => null;
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../features/auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-
-    const headerMod = await import("./HUDHeader");
-    HUDHeader = headerMod.default;
-
-    const sidebarMod = await import("./SidebarCommand");
-    SidebarCommand = sidebarMod.default;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (e) {
-    // Shims active for sandbox stability
-  }
-};
-
-resolveModules();
+import { useAuth } from "../../features/auth/AuthContext";
+import HUDHeader from "./HUDHeader";
+import SidebarCommand from "./SidebarCommand";
 
 /** --- TYPES --- **/
 interface AppShellProps {

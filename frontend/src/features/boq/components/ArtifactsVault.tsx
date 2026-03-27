@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
 import { 
   FileText, 
@@ -13,24 +12,8 @@ import {
   Lock,
   Database
 } from 'lucide-react';
-
-    // Office Databse Integration
-let useAuth: any = () => ({ user: { id: 'dev-user' }, theme: 'dark' });
-let db: any = null;
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../../features/auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-
-    const dbMod = await import("../../../lib/database/database");
-    if (dbMod.db) db = dbMod.db; 
-  } catch (e) {
-    // Fallback if database.ts is not reachable
-  }
-};
-
-resolveModules();
+import { useAuth } from "../../../features/auth/AuthContext";
+import { db } from "../../../lib/database/database";
 
 /** --- TYPES --- **/
 

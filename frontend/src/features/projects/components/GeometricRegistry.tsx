@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import {
   Trash2, 
@@ -11,32 +10,12 @@ import {
   Database,
   CheckCircle2
 } from 'lucide-react';
+import { useAuth } from "../../auth/AuthContext";
+import { db, syncEngine } from "../../../lib/database/database";
 
 /* ======================================================
     OFFICE MODULE RESOLUTION (OFFLINE-FIRST)
    ====================================================== */
-
-let useAuth: any = () => ({
-  theme: 'dark',
-});
-
-let db: any = null;
-let syncEngine: any = null;
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../../features/auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-
-    const dbMod = await import("../../../lib/database/database");
-    if (dbMod.db) db = dbMod.db; 
-    if (dbMod.syncEngine) syncEngine = dbMod.syncEngine;
-  } catch (e) {
-    // Sandbox shims active
-  }
-};
-
-resolveModules();
 
 /** --- TYPES --- **/
 

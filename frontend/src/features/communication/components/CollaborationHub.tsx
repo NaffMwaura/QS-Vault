@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   MessageSquare, 
@@ -15,47 +14,10 @@ import {
   ChevronRight,
   Database
 } from 'lucide-react';
-
-/* ======================================================
-    OFFICE MODULE RESOLUTION (PRO-DEV SETUP)
-   ====================================================== */
-
-let useAuth: any = () => ({ 
-  user: { id: 'dev-node-001', user_metadata: { full_name: 'Naftaly Mwaura' } },
-  theme: 'dark' 
-});
-
-let db: any = null;
-let syncEngine: any = null;
-let Button: any = ({ children, onClick, className }: any) => (
-  <button onClick={onClick} className={className}>{children}</button>
-);
-let GlassCard: any = ({ children, className }: any) => (
-  <div className={className}>{children}</div>
-);
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-
-    const dbMod = await import("../../../lib/database/database");
-    if (dbMod.db) db = dbMod.db; 
-    
-    const syncMod = await import("../../../lib/database/database");
-    if (syncMod.syncEngine) syncEngine = syncMod.syncEngine;
-
-    const btnMod = await import("../../../components/ui/Button");
-    if (btnMod.default) Button = btnMod.default;
-
-    const glassMod = await import("../../../components/ui/GlassCard");
-    if (glassMod.default) GlassCard = glassMod.default;
-  } catch (e) {
-    // Sandbox shims active for environment stability
-  }
-};
-
-resolveModules();
+import { useAuth } from "../../auth/AuthContext";
+import Button from "../../../components/ui/Button";
+import GlassCard from "../../../components/ui/GlassCard";
+import { db, syncEngine } from "../../../lib/database/database";
 
 /** --- TYPES --- **/
 
@@ -84,6 +46,7 @@ interface CollaborationHubProps {
 
 const CollaborationHub: React.FC<CollaborationHubProps> = ({ projectId }) => {
   const { user } = useAuth();
+  const currentUserId = user?.id ?? 'local-user';
   
   // Navigation & UI State
   const [activeTab, setActiveTab] = useState<'chat' | 'rfi'>('chat');
@@ -153,7 +116,7 @@ const CollaborationHub: React.FC<CollaborationHubProps> = ({ projectId }) => {
 
     const messageData: Message = {
       id: crypto.randomUUID(),
-      user_id: user.id,
+      user_id: currentUserId,
       text: newMessage,
       timestamp: new Date().toISOString(),
       is_local: true
@@ -277,10 +240,10 @@ const CollaborationHub: React.FC<CollaborationHubProps> = ({ projectId }) => {
                className="flex-1 overflow-y-auto p-10 space-y-8 custom-scrollbar"
              >
                 {messages.length > 0 ? messages.map((msg) => (
-                  <div key={msg.id} className={`flex ${msg.user_id === user.id ? 'justify-end' : 'justify-start'}`}>
-                     <div className={`max-w-[75%] space-y-2 ${msg.user_id === user.id ? 'text-right' : 'text-left'}`}>
+                  <div key={msg.id} className={`flex ${msg.user_id === currentUserId ? 'justify-end' : 'justify-start'}`}>
+                     <div className={`max-w-[75%] space-y-2 ${msg.user_id === currentUserId ? 'text-right' : 'text-left'}`}>
                         <div className={`p-6 rounded-4xl text-sm font-medium leading-relaxed
-                          ${msg.user_id === user.id 
+                          ${msg.user_id === currentUserId 
                             ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/10 rounded-tr-none' 
                             : 'bg-zinc-800 border border-zinc-700 text-zinc-200 rounded-tl-none'}`}>
                            {msg.text}
