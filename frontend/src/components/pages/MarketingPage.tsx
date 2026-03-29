@@ -339,6 +339,7 @@ const MarketingPage = ({ onGetStarted }: { onGetStarted: () => void }) => {
         </div>
       </section>
 
+
       {/* 6. SYSTEM FOOTER */}
       <footer className="theme-surface-muted py-40 text-center border-t border-[color:var(--app-border)] transition-colors duration-500">
         <div className="mb-14 flex items-center justify-center gap-4">
