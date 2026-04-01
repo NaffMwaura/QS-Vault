@@ -1,23 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React from "react";
 import { Database, Globe, WifiOff,  TrendingUp } from "lucide-react";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let useAuth: any = () => ({
-  theme: "dark",
-  isOnline: true,
-});
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../../features/auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-  } catch (e) {
-    // Sandbox fallback active
-  }
-};
-
-resolveModules();
+import { useAuth } from "../../../features/auth/AuthContext";
 
 interface StatItem {
   label: string;

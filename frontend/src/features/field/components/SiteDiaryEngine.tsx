@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
@@ -15,28 +14,13 @@ import {
   Loader2,
   History
 } from 'lucide-react';
+import { useAuth } from "../../auth/AuthContext";
+import { db, syncEngine } from "../../../lib/database/database";
 
 /* ======================================================
     SITE DIARY: DAILY PROGRESS TRACKER
     Uses Dexie (Offline) + SyncEngine (Online)
    ====================================================== */
-
-let useAuth: any = () => ({ theme: 'dark' });
-let db: any = null;
-let syncEngine: any = null;
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-    const dbMod = await import("../../../lib/database/database");
-    if (dbMod.db) db = dbMod.db;
-    if (dbMod.syncEngine) syncEngine = dbMod.syncEngine;
-  } catch (e) {
-    // Shims active for sandbox
-  }
-};
-resolveModules();
 
 interface SiteDiaryEngineProps {
   projectId: string | null;

@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
 import { 
   FileText, 
@@ -13,24 +12,8 @@ import {
   Lock,
   Database
 } from 'lucide-react';
-
-    // Office Databse Integration
-let useAuth: any = () => ({ user: { id: 'dev-user' }, theme: 'dark' });
-let db: any = null;
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../../features/auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-
-    const dbMod = await import("../../../lib/database/database");
-    if (dbMod.db) db = dbMod.db; 
-  } catch (e) {
-    // Fallback if database.ts is not reachable
-  }
-};
-
-resolveModules();
+import { useAuth } from "../../../features/auth/AuthContext";
+import { db } from "../../../lib/database/database";
 
 /** --- TYPES --- **/
 
@@ -50,23 +33,23 @@ const DocumentCard: React.FC<{
   isProcessing: boolean;
   theme: 'light' | 'dark' 
 }> = ({ report, onDownload, isProcessing, theme }) => (
-  <div className={`p-8 rounded-[2.5rem] border transition-all duration-500 group relative flex flex-col justify-between overflow-hidden
+  <div className={`p-5 sm:p-6 rounded-[1.8rem] border transition-all duration-500 group relative flex flex-col justify-between overflow-hidden
     ${theme === 'dark' 
       ? 'bg-zinc-900/40 border-zinc-800 hover:border-amber-500/30 shadow-2xl' 
       : 'bg-white border-zinc-200 hover:border-amber-500/30 shadow-xl'}`}>
     
-    <div className="flex justify-between items-start mb-8">
-      <div className={`p-5 rounded-3xl transition-all duration-500 shadow-inner
+    <div className="mb-5 flex items-start justify-between gap-4">
+      <div className={`flex h-14 w-14 items-center justify-center rounded-[1.2rem] transition-all duration-500 shadow-inner
         ${theme === 'dark' ? 'bg-zinc-950 border border-zinc-800' : 'bg-zinc-50 border border-zinc-100'}
         group-hover:bg-amber-500/10 group-hover:border-amber-500/20`}>
         {report.type === 'XLS' ? (
-          <FileSpreadsheet className="text-zinc-600 group-hover:text-amber-500 transition-colors" size={32} />
+          <FileSpreadsheet className="text-zinc-600 group-hover:text-amber-500 transition-colors" size={24} />
         ) : (
-          <FileText className="text-zinc-600 group-hover:text-amber-500 transition-colors" size={32} />
+          <FileText className="text-zinc-600 group-hover:text-amber-500 transition-colors" size={24} />
         )}
       </div>
       <div className="text-right">
-        <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border
+        <span className={`theme-admin-chip inline-flex border
           ${report.status === 'Draft' 
             ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' 
             : report.status === 'Certified'
@@ -77,30 +60,30 @@ const DocumentCard: React.FC<{
       </div>
     </div>
 
-    <div className="mb-10 text-left">
-      <p className="text-[8px] font-black uppercase text-zinc-500 tracking-[0.3em] mb-2 italic">
+    <div className="mb-6 text-left">
+      <p className="theme-admin-label mb-2">
         Project: {report.projectName}
       </p>
-      <h3 className={`text-2xl font-black uppercase tracking-tight mb-2 leading-tight
+      <h3 className={`mb-2 text-[1.35rem] font-black uppercase tracking-tight leading-tight
         ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
         {report.title}
       </h3>
-      <div className="flex items-center gap-4 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+      <div className="flex flex-wrap items-center gap-3 text-[0.74rem] font-semibold text-zinc-500 uppercase tracking-[0.12em]">
         <span>Rev {report.version}</span>
         <span className="w-1 h-1 rounded-full bg-zinc-800" />
         <span>Updated: {report.lastUpdated}</span>
       </div>
     </div>
 
-    <div className="grid grid-cols-2 gap-4">
-      <button className={`flex items-center justify-center gap-3 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <button className={`theme-admin-control flex items-center justify-center gap-3 transition-all
         ${theme === 'dark' ? 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>
         <Eye size={14} /> Preview
       </button>
       <button 
         onClick={() => onDownload(report.id)}
         disabled={report.status === 'Archived' || isProcessing}
-        className={`flex items-center justify-center gap-3 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl
+        className={`theme-admin-control flex items-center justify-center gap-3 transition-all shadow-xl
           ${report.status === 'Archived' 
             ? 'bg-zinc-950 text-zinc-800 cursor-not-allowed border border-zinc-900' 
             : 'bg-amber-500 text-black shadow-amber-500/20 hover:bg-amber-400 active:scale-95'}`}
@@ -157,30 +140,30 @@ const ArtifactsVault: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col p-6 sm:p-12 space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="flex-1 flex flex-col space-y-8 p-5 sm:p-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
       
-      <header className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 shrink-0 text-left">
+      <header className="flex shrink-0 flex-col items-start justify-between gap-5 text-left lg:flex-row lg:items-end">
         <div className="space-y-2">
-          <h2 className={`text-4xl sm:text-6xl font-black uppercase italic tracking-tighter leading-none
+          <h2 className={`text-3xl sm:text-4xl font-black uppercase italic tracking-tighter leading-none
             ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
             Project <span className="text-amber-500">Reports.</span>
           </h2>
-          <p className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-500 italic">
+          <p className="theme-admin-label">
             Official Documents & Cost Records
           </p>
         </div>
-        <button className="flex items-center gap-3 px-10 py-5 bg-amber-500 text-black rounded-4xl font-black uppercase text-[10px] tracking-widest shadow-2xl shadow-amber-500/20 hover:bg-amber-400 active:scale-95 transition-all">
+        <button className="theme-admin-control flex items-center gap-3 rounded-[1.2rem] bg-amber-500 text-black shadow-2xl shadow-amber-500/20 hover:bg-amber-400 active:scale-95 transition-all">
           <FileCheck size={18} className="stroke-[3px]" /> Prepare Final Report
         </button>
       </header>
 
       {loading ? (
-        <div className="py-20 text-center opacity-20">
+        <div className="py-16 text-center opacity-30">
           <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4" />
-          <p className="font-black uppercase text-xs tracking-widest">Accessing File Cabinet...</p>
+          <p className="theme-admin-label">Accessing File Cabinet...</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 overflow-y-auto custom-scrollbar pr-2 pb-10">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
           {reports.length > 0 ? reports.map((report) => (
             <DocumentCard 
               key={report.id} 
@@ -190,14 +173,14 @@ const ArtifactsVault: React.FC = () => {
               theme={theme} 
             />
           )) : (
-            <div className={`col-span-full p-20 rounded-[3.5rem] border border-dashed flex flex-col items-center justify-center gap-6 opacity-30
+            <div className={`col-span-full flex flex-col items-center justify-center gap-5 rounded-[2rem] border border-dashed p-12 text-center opacity-40
               ${theme === 'dark' ? 'border-zinc-800 bg-zinc-950/20' : 'border-zinc-300 bg-zinc-50'}`}>
-              <Database size={64} className="text-zinc-700" />
-              <div className="text-center">
-                <p className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-500 leading-none">
+              <Database size={48} className="text-zinc-700" />
+              <div>
+                <p className="theme-admin-subheading">
                   No Documents Found
                 </p>
-                <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-zinc-600 mt-3">
+                <p className="theme-admin-meta mt-2">
                   Start a project measurement to generate reports.
                 </p>
               </div>
@@ -206,21 +189,21 @@ const ArtifactsVault: React.FC = () => {
         </div>
       )}
 
-      <footer className="flex flex-col sm:flex-row justify-between items-center opacity-30 gap-6">
+      <footer className="flex flex-col gap-4 border-t border-[color:var(--app-divider)] pt-5 opacity-60 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <ShieldCheck size={18} className="text-emerald-500" />
-          <p className="text-[9px] font-black uppercase tracking-[0.5em] italic leading-none">
+          <ShieldCheck size={16} className="text-emerald-500" />
+          <p className="theme-admin-label">
             Secure Office Records System
           </p>
         </div>
-        <div className="flex items-center gap-8">
+        <div className="flex flex-wrap items-center gap-5">
           <div className="flex items-center gap-2">
             <Lock size={12} className="text-zinc-600" />
-            <span className="text-[8px] font-black uppercase tracking-widest text-zinc-600">Encrypted</span>
+            <span className="theme-admin-meta text-[0.72rem] uppercase">Encrypted</span>
           </div>
           <div className="flex items-center gap-2">
             <History size={12} className="text-amber-500" />
-            <span className="text-[8px] font-black uppercase tracking-widest text-zinc-600">History Active</span>
+            <span className="theme-admin-meta text-[0.72rem] uppercase">History Active</span>
           </div>
         </div>
       </footer>

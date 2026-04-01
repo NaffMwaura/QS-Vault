@@ -13,6 +13,7 @@ import {
   Zap,
   Database,
 } from 'lucide-react';
+<<<<<<< HEAD
 
 /* ======================================================
     ENGINE RESOLUTION (STABILIZED IMPORTS)
@@ -72,6 +73,22 @@ const resolveModules = async () => {
 };
 
 resolveModules();
+=======
+import { useAuth } from "../../features/auth/AuthContext";
+import IdentityNode from "../../features/auth/components/IdentityNode";
+import CollaborationHub from "../../features/communication/components/CollaborationHub";
+import SiteDiaryEngine from "../../features/field/components/SiteDiaryEngine";
+import RatesLibrary from "../../features/projects/components/RatesLibrary";
+import StatGrid from "../../features/projects/components/StatGrid";
+import VaultRegistry from "../../features/projects/components/VaultRegistry";
+import VariationBridge from "../../features/qs-bridge/components/VariationBridge";
+import ComplianceVault from "../../features/safety/components/ComplianceVault";
+import ResourceGantt from "../../features/scheduling/components/ResourceGantt";
+import SyncQueueMonitor from "../../features/sync/components/SyncQueueMonitor";
+import GeometricRegistry from "../../features/takeoff/components/GeometricRegistry";
+import { db } from "../../lib/database/database";
+import SunlightModeToggle from "../layout/SunlightModeToggle";
+>>>>>>> 5672f133f38e4dbe54cbf2ed49ea9dee7913a4a8
 
 /** --- MASTER DASHBOARD: CONSTRUCTION OS v2.0 --- **/
 
@@ -123,18 +140,19 @@ const DashboardPage: React.FC = () => {
     <div className={`space-y-16 animate-in fade-in duration-700 pb-20 text-left max-w-1600px] mx-auto`}>
       
       {/* 1. TOP UTILITY HUD */}
-      <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-        <div className="w-full lg:w-auto">
-          <SyncQueueMonitor />
-        </div>
-        <div className="flex items-center gap-4 w-full lg:w-auto justify-end">
-          <div className="hidden md:flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-zinc-950 border border-zinc-800 shadow-inner">
+      <header className="space-y-4">
+        <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+          <div className="inline-flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-zinc-950 border border-zinc-800 shadow-inner">
             <UserCheck size={14} className="text-emerald-500" />
-            <span className="text-[10px] font-black uppercase text-zinc-500 tracking-widest leading-none">
+            <span className="text-[10px] font-black uppercase text-zinc-400 tracking-widest leading-none">
               Officer: {user.user_metadata?.full_name || 'Naftaly Mwaura'}
             </span>
           </div>
           <SunlightModeToggle />
+        </div>
+
+        <div className="w-full">
+          <SyncQueueMonitor />
         </div>
       </header>
 
@@ -277,7 +295,11 @@ const DashboardPage: React.FC = () => {
                        <Database size={18} className="text-zinc-500" />
                        <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 italic">Takeoff Audit Ledger</h4>
                     </div>
-                    <GeometricRegistry measurements={recentMeasurements} activeSection="All Sections" />
+                  <GeometricRegistry
+                    measurements={recentMeasurements}
+                    onDelete={() => undefined}
+                    activeSection="All Sections"
+                  />
                   </div>
                </div>
             )}

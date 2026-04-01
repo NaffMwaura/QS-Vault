@@ -24,26 +24,8 @@ import SMMTemplates from './components/SMMTemplates';
 import BoQGenerator from '../boq/components/BoQGenerator';
 import CertificateGenerator from '../reports/components/CertificateGenerator';
 import WhatsAppExport from '../reports/components/WhatsAppExport';
-
-/* ======================================================
-    OFFICE MODULE RESOLUTION
-   ====================================================== */
-
-let useAuth: any = () => ({ user: { id: 'dev-node-001' }, theme: 'dark' });
-let db: any = null;
-let syncEngine: any = null;
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../features/auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-    const dbMod = await import("../../lib/database/database");
-    if (dbMod.db) db = dbMod.db;
-    if (dbMod.syncEngine) syncEngine = dbMod.syncEngine;
-  } catch (e) { /* empty */ }
-};
-
-resolveModules();
+import { useAuth } from "../auth/AuthContext";
+import { db, syncEngine } from "../../lib/database/database";
 
 /** --- TYPES --- **/
 interface Point { x: number; y: number; }
@@ -96,7 +78,7 @@ const ProjectTakeoffPage: React.FC<ProjectTakeoffPageProps> = ({ projectId, proj
       if (!db || !projectId) { setIsLoading(false); return; }
       try {
         const stored = await db.measurements.where('project_id').equals(projectId).toArray();
-        setMeasurements(stored);
+        setMeasurements(stored as unknown as Measurement[]);
       } finally { setIsLoading(false); }
     };
     loadVault();
@@ -129,8 +111,10 @@ const ProjectTakeoffPage: React.FC<ProjectTakeoffPageProps> = ({ projectId, proj
     };
 
     try {
-      await db.measurements.add(entry);
-      if (syncEngine) await syncEngine.queueChange('measurements', id, 'INSERT', entry);
+      await db.measurements.add(entry as typeof entry & { bill_item_id: null });
+      if (syncEngine) {
+        await syncEngine.queueChange('measurements', id, 'INSERT', entry as typeof entry & { bill_item_id: null });
+      }
       setMeasurements([entry, ...measurements]);
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);

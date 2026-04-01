@@ -14,39 +14,12 @@ import {
   Plus,
   ShieldCheck
 } from 'lucide-react';
+import { useAuth } from "../../auth/AuthContext";
+import { db, syncEngine } from "../../../lib/database/database";
 
 /* ======================================================
     OFFICE MODULE RESOLUTION (OFFLINE-FIRST)
    ====================================================== */
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let useAuth: any = () => ({
-  theme: 'dark',
-  isOnline: true,
-});
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let db: any = null;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let syncEngine: any = null;
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../../features/auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-
-    const dbMod = await import("../../../lib/database/database");
-    if (dbMod.db) db = dbMod.db; 
-    
-    const syncMod = await import("../../../lib/database/database");
-    if (syncMod.syncEngine) syncEngine = syncMod.syncEngine;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (e) {
-    // Sandbox fallback active
-  }
-};
-
-resolveModules();
 
 /** --- MAIN COMPONENT: DATA SYNC MONITOR --- **/
 
@@ -65,8 +38,8 @@ const SyncQueueMonitor: React.FC = () => {
   useEffect(() => {
     const checkOutbox = async () => {
       try {
-        if (db?.syncQueue) {
-          const count = await db.syncQueue.count();
+        if (db?.sync_queue) {
+          const count = await db.sync_queue.count();
           setPendingCount(count);
         }
       // eslint-disable-next-line @typescript-eslint/no-unused-vars

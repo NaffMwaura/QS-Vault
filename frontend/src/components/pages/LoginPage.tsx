@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Mail,
   CheckCircle,
@@ -21,79 +21,9 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
-interface AuthContextValue {
-  theme: "light" | "dark";
-  toggleTheme: () => void;
-}
-
-interface SupabaseClientMock {
-  auth: {
-    signInWithPassword: (args: {
-      email?: string;
-      password?: string;
-    }) => Promise<{
-      data: { user: { id: string } } | null;
-      error: Error | null;
-    }>;
-    signUp: (args: {
-      email?: string;
-      password?: string;
-      options?: { data?: Record<string, string>; emailRedirectTo?: string };
-    }) => Promise<{
-      data: { user: { id: string } } | null;
-      error: Error | null;
-    }>;
-    signInWithOAuth: (args: {
-      provider: string;
-      options?: { redirectTo?: string };
-    }) => Promise<{ error: Error | null }>;
-  };
-  from: (table: string) => {
-    select: (columns: string) => {
-      eq: (
-        column: string,
-        value: string,
-      ) => {
-        single: () => Promise<{
-          data: { role: string } | null;
-          error: Error | null;
-        }>;
-      };
-    };
-  };
-}
-
-let supabase: SupabaseClientMock = {
-  auth: {
-    signInWithPassword: async () => ({
-      data: { user: { id: "mock" } },
-      error: null,
-    }),
-    signUp: async () => ({ data: { user: { id: "mock" } }, error: null }),
-    signInWithOAuth: async () => ({ error: null }),
-  },
-  from: () => ({
-    select: () => ({
-      eq: () => ({
-        single: async () => ({ data: { role: "user" }, error: null }),
-      }),
-    }),
-  }),
-};
-
-try {
-  // Use @ts-expect-error instead of @ts-ignore per eslint@typescript-eslint/ban-ts-comment
-  import("../../lib/database/database")
-    .then((mod) => {
-      supabase = mod.supabase as unknown as SupabaseClientMock;
-    })
-    .catch(() => {
-      // Fail-safe for async resolution
-    });
-} catch {
-  //
-}
+import { useAuth } from "../../features/auth/AuthContext";
+import { useOnlineStatus } from "../../hooks/useOnlineStatus";
+import { supabase } from "../../lib/database/database";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
@@ -110,25 +40,6 @@ interface FeatureItemProps {
   icon: React.ElementType;
   title: string;
   description: string;
-}
-
-let useAuth: () => AuthContextValue = () => ({
-  theme: "dark",
-  toggleTheme: () => {
-    /* no-op simulation */
-  },
-});
-
-try {
-  import("../../features/auth/AuthContext")
-    .then((mod) => {
-      useAuth = mod.useAuth;
-    })
-    .catch(() => {
-      // Fail-safe for async resolution
-    });
-} catch {
-  //
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -196,19 +107,7 @@ const LoginPage: React.FC = () => {
 
   // View State
   const [mobileView, setMobileView] = useState<"branding" | "form">("form");
-  const [isOnline, setIsOnline] = useState(() =>
-    typeof navigator !== "undefined" ? navigator.onLine : true,
-  );
-
-  useEffect(() => {
-    const handleStatus = () => setIsOnline(navigator.onLine);
-    window.addEventListener("online", handleStatus);
-    window.addEventListener("offline", handleStatus);
-    return () => {
-      window.removeEventListener("online", handleStatus);
-      window.removeEventListener("offline", handleStatus);
-    };
-  }, []);
+  const isOnline = useOnlineStatus();
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();

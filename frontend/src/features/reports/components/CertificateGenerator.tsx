@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { 
   FileCheck, 
@@ -15,33 +14,13 @@ import {
   Wallet,
   CheckCircle2
 } from 'lucide-react';
+import { useAuth } from "../../../features/auth/AuthContext";
+import Button from "../../../components/ui/Button";
+import { db } from "../../../lib/database/database";
 
 /* ======================================================
     OFFICE MODULE RESOLUTION (OFFLINE-READY)
    ====================================================== */
-
-let useAuth: any = () => ({ theme: 'dark' });
-let db: any = null;
-let Button: any = ({ children, onClick, className}: any) => (
-  <button onClick={onClick} className={className}>{children}</button>
-);
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../../features/auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-
-    const dbMod = await import("../../../lib/database/database");
-    if (dbMod.db) db = dbMod.db;
-
-    const btnMod = await import("../../../components/ui/Button");
-    if (btnMod.default) Button = btnMod.default;
-  } catch (e) {
-    // Sandbox shims active
-  }
-};
-
-resolveModules();
 
 /** --- TYPES --- **/
 
@@ -138,22 +117,22 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({ projectId, 
 
   if (loading) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-40 opacity-20">
+      <div className="flex-1 flex flex-col items-center justify-center p-16 opacity-30">
         <Loader2 className="w-12 h-12 animate-spin mb-4 text-amber-500" />
-        <p className="font-black text-[10px] uppercase tracking-[0.4em]">Compiling Financial Data...</p>
+        <p className="theme-admin-label">Compiling Financial Data...</p>
       </div>
     );
   }
 
   return (
-    <section className="flex-1 flex flex-col p-6 sm:p-12 space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 text-left">
+    <section className="flex-1 flex flex-col space-y-8 p-5 sm:p-6 animate-in fade-in slide-in-from-bottom-4 duration-700 text-left">
       
       {/* 1. REPORT HEADER: MASTER ACTIONS */}
-      <header className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 shrink-0">
+      <header className="flex shrink-0 flex-col items-start justify-between gap-5 lg:flex-row lg:items-end">
         <div className="space-y-2">
           <div className="flex items-center gap-3 text-amber-500 mb-2">
-            <FileCheck size={32} className="stroke-[2.5px]" />
-            <h2 className={`text-4xl sm:text-6xl font-black uppercase italic tracking-tighter leading-none
+            <FileCheck size={24} className="stroke-[2.5px]" />
+            <h2 className={`text-3xl sm:text-4xl font-black uppercase italic tracking-tighter leading-none
               ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
               Payment <span className="text-amber-500/80">Certificate.</span>
             </h2>
@@ -163,17 +142,17 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({ projectId, 
           </p>
         </div>
 
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-3">
           <Button 
             variant="outline" 
-            className="px-8 py-5" 
+            className="theme-admin-control px-5" 
             leftIcon={<Printer size={16} />}
           >
             Print Draft
           </Button>
           <Button 
             variant="primary" 
-            className="px-10 py-5" 
+            className="theme-admin-control px-5" 
             leftIcon={<Download size={16} />}
           >
             Export PDF
@@ -182,20 +161,20 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({ projectId, 
       </header>
 
       {/* 2. PROJECT OVERVIEW NODES */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
           { label: 'Work Area', value: projectName, icon: Building2 },
           { label: 'Primary Client', value: data.contractor, icon: UserCheck },
           { label: 'Report Date', value: data.valuationDate, icon: Clock },
           { label: 'Contract Sum', value: `KES ${data.contractSum.toLocaleString()}`, icon: Wallet },
         ].map((info, i) => (
-          <div key={i} className={`p-6 rounded-[2.5rem] border shadow-sm transition-all duration-500
+          <div key={i} className={`p-5 rounded-[1.6rem] border shadow-sm transition-all duration-500
             ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800' : 'bg-white border-zinc-200'}`}>
             <div className="flex items-center gap-3 mb-4 text-zinc-600">
               <info.icon size={14} />
-              <span className="text-[9px] font-black uppercase tracking-widest">{info.label}</span>
+              <span className="theme-admin-label">{info.label}</span>
             </div>
-            <p className={`text-xs sm:text-sm font-black uppercase tracking-tight truncate ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-900'}`}>
+            <p className={`theme-admin-row-title truncate uppercase ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-900'}`}>
               {info.value || 'Not Defined'}
             </p>
           </div>
@@ -203,33 +182,33 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({ projectId, 
       </div>
 
       {/* 3. PROFESSIONAL VALUATION LEDGER */}
-      <div className={`rounded-[3.5rem] border backdrop-blur-3xl overflow-hidden transition-all duration-500
+      <div className={`rounded-[2rem] border backdrop-blur-3xl overflow-hidden transition-all duration-500
         ${theme === 'dark' ? 'bg-zinc-900/20 border-zinc-800 shadow-2xl shadow-black' : 'bg-white border-zinc-200'}`}>
         
-        <div className="p-8 sm:p-14 space-y-12">
+        <div className="space-y-8 p-5 sm:p-6">
           
           {/* Section 01: Work Done */}
-          <div className="space-y-8">
-            <div className="flex items-center gap-4 border-b border-zinc-800/40 pb-4">
-               <span className="px-3 py-1 rounded bg-amber-500/10 border border-amber-500/20 text-amber-500 font-mono text-[10px] font-black leading-none">01</span>
-               <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-zinc-500 italic">Project Progress Valuation</h3>
+          <div className="space-y-6">
+            <div className="flex items-center gap-4 border-b border-zinc-800/20 pb-4">
+               <span className="theme-admin-chip bg-amber-500/10 border border-amber-500/20 text-amber-500 font-mono">01</span>
+               <h3 className="theme-admin-label">Project Progress Valuation</h3>
             </div>
-            <div className="space-y-6">
+            <div className="space-y-5">
               <div className="flex justify-between items-center group">
-                <span className="text-sm font-bold uppercase text-zinc-500 group-hover:text-zinc-300 transition-colors">Measured Work to Date</span>
-                <span className={`text-xl font-black italic tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
+                <span className="theme-admin-meta uppercase group-hover:text-zinc-300 transition-colors">Measured Work to Date</span>
+                <span className={`text-lg font-black italic tracking-tight ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
                   KES {data.workExecuted.toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between items-center group">
-                <span className="text-sm font-bold uppercase text-zinc-500 group-hover:text-zinc-300 transition-colors">Stored Materials on Site</span>
-                <span className={`text-xl font-black italic tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
+                <span className="theme-admin-meta uppercase group-hover:text-zinc-300 transition-colors">Stored Materials on Site</span>
+                <span className={`text-lg font-black italic tracking-tight ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
                   KES {data.materialsOnSite.toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between items-center pt-6 border-t border-zinc-800/20">
-                <span className="text-sm font-black uppercase text-amber-500 italic">Total Value of Work Executed</span>
-                <span className="text-3xl font-black tracking-tighter text-amber-500 italic shadow-amber-500/10 drop-shadow-xl">
+                <span className="theme-admin-label text-amber-500">Total Value of Work Executed</span>
+                <span className="text-2xl font-black tracking-tight text-amber-500 italic shadow-amber-500/10 drop-shadow-xl">
                   KES {financials.grossValuation.toLocaleString()}
                 </span>
               </div>
@@ -237,21 +216,21 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({ projectId, 
           </div>
 
           {/* Section 02: Deductions */}
-          <div className="space-y-8">
-            <div className="flex items-center gap-4 border-b border-zinc-800/40 pb-4">
-               <span className="px-3 py-1 rounded bg-rose-500/10 border border-rose-500/20 text-rose-500 font-mono text-[10px] font-black leading-none">02</span>
-               <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-zinc-500 italic">Authorized Deductions</h3>
+          <div className="space-y-6">
+            <div className="flex items-center gap-4 border-b border-zinc-800/20 pb-4">
+               <span className="theme-admin-chip bg-rose-500/10 border border-rose-500/20 text-rose-500 font-mono">02</span>
+               <h3 className="theme-admin-label">Authorized Deductions</h3>
             </div>
-            <div className="space-y-6">
+            <div className="space-y-5">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-bold uppercase text-zinc-500">Retention Fund ({data.retentionPercent}%)</span>
-                <span className="text-xl font-black italic tracking-tighter text-rose-500/80">
+                <span className="theme-admin-meta uppercase">Retention Fund ({data.retentionPercent}%)</span>
+                <span className="text-lg font-black italic tracking-tight text-rose-500/80">
                   (KES {financials.retentionAmount.toLocaleString()})
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm font-bold uppercase text-zinc-500">Previous Amount Certified</span>
-                <span className="text-xl font-black italic tracking-tighter text-rose-500/80">
+                <span className="theme-admin-meta uppercase">Previous Amount Certified</span>
+                <span className="text-lg font-black italic tracking-tight text-rose-500/80">
                   (KES {data.previousCertified.toLocaleString()})
                 </span>
               </div>
@@ -259,25 +238,25 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({ projectId, 
           </div>
 
           {/* Section 03: Final Net Total */}
-          <div className={`p-10 sm:p-14 rounded-[3.5rem] border transition-all duration-500 flex flex-col md:flex-row justify-between items-center gap-10
+          <div className={`rounded-[1.7rem] border transition-all duration-500 flex flex-col md:flex-row justify-between items-center gap-8 p-6 sm:p-8
             ${theme === 'dark' ? 'bg-zinc-950/60 border-zinc-800 shadow-inner' : 'bg-zinc-50 border-zinc-100 shadow-inner'}`}>
             <div className="text-left space-y-3">
               <div className="flex items-center gap-3 text-emerald-500">
                 <CheckCircle2 size={18} />
-                <p className="text-[11px] font-black uppercase tracking-widest leading-none">Certified Net Amount Due</p>
+                <p className="theme-admin-label leading-none">Certified Net Amount Due</p>
               </div>
-              <p className={`text-6xl sm:text-7xl font-black italic tracking-tighter leading-none
+              <p className={`text-4xl sm:text-5xl font-black italic tracking-tight leading-none
                 ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
                 KES {financials.currentAmountDue.toLocaleString()}
               </p>
-              <p className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">Calculated per SMM-Kenya Standards</p>
+              <p className="theme-admin-meta uppercase">Calculated per SMM-Kenya Standards</p>
             </div>
             
             <div className="w-full md:w-px h-px md:h-24 bg-zinc-800/60" />
 
             <div className="text-right space-y-2">
-              <p className="text-[11px] font-black uppercase text-zinc-500 tracking-widest text-right italic opacity-60">Including VAT (16%)</p>
-              <p className="text-3xl font-black italic tracking-tighter text-amber-500/80 text-right drop-shadow-lg">
+              <p className="theme-admin-label text-right opacity-60">Including VAT (16%)</p>
+              <p className="text-2xl font-black italic tracking-tight text-amber-500/80 text-right drop-shadow-lg">
                 TOTAL: KES {financials.totalDue.toLocaleString()}
               </p>
             </div>
@@ -285,46 +264,46 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({ projectId, 
         </div>
 
         {/* 4. VERIFICATION NODES (Signatures) */}
-        <div className={`p-12 sm:p-16 border-t grid md:grid-cols-2 gap-16
+        <div className={`border-t grid gap-10 p-6 sm:p-8 md:grid-cols-2
           ${theme === 'dark' ? 'bg-zinc-900/60 border-zinc-800' : 'bg-zinc-50 border-zinc-200'}`}>
           
-          <div className="space-y-8">
+          <div className="space-y-6">
             <div className="flex items-center gap-3 opacity-40">
               <Signature size={16} className="text-zinc-500" />
-              <p className="text-[10px] font-black uppercase tracking-widest">Quantity Surveyor Authorization</p>
+              <p className="theme-admin-label">Quantity Surveyor Authorization</p>
             </div>
             <div className="h-24 border-b border-dashed border-zinc-700 flex items-center justify-center">
-              <p className="text-[11px] font-mono text-zinc-800 uppercase tracking-[0.4em] italic">Electronic Signature Pending</p>
+              <p className="theme-admin-meta font-mono uppercase">Electronic Signature Pending</p>
             </div>
           </div>
 
-          <div className="space-y-8">
+          <div className="space-y-6">
             <div className="flex items-center gap-3 opacity-40">
               <UserCheck size={16} className="text-zinc-500" />
-              <p className="text-[10px] font-black uppercase tracking-widest">Client Representative Review</p>
+              <p className="theme-admin-label">Client Representative Review</p>
             </div>
             <div className="h-24 border-b border-dashed border-zinc-700 flex items-center justify-center">
-              <p className="text-[11px] font-mono text-zinc-800 uppercase tracking-[0.4em] italic">Awaiting Official Stamp</p>
+              <p className="theme-admin-meta font-mono uppercase">Awaiting Official Stamp</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* 5. SYSTEM COMPLIANCE FOOTER */}
-      <footer className="flex flex-col sm:flex-row justify-between items-center opacity-30 gap-8">
+      <footer className="flex flex-col gap-4 border-t border-[color:var(--app-divider)] pt-5 opacity-60 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
-          <ShieldCheck size={20} className="text-emerald-500" />
+          <ShieldCheck size={18} className="text-emerald-500" />
           <div className="text-left">
-            <p className="text-[9px] font-black uppercase tracking-widest leading-none">Immutable Vault Record</p>
-            <p className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest mt-1">Certified System v2.0</p>
+            <p className="theme-admin-label leading-none">Immutable Vault Record</p>
+            <p className="theme-admin-meta mt-1 uppercase">Certified System v2.0</p>
           </div>
         </div>
-        <div className="flex items-center gap-8">
+        <div className="flex flex-wrap items-center gap-5">
            <div className="flex items-center gap-2">
              <AlertCircle size={14} className="text-amber-500" />
-             <span className="text-[9px] font-black uppercase tracking-widest leading-none italic">Verified Professional Protocol</span>
+             <span className="theme-admin-meta uppercase italic">Verified Professional Protocol</span>
            </div>
-           <p className="text-[9px] font-black uppercase tracking-widest leading-none font-mono">
+           <p className="theme-admin-meta font-mono uppercase leading-none">
              REF: {projectId.slice(0, 12).toUpperCase()}-IPC
            </p>
         </div>

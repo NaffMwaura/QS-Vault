@@ -1,180 +1,16 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  Zap,
-  MapPin,
-  Tablet,
-  DollarSign,
-  CheckCircle,
-  LayoutGrid,
-  Sun,
-  Moon,
-  Wifi,
-  WifiOff,
-  HardHat,
-  ChevronRight,
-  Menu,
-  X,
-  type LucideIcon,
-  ShieldCheck,
-  TrendingUp,
-  Cpu,
-} from "lucide-react";
-
-/* ======================================================
-    OFFICE MODULE RESOLUTION (PRO DEV CONFIG)
-   ====================================================== */
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let useAuth: any = () => ({
-  theme: 'dark',
-  toggleTheme: () => console.log("Theme Shift Requested"),
-});
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let Button: any = ({ children, onClick, className}: any) => (
-  <button onClick={onClick} className={className}>{children}</button>
-);
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let GlassCard: any = ({ children, className }: any) => (
-  <div className={className}>{children}</div>
-);
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../features/auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-
-    const btnMod = await import("../ui/Button");
-    if (btnMod.default) Button = btnMod.default;
-
-    const glassMod = await import("../ui/GlassCard");
-    if (glassMod.default) GlassCard = glassMod.default;
-  } catch (e) {
-    // Shims active for environment stability
-  }
-};
-
-resolveModules();
-
-// --- CUSTOM TYPEWRITER HOOK ---
-const useTypewriter = (words: string[], speed = 70, deleteSpeed = 50, delay = 1500) => {
-  const [text, setText] = useState("");
-  const [wordIndex, setWordIndex] = useState(0);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  useEffect(() => {
-    const currentWord = words[wordIndex];
-    const timeout = setTimeout(() => {
-      if (!isDeleting) {
-        setText(currentWord.substring(0, text.length + 1));
-        if (text.length === currentWord.length) {
-          setTimeout(() => setIsDeleting(true), delay);
-        }
-      } else {
-        setText(currentWord.substring(0, text.length - 1));
-        if (text.length === 0) {
-          setIsDeleting(false);
-          setWordIndex((prev) => (prev + 1) % words.length);
-        }
-      }
-    }, isDeleting ? deleteSpeed : speed);
-
-    return () => clearTimeout(timeout);
-  }, [text, isDeleting, wordIndex, words, speed, deleteSpeed, delay]);
-
-  return text;
-};
-
-/* ======================================================
-    REUSABLE SECTION COMPONENTS
-   ====================================================== */
-
-interface CardProps {
-  icon: LucideIcon;
-  title: string;
-  description: string;
-}
-
-const FeatureCard = ({ icon: Icon, title, description }: CardProps) => (
-  <GlassCard interactive className="p-10 sm:p-14 border text-center flex flex-col items-center h-full">
-    <div className="w-20 h-20 bg-amber-500/10 rounded-3xl flex items-center justify-center mb-10 group-hover:bg-amber-500 transition-all duration-500 shadow-inner">
-      <Icon size={36} className="text-amber-500 group-hover:text-black transition-colors" />
-    </div>
-    <h3 className="theme-title text-xl sm:text-2xl font-black uppercase tracking-tight mb-6">
-      {title}
-    </h3>
-    <p className="theme-muted text-base leading-relaxed font-medium">
-      {description}
-    </p>
-  </GlassCard>
-);
-
-const ValuePropCard = ({ icon: Icon, title, description }: CardProps) => (
-  <div className="theme-surface-card-soft p-8 sm:p-10 border rounded-[2.5rem] transition-all duration-500 hover:border-amber-500/30 space-y-6 flex flex-col items-start text-left group">
-    <div className="p-4 bg-amber-500/10 rounded-2xl group-hover:scale-110 transition-transform">
-      <Icon size={24} className="text-amber-500" />
-    </div>
-    <div>
-      <h3 className="theme-title text-[12px] font-black uppercase tracking-[0.2em] mb-3">
-        {title}
-      </h3>
-      <p className="theme-muted text-xs sm:text-sm leading-relaxed font-bold">
-        {description}
-      </p>
-    </div>
-  </div>
-);
-
-/* ======================================================
-    MAIN MARKETING PAGE COMPONENT
-   ====================================================== */
+import Footer from "../core/Footer";
+import Hero from "../core/Hero";
+import { NavigationBar } from "../core/Navbar";
+import { TestimonialsSection } from "../marketing/TestimonialsSection";
+import { ValuePropsSection } from "../marketing/ValuePropsSection";
+import { WorkflowSection } from "../marketing/WorkflowSection";
 
 const MarketingPage = ({ onGetStarted }: { onGetStarted: () => void }) => {
-  const { theme, toggleTheme } = useAuth();
-  const navigate = useNavigate();
-  const [isOnline, setIsOnline] = useState(() => typeof navigator !== 'undefined' ? navigator.onLine : true);
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const typewriterText = useTypewriter([
-    "Precision Cost Control.",
-    "Automated BoQ Systems.",
-    "Site Progress Tracking.",
-    "Offline Daily Records.",
-  ]);
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    const handleStatus = () => setIsOnline(navigator.onLine);
-    window.addEventListener("scroll", handleScroll);
-    window.addEventListener("online", handleStatus);
-    window.addEventListener("offline", handleStatus);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("online", handleStatus);
-      window.removeEventListener("offline", handleStatus);
-    };
-  }, []);
-
   return (
     <main className="theme-page min-h-screen selection:bg-amber-500/30 transition-colors duration-500 overflow-x-hidden custom-scrollbar">
-      
-      {/* 1. PROFESSIONAL NAVIGATION BAR */}
-      <nav className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${scrolled ? "theme-nav-solid border-b py-4 backdrop-blur-md" : "bg-transparent py-8 sm:py-10"}`}>
-        <div className="max-w-7xl mx-auto px-6 sm:px-10 flex justify-between items-center">
-          <div className="flex items-center gap-4 sm:gap-10">
-            <div className="flex items-center gap-3">
-              <div className="bg-amber-500 p-2 rounded-xl shadow-xl">
-                <HardHat size={20} className="text-black" />
-              </div>
-              <span className="theme-title text-2xl font-black uppercase tracking-tighter italic">
-                QS VAULT<span className="text-amber-500">.</span>
-              </span>
-            </div>
+      <NavigationBar onGetStarted={onGetStarted} />
 
+<<<<<<< HEAD
             <div className={`hidden lg:flex items-center gap-3 px-5 py-2.5 rounded-full border text-[9px] font-black transition-all duration-500 uppercase tracking-widest ${
               isOnline ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-600" : "bg-red-500/10 border-red-500/20 text-red-500 animate-pulse"
             }`}>
@@ -363,16 +199,24 @@ const MarketingPage = ({ onGetStarted }: { onGetStarted: () => void }) => {
           </div>
         </div>
       </footer>
+=======
+      <Hero onGetStarted={onGetStarted} />
+      <WorkflowSection />
+      <ValuePropsSection />
+      <TestimonialsSection />
+      <Footer />
+>>>>>>> 5672f133f38e4dbe54cbf2ed49ea9dee7913a4a8
 
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 20px; transition: background 0.3s; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #52525b; border-radius: 20px; transition: background 0.3s; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
-        
+
         @keyframes fade-in {
           from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
         }
+
         .animate-in { animation: fade-in 0.8s ease-out forwards; }
       `}</style>
     </main>
