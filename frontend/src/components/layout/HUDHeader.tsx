@@ -154,7 +154,7 @@ const HUDHeader: React.FC<HUDHeaderProps> = ({
             </button>
 
             {showDropdown && (
-              <div className="theme-surface-overlay absolute right-0 top-full z-50 mt-3 w-64 rounded-[2rem] border p-3 shadow-2xl backdrop-blur-3xl">
+              <div className="theme-surface-overlay absolute right-0 top-full z-50 mt-3 w-64 rounded-4xl border p-3 shadow-2xl backdrop-blur-3xl">
               <div className="theme-divider mb-3 border-b px-4 py-4 text-left">
                   <p className="theme-admin-subheading">{fullName}</p>
                   <p className="theme-admin-meta mt-1 truncate">{user?.email}</p>
@@ -171,7 +171,7 @@ const HUDHeader: React.FC<HUDHeaderProps> = ({
                       setActiveView('settings');
                       setShowDropdown(false);
                     }}
-                    className="theme-muted theme-admin-control flex w-full items-center gap-3 text-left transition-all hover:bg-zinc-500/5 hover:text-[var(--app-fg)]"
+                    className="theme-muted theme-admin-control flex w-full items-center gap-3 text-left transition-all hover:bg-zinc-500/5 hover:text-(--app-fg)"
                   >
                     <Settings size={16} className="text-amber-500" />
                     Reports
@@ -183,7 +183,7 @@ const HUDHeader: React.FC<HUDHeaderProps> = ({
                       setActiveView('profile');
                       setShowDropdown(false);
                     }}
-                    className="theme-muted theme-admin-control flex w-full items-center gap-3 text-left transition-all hover:bg-zinc-500/5 hover:text-[var(--app-fg)]"
+                    className="theme-muted theme-admin-control flex w-full items-center gap-3 text-left transition-all hover:bg-zinc-500/5 hover:text-[--app-fg)]"
                   >
                     <Edit3 size={16} className="text-amber-500" />
                     Profile

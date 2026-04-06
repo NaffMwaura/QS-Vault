@@ -16,7 +16,7 @@ export const AdminPageSection = ({
   children,
 }: AdminPageSectionProps) => (
   <section className="theme-admin-panel">
-    <div className="flex flex-col gap-4 border-b border-[color:var(--app-divider)] px-5 py-5 sm:px-6 sm:py-6 lg:flex-row lg:items-center lg:justify-between">
+    <div className="flex flex-col gap-4 border-b border-(--app-divider) px-5 py-5 sm:px-6 sm:py-6 lg:flex-row lg:items-center lg:justify-between">
       <div className="text-left">
         {eyebrow && <p className="theme-admin-eyebrow">{eyebrow}</p>}
         <h2 className="theme-admin-heading mt-2">{title}</h2>

@@ -279,7 +279,7 @@ const AdminDashboardPage: React.FC = () => {
                     {filteredProfiles.map((profile) => (
                       <tr
                         key={profile.id}
-                        className="border-b border-[color:var(--app-divider)] last:border-b-0 hover:bg-amber-500/5"
+                        className="border-b border-(--app-divider) last:border-b-0 hover:bg-amber-500/5"
                       >
                         <td className="px-4 py-4">
                           <div className="flex items-center gap-3">
@@ -351,7 +351,7 @@ const AdminDashboardPage: React.FC = () => {
                           />
                         </summary>
 
-                        <div className="mt-4 space-y-4 border-t border-[color:var(--app-divider)] pt-4 text-left">
+                        <div className="mt-4 space-y-4 border-t border-(--app-divider) pt-4 text-left">
                           <div className="grid gap-2.5 text-sm">
                             <div className="flex justify-between gap-3">
                               <span className="theme-admin-label">Reference</span>
@@ -404,7 +404,7 @@ const AdminDashboardPage: React.FC = () => {
                   {filteredProjects.map((project) => (
                     <tr
                       key={project.id}
-                      className="border-b border-[color:var(--app-divider)] last:border-b-0 hover:bg-amber-500/5"
+                      className="border-b border-(--app-divider)] last:border-b-0 hover:bg-amber-500/5"
                     >
                       <td className="px-4 py-4">
                         <p className="theme-admin-row-title uppercase">
@@ -461,7 +461,7 @@ const AdminDashboardPage: React.FC = () => {
                         />
                       </summary>
 
-                      <div className="mt-4 space-y-4 border-t border-[color:var(--app-divider)] pt-4 text-left">
+                      <div className="mt-4 space-y-4 border-t border-(--app-divider)] pt-4 text-left">
                         <div className="grid gap-2.5 text-sm">
                           <div className="flex justify-between gap-3">
                             <span className="theme-admin-label">Owner</span>
@@ -526,11 +526,11 @@ const AdminDashboardPage: React.FC = () => {
           >
             <div className="grid gap-6 xl:grid-cols-2">
               <div className="space-y-6">
-                <div className="rounded-[1.8rem] border border-[color:var(--app-divider)] p-1">
+                <div className="rounded-[1.8rem] border border-(--app-divider)] p-1">
                   <ArtifactsVault />
                 </div>
 
-                <div className="rounded-[1.8rem] border border-[color:var(--app-divider)] p-4 sm:p-5">
+                <div className="rounded-[1.8rem] border border---app-divider)] p-4 sm:p-5">
                   <div className="mb-4 flex items-center gap-3">
                     <Calculator size={18} className="text-amber-500" />
                     <h3 className="theme-admin-subheading">Valuation Auditor</h3>
@@ -553,7 +553,7 @@ const AdminDashboardPage: React.FC = () => {
                   actionLabel="Force Global Cloud Sync"
                 />
 
-                <div className="rounded-[1.8rem] border border-[color:var(--app-divider)] p-4 sm:p-5">
+                <div className="rounded-[1.8rem] border border-[(--app-divider)] p-4 sm:p-5">
                   <div className="mb-4 flex items-center gap-3">
                     <Share2 size={18} className="text-amber-500" />
                     <h3 className="theme-admin-subheading">Admin Transmittal</h3>
@@ -572,7 +572,7 @@ const AdminDashboardPage: React.FC = () => {
                   />
                 </div>
 
-                <div className="rounded-[1.8rem] border border-[color:var(--app-divider)] p-4 sm:p-5">
+                <div className="rounded-[1.8rem] border border-[(--app-divider)] p-4 sm:p-5">
                   <div className="mb-4 flex items-center gap-3">
                     <FileText size={18} className="text-emerald-500" />
                     <h3 className="theme-admin-subheading">Draft Certification Auditor</h3>
@@ -604,7 +604,7 @@ const AdminDashboardPage: React.FC = () => {
             <button
               type="button"
               onClick={handleLogout}
-              className="theme-admin-control w-full min-h-[3.25rem] rounded-[1.4rem] border border-rose-500/20 bg-rose-500/5 text-rose-500 transition-all hover:bg-rose-500 hover:text-white"
+              className="theme-admin-control w-full min-h-13 rounded-[1.4rem] border border-rose-500/20 bg-rose-500/5 text-rose-500 transition-all hover:bg-rose-500 hover:text-white"
             >
               Terminate Admin Session
             </button>
