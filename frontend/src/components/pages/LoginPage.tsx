@@ -69,7 +69,6 @@ const Button: React.FC<ButtonProps> = ({
     </button>
   );
 };
-
 const FeatureItem: React.FC<FeatureItemProps> = ({
   icon: Icon,
   title,

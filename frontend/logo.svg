@@ -1,0 +1,15 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background specifically for PWA Maskable requirement -->
+  <rect width="512" height="512" rx="128" fill="#09090b"/>
+  
+  <!-- Outer Shield/Vault Shape -->
+  <path d="M256 60L420 130V250C420 360 256 450 256 450C256 450 92 360 92 250V130L256 60Z" stroke="#f59e0b" stroke-width="24" stroke-linejoin="round"/>
+  
+  <!-- Professional Hard Hat Icon -->
+  <path d="M180 230C180 185.817 214.027 150 256 150C297.973 150 332 185.817 332 230V250H180V230Z" fill="#f59e0b"/>
+  <path d="M160 250H352V270C352 275.523 347.523 280 342 280H170C164.477 280 160 275.523 160 270V250Z" fill="#f59e0b"/>
+  <rect x="246" y="130" width="20" height="40" rx="4" fill="#f59e0b"/>
+  
+  <!-- Precision Grid Elements -->
+  <path d="M200 320H312M200 350H312M256 310V360" stroke="#f59e0b" stroke-width="8" stroke-linecap="round" opacity="0.5"/>
+</svg>
