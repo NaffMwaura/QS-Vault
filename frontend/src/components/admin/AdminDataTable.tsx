@@ -8,9 +8,9 @@ export const AdminDataTable = ({
   children: React.ReactNode;
 }) => (
   <div className="hidden overflow-x-auto custom-scrollbar lg:block">
-    <table className="w-full min-w-[760px] border-collapse text-left">
+    <table className="w-full min-w-760px] border-collapse text-left">
       <thead>
-        <tr className="border-b border-[color:var(--app-divider)]">
+        <tr className="border-b border-[(--app-divider)]">
           {headers.map((header, index) => (
             <th
               key={header}
