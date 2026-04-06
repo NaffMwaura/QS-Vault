@@ -1,6 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
 import { type Session, type User, type AuthChangeEvent } from "@supabase/supabase-js";
 import { db, supabase } from "../../lib/database/database";
