@@ -2,11 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- Main Favicon: Matches the manifest.json src -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     
-    <!-- PWA Integration Node -->
+    <!-- PWA & Mobile Protocol Node -->
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#09090b" />
 
@@ -14,7 +13,16 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="QS Vault" />
-    <link rel="apple-touch-icon" href="/logo192.png" />
+    <link rel="apple-touch-icon" href="/apple-icon-180.png" />
+
+    <!-- Generated iOS Splash Screens (Multi-Device Support) -->
+    <link rel="apple-touch-startup-image" href="/apple-splash-2048-2732.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/apple-splash-1668-2388.jpg" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/apple-splash-1536-2048.jpg" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/apple-splash-1179-2556.jpg" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/apple-splash-1284-2778.jpg" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/apple-splash-1170-2532.jpg" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/apple-splash-1125-2436.jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
 
     <!-- SEO & Infrastructure Metadata -->
     <title>QS Vault | Precision Quantity Surveying & Project Management</title>
@@ -27,20 +35,20 @@
     <meta property="og:url" content="https://qs-vault.netlify.app/" />
     <meta property="og:title" content="QS Vault | Precision Quantity Surveying OS" />
     <meta property="og:description" content="Professional takeoff system developed for site mastery. SMM compliant, encrypted, and offline-capable." />
-    <meta property="og:image" content="/logo512.png" />
+    <meta property="og:image" content="/manifest-icon-512.maskable.png" />
 
     <!-- Twitter Protocol -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:title" content="QS Vault | Precision Quantity Surveying OS" />
     <meta property="twitter:description" content="Eliminate errors in construction takeoffs and valuations with regional SMM compliance." />
-    <meta property="twitter:image" content="/logo512.png" />
+    <meta property="twitter:image" content="/manifest-icon-512.maskable.png" />
 
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     
     <style>
       /* NATIVE APP CORE OVERRIDES:
-         1. overscroll-behavior: none prevents the 'rubber-band' effect common in browsers.
-         2. background-color matches the theme_color in manifest.json for seamless loading.
+         1. overscroll-behavior: none prevents the 'rubber-band' effect.
+         2. background-color matches theme_color for seamless transitions.
       */
       html, body {
         overscroll-behavior: none;
@@ -69,7 +77,7 @@
   <body>
     <div id="root"></div>
 
-    <!-- Security Fallback for Browser Nodes -->
+    <!-- Security Fallback for Legacy Browser Nodes -->
     <noscript>
       <div style="text-align: center; padding: 50px; font-family: sans-serif; background: #09090b; color: white; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;">
         <h1 style="color: #f59e0b; font-weight: 900; letter-spacing: 0.1em; margin-bottom: 20px;">QS VAULT NODE OFFLINE</h1>
