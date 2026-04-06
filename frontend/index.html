@@ -1,12 +1,20 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- Updated icon to point to your public image -->
     <link rel="icon" type="image/jpeg" href="/Prof.jfif" />
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     
+    <!-- PWA Link Node -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#09090b" />
+
+    <!-- iOS Native Feel Configuration -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="QS Vault" />
+    <link rel="apple-touch-icon" href="/logo192.png" />
+
     <!-- SEO Meta Tags -->
     <title>QS Vault | Precision Quantity Surveying & Project Management</title>
     <meta name="description" content="The professional standard for East African Quantity Surveyors. QS Vault provides offline-capable site takeoffs, SMM compliant BoQ generation, and secure cloud synchronization." />
@@ -18,7 +26,6 @@
     <meta property="og:url" content="https://qs-vault.netlify.app/" />
     <meta property="og:title" content="QS Vault | Precision Quantity Surveying OS" />
     <meta property="og:description" content="Professional takeoff system developed for Africa. SMM compliant, encrypted, and offline-capable." />
-    <!-- Updated social image to point to your public image -->
     <meta property="og:image" content="/Prof.jfif" />
 
     <!-- Twitter -->
@@ -27,19 +34,58 @@
     <meta property="twitter:description" content="Eliminate errors in construction takeoffs and valuations with regional SMM compliance." />
     <meta property="twitter:image" content="/Prof.jfif" />
 
-    <!-- Performance & Security -->
+    <!-- Performance & Structural CSS -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="theme-color" content="#f59e0b" />
+    
+    <style>
+      /* NATIVE APP OVERRIDES:
+         1. Prevent elastic 'rubber-band' scrolling on mobile.
+         2. Force height to 100% to support absolute positioning in the Viewport.
+      */
+      html, body {
+        overscroll-behavior: none;
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background-color: #09090b;
+      }
+      
+      #root {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Custom scrollbar for desktop takeoff work */
+      ::-webkit-scrollbar { width: 4px; height: 4px; }
+      ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
+      ::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
+    </style>
   </head>
   <body>
     <div id="root"></div>
+
     <!-- Fallback for users with disabled JavaScript -->
     <noscript>
-      <div style="text-align: center; padding: 50px; font-family: sans-serif;">
-        <h1>QS Vault Node Offline</h1>
+      <div style="text-align: center; padding: 50px; font-family: sans-serif; background: #09090b; color: white; height: 100vh;">
+        <h1 style="color: #f59e0b;">QS Vault Node Offline</h1>
         <p>This application requires JavaScript to initialize the secure measurement environment.</p>
       </div>
     </noscript>
+
     <script type="module" src="/src/main.tsx"></script>
+
+    <!-- SERVICE WORKER HANDSHAKE -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('QS Vault: Service Node Registered.', reg.scope))
+            .catch(err => console.warn('QS Vault: Service Node Standby.', err));
+        });
+      }
+    </script>
   </body>
 </html>
