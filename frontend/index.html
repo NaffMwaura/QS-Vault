@@ -1,45 +1,101 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- Updated icon to point to your public image -->
-    <link rel="icon" type="image/jpeg" href="/Prof.jfif" />
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     
-    <!-- SEO Meta Tags -->
+    <!-- PWA & Mobile Protocol Node -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#09090b" />
+
+    <!-- iOS Native Experience Configuration -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="QS Vault" />
+    <link rel="apple-touch-icon" href="/apple-icon-180.png" />
+
+    <!-- Generated iOS Splash Screens (Multi-Device Support) -->
+    <link rel="apple-touch-startup-image" href="/apple-splash-2048-2732.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/apple-splash-1668-2388.jpg" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/apple-splash-1536-2048.jpg" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/apple-splash-1179-2556.jpg" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/apple-splash-1284-2778.jpg" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/apple-splash-1170-2532.jpg" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/apple-splash-1125-2436.jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+
+    <!-- SEO & Infrastructure Metadata -->
     <title>QS Vault | Precision Quantity Surveying & Project Management</title>
-    <meta name="description" content="The professional standard for East African Quantity Surveyors. QS Vault provides offline-capable site takeoffs, SMM compliant BoQ generation, and secure cloud synchronization." />
+    <meta name="description" content="The professional standard for Quantity Surveyors. QS Vault provides offline-capable site takeoffs, SMM-KE compliant BoQ generation, and secure cloud synchronization." />
     <meta name="keywords" content="Quantity Surveying, Construction Estimation, BoQ Generation, SMM Kenya, Project Management, Construction Software Africa" />
     <meta name="author" content="Momentum Global Infrastructure" />
 
-    <!-- Open Graph / Facebook -->
+    <!-- Open Graph Protocol (Office Sharing) -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://qs-vault.netlify.app/" />
     <meta property="og:title" content="QS Vault | Precision Quantity Surveying OS" />
-    <meta property="og:description" content="Professional takeoff system developed for Africa. SMM compliant, encrypted, and offline-capable." />
-    <!-- Updated social image to point to your public image -->
-    <meta property="og:image" content="/Prof.jfif" />
+    <meta property="og:description" content="Professional takeoff system developed for site mastery. SMM compliant, encrypted, and offline-capable." />
+    <meta property="og:image" content="/manifest-icon-512.maskable.png" />
 
-    <!-- Twitter -->
+    <!-- Twitter Protocol -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:title" content="QS Vault | Precision Quantity Surveying OS" />
     <meta property="twitter:description" content="Eliminate errors in construction takeoffs and valuations with regional SMM compliance." />
-    <meta property="twitter:image" content="/Prof.jfif" />
+    <meta property="twitter:image" content="/manifest-icon-512.maskable.png" />
 
-    <!-- Performance & Security -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="theme-color" content="#f59e0b" />
+    
+    <style>
+      /* NATIVE APP CORE OVERRIDES:
+         1. overscroll-behavior: none prevents the 'rubber-band' effect.
+         2. background-color matches theme_color for seamless transitions.
+      */
+      html, body {
+        overscroll-behavior: none;
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background-color: #09090b;
+        -webkit-tap-highlight-color: transparent;
+      }
+      
+      #root {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Custom technical scrollbar for high-precision takeoff work */
+      ::-webkit-scrollbar { width: 4px; height: 4px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
+      ::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
+    </style>
   </head>
   <body>
     <div id="root"></div>
-    <!-- Fallback for users with disabled JavaScript -->
+
+    <!-- Security Fallback for Legacy Browser Nodes -->
     <noscript>
-      <div style="text-align: center; padding: 50px; font-family: sans-serif;">
-        <h1>QS Vault Node Offline</h1>
-        <p>This application requires JavaScript to initialize the secure measurement environment.</p>
+      <div style="text-align: center; padding: 50px; font-family: sans-serif; background: #09090b; color: white; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+        <h1 style="color: #f59e0b; font-weight: 900; letter-spacing: 0.1em; margin-bottom: 20px;">QS VAULT NODE OFFLINE</h1>
+        <p style="text-transform: uppercase; font-size: 10px; letter-spacing: 0.2em; opacity: 0.6;">JavaScript initialization required for secure measurement environment.</p>
       </div>
     </noscript>
+
     <script type="module" src="/src/main.tsx"></script>
+
+    <!-- SERVICE WORKER REGISTRATION HANDSHAKE -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('QS Vault: Service Node Active.', reg.scope))
+            .catch(err => console.warn('QS Vault: Service Node Standby.', err));
+        });
+      }
+    </script>
   </body>
 </html>

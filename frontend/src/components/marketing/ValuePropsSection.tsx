@@ -20,7 +20,7 @@ export const ValuePropsSection = () => (
           </p>
         </div>
 
-        <div className="theme-surface-accent w-full lg:w-auto border px-8 py-8 sm:px-10 sm:py-10 rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl transition-colors">
+        <div className="theme-surface-accent w-full lg:w-auto border px-8 py-8 sm:px-10 sm:py-10 rounded-4xl sm:rounded-[2.5rem] shadow-2xl transition-colors">
           <p className="text-[12px] font-black uppercase tracking-[0.35em] text-amber-600 dark:text-amber-400 mb-3 leading-none">
             Compliance Protocol
           </p>
