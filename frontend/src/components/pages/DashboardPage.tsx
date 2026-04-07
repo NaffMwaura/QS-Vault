@@ -1,3 +1,4 @@
+ 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, type To } from 'react-router-dom';
@@ -23,7 +24,7 @@ import VariationBridge from "../../features/qs-bridge/components/VariationBridge
 import ComplianceVault from "../../features/safety/components/ComplianceVault";
 import ResourceGantt from "../../features/scheduling/components/ResourceGantt";
 import SyncQueueMonitor from "../../features/sync/components/SyncQueueMonitor";
-import GeometricRegistry from "../../features/takeoff/components/GeometricRegistry";
+import TakeoffLedger from "../../features/takeoff/components/TakeoffLedger";
 import { db } from "../../lib/database/database";
 import SunlightModeToggle from "../layout/SunlightModeToggle";
 
@@ -232,7 +233,7 @@ const DashboardPage: React.FC = () => {
                        <Database size={18} className="text-zinc-500" />
                        <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 italic">Takeoff Audit Ledger</h4>
                     </div>
-                  <GeometricRegistry
+                  <TakeoffLedger
                     measurements={recentMeasurements}
                     onDelete={() => undefined}
                     activeSection="All Sections"

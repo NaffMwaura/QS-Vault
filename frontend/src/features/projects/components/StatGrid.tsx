@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+ 
 import React from "react";
 import { Database, Globe, WifiOff,  TrendingUp } from "lucide-react";
 import { useAuth } from "../../../features/auth/AuthContext";
