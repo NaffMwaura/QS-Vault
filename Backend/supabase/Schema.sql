@@ -1,0 +1,145 @@
+-- -- ============================================
+-- -- 1. EXTENSIONS
+-- -- ============================================
+-- CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- -- ============================================
+-- -- 2. PROFILES (AUTH + RBAC)
+-- -- ============================================
+-- CREATE TABLE public.profiles (
+--   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+--   username TEXT UNIQUE,
+--   full_name TEXT,
+--   avatar_url TEXT,
+--   role TEXT DEFAULT 'user' CHECK (
+--     role IN ('user', 'editor', 'admin', 'super-admin')
+--   ),
+--   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+-- );
+-- ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+-- -- Users can read profiles (needed for UI)
+-- CREATE POLICY "Read profiles" ON public.profiles FOR
+-- SELECT USING (auth.role() = 'authenticated');
+-- -- Users manage their own profile
+-- CREATE POLICY "Own profile access" ON public.profiles FOR ALL USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
+-- -- Admin override (JWT-based, no recursion)
+-- CREATE POLICY "Admin full access" ON public.profiles FOR ALL USING (
+--   (auth.jwt()->'app_metadata'->>'role') IN ('admin', 'super-admin')
+-- );
+-- -- ============================================
+-- -- 3. PROJECTS
+-- -- ============================================
+-- CREATE TABLE public.projects (
+--   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+--   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+--   name TEXT NOT NULL,
+--   location TEXT,
+--   client_name TEXT,
+--   contract_sum NUMERIC DEFAULT 0,
+--   status TEXT DEFAULT 'active',
+--   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+--   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+-- );
+-- ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
+-- CREATE POLICY "User projects" ON public.projects FOR ALL USING (auth.uid() = user_id);
+-- -- ============================================
+-- -- 4. BILL ITEMS (QS CORE)
+-- -- ============================================
+-- CREATE TABLE public.bill_items (
+--   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+--   project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE,
+--   item_code TEXT,
+--   description TEXT,
+--   unit TEXT,
+--   rate NUMERIC DEFAULT 0,
+--   quantity NUMERIC DEFAULT 0,
+--   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+-- );
+-- ALTER TABLE public.bill_items ENABLE ROW LEVEL SECURITY;
+-- CREATE POLICY "Project-based access" ON public.bill_items FOR ALL USING (
+--   project_id IN (
+--     SELECT id
+--     FROM public.projects
+--     WHERE user_id = auth.uid()
+--   )
+-- );
+-- -- ============================================
+-- -- 5. MEASUREMENTS (TAKEOFF DATA)
+-- -- ============================================
+-- CREATE TABLE public.measurements (
+--   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+--   project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE,
+--   bill_item_id UUID,
+--   label TEXT,
+--   type TEXT,
+--   value NUMERIC,
+--   unit TEXT,
+--   section_code TEXT,
+--   points JSONB,
+--   timestamp TIMESTAMP DEFAULT NOW()
+-- );
+-- ALTER TABLE public.measurements ENABLE ROW LEVEL SECURITY;
+-- CREATE POLICY "Project-based access" ON public.measurements FOR ALL USING (
+--   project_id IN (
+--     SELECT id
+--     FROM public.projects
+--     WHERE user_id = auth.uid()
+--   )
+-- );
+-- -- ============================================
+-- -- 6. SITE DIARY (FIELD OPS)
+-- -- ============================================
+-- CREATE TABLE public.site_diary (
+--   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+--   project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE,
+--   date DATE,
+--   weather TEXT,
+--   headcount INT,
+--   progress_summary TEXT,
+--   created_at TIMESTAMP DEFAULT NOW()
+-- );
+-- ALTER TABLE public.site_diary ENABLE ROW LEVEL SECURITY;
+-- CREATE POLICY "Project-based access" ON public.site_diary FOR ALL USING (
+--   project_id IN (
+--     SELECT id
+--     FROM public.projects
+--     WHERE user_id = auth.uid()
+--   )
+-- );
+-- -- ============================================
+-- -- 7. ISSUES / SNAGS
+-- -- ============================================
+-- CREATE TABLE public.issues (
+--   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+--   project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE,
+--   title TEXT,
+--   status TEXT,
+--   assigned_subcontractor TEXT,
+--   description TEXT,
+--   created_at TIMESTAMP DEFAULT NOW()
+-- );
+-- ALTER TABLE public.issues ENABLE ROW LEVEL SECURITY;
+-- CREATE POLICY "Project-based access" ON public.issues FOR ALL USING (
+--   project_id IN (
+--     SELECT id
+--     FROM public.projects
+--     WHERE user_id = auth.uid()
+--   )
+-- );
+-- -- ============================================
+-- -- 8. AUTO PROFILE CREATION
+-- -- ============================================
+-- CREATE OR REPLACE FUNCTION public.handle_new_user() RETURNS TRIGGER AS $$ BEGIN
+-- INSERT INTO public.profiles (id, username, full_name, role)
+-- VALUES (
+--     new.id,
+--     new.raw_user_meta_data->>'username',
+--     new.raw_user_meta_data->>'full_name',
+--     COALESCE(new.raw_user_meta_data->>'role', 'user')
+--   );
+-- RETURN new;
+-- END;
+-- $$ LANGUAGE plpgsql SECURITY DEFINER;
+-- DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+-- CREATE TRIGGER on_auth_user_created
+-- AFTER
+-- INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
