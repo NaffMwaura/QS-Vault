@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+ 
 import React, { useState, useEffect } from 'react';
-import { 
+import {
   Box, 
   Layers, 
   Calculator, 
@@ -10,6 +10,7 @@ import {
   Zap
 } from 'lucide-react';
 import { useAuth } from "../../auth/AuthContext";
+import type { SmmParams } from "../types/takeoff";
 
 /** --- TYPES --- **/
 
@@ -17,7 +18,7 @@ export type SMMSection = 'Concrete' | 'Walling' | 'Finishes';
 
 interface SMMTemplatesProps {
   activeSection: string;
-  onParameterChange: (params: any) => void;
+  onParameterChange: (params: SmmParams) => void;
   isDeductionMode: boolean;
   setIsDeductionMode: (val: boolean) => void;
 }
