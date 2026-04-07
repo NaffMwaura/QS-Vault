@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect } from "react";
+import React, { useState,  } from "react";
 import {
   Mail,
-  CheckCircle,
-  X,
   HardHat,
   ShieldCheck,
   Zap,
@@ -261,7 +259,7 @@ const LoginPage: React.FC = () => {
             <h2 className={`text-5xl md:text-6xl lg:text-7xl font-black uppercase tracking-tighter leading-tight italic 
               ${theme === 'dark' ? 'text-zinc-100' : 'text-zinc-900'}`}>
               Site Mastery <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-amber-200">Starts Here.</span>
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-amber-500 to-amber-200">Starts Here.</span>
             </h2>
           </div>
 
@@ -324,7 +322,7 @@ const LoginPage: React.FC = () => {
                     <User size={20} className="absolute left-7 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-amber-500 transition-colors" />
                     <input
                       required type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Enter username"
-                      className={`w-full pl-16 pr-8 py-5 rounded-[2rem] text-lg font-medium border outline-none transition-all shadow-inner
+                      className={`w-full pl-16 pr-8 py-5 rounded-4xl text-lg font-medium border outline-none transition-all shadow-inner
                         ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800 text-white focus:border-amber-500' : 'bg-zinc-50 border-zinc-200 text-zinc-900 focus:border-amber-500'}`}
                     />
                   </div>
@@ -337,7 +335,7 @@ const LoginPage: React.FC = () => {
                   <Mail size={20} className="absolute left-7 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-amber-500 transition-colors" />
                   <input
                     required type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@vault.com"
-                    className={`w-full pl-16 pr-8 py-6 rounded-[2rem] text-lg font-medium border outline-none transition-all shadow-inner
+                    className={`w-full pl-16 pr-8 py-6 rounded-4xl text-lg font-medium border outline-none transition-all shadow-inner
                       ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800 text-white focus:border-amber-500' : 'bg-zinc-50 border-zinc-200 text-zinc-900 focus:border-amber-500'}`}
                   />
                 </div>
@@ -349,7 +347,7 @@ const LoginPage: React.FC = () => {
                   <Lock size={20} className="absolute left-7 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-amber-500 transition-colors" />
                   <input
                     required type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••"
-                    className={`w-full pl-16 pr-20 py-6 rounded-[2rem] text-lg font-medium border outline-none transition-all shadow-inner
+                    className={`w-full pl-16 pr-20 py-6 rounded-4xl text-lg font-medium border outline-none transition-all shadow-inner
                       ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800 text-white focus:border-amber-500' : 'bg-zinc-50 border-zinc-200 text-zinc-900 focus:border-amber-500'}`}
                   />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-7 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-amber-500 transition-colors">
@@ -360,7 +358,7 @@ const LoginPage: React.FC = () => {
 
               <button
                 type="submit" disabled={loading}
-                className="w-full py-6 bg-amber-500 text-black rounded-[2rem] font-black uppercase text-sm tracking-[0.2em] shadow-2xl hover:bg-amber-400 active:scale-[0.97] transition-all flex items-center justify-center gap-4 italic"
+                className="w-full py-6 bg-amber-500 text-black rounded-4xl font-black uppercase text-sm tracking-[0.2em] shadow-2xl hover:bg-amber-400 active:scale-[0.97] transition-all flex items-center justify-center gap-4 italic"
               >
                 {loading ? <Loader2 className="animate-spin" size={20} /> : isRegistering ? "Sign Up" : "Login"}
               </button>
