@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+ 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   MessageSquare, 
@@ -17,26 +17,17 @@ import {
 import { useAuth } from "../../auth/AuthContext";
 import Button from "../../../components/ui/Button";
 import GlassCard from "../../../components/ui/GlassCard";
-import { db, syncEngine } from "../../../lib/database/database";
+import {
+  db,
+  syncEngine,
+  type ChatMessage,
+  type RFI,
+} from "../../../lib/database/database";
 
 /** --- TYPES --- **/
 
-interface RFI {
-  id: string;
-  subject: string;
-  to_professionals: string[];
-  content: string;
-  status: 'draft' | 'sent' | 'responded';
-  created_at: string;
-}
-
-interface Message {
-  id: string;
-  user_id: string;
-  text: string;
-  timestamp: string;
-  is_local?: boolean; 
-}
+type Message = Omit<ChatMessage, "project_id"> & { is_local?: boolean };
+type StoredRFI = Omit<RFI, "project_id">;
 
 interface CollaborationHubProps {
   projectId: string | null;
@@ -55,7 +46,7 @@ const CollaborationHub: React.FC<CollaborationHubProps> = ({ projectId }) => {
 
   // Data States (Live from Dexie Vault)
   const [messages, setMessages] = useState<Message[]>([]);
-  const [rfis, setRfis] = useState<RFI[]>([]);
+  const [rfis, setRfis] = useState<StoredRFI[]>([]);
   const [newMessage, setNewMessage] = useState('');
   
   // RFI Workflow States
@@ -85,7 +76,7 @@ const CollaborationHub: React.FC<CollaborationHubProps> = ({ projectId }) => {
       ]);
 
       // Sort messages by timestamp locally
-      setMessages(storedMessages.sort((a: any, b: any) => 
+      setMessages(storedMessages.sort((a: Message, b: Message) => 
         new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
       ));
       setRfis(storedRfis);
@@ -144,7 +135,7 @@ const CollaborationHub: React.FC<CollaborationHubProps> = ({ projectId }) => {
     if (!projectId || !db) return;
 
     const rfiId = crypto.randomUUID();
-    const rfiData: RFI = {
+    const rfiData: StoredRFI = {
       id: rfiId,
       subject: rfiForm.subject,
       content: rfiForm.content,

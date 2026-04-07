@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+ 
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Sun, 
@@ -39,6 +39,8 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId }) => {
     headcount: 0,
     progress_summary: '',
   });
+
+  type WeatherType = typeof diaryData.weather;
 
   /** * LOAD TODAY'S RECORD
    * Checks the local device (Dexie) to see if we already started a report for today.
@@ -162,7 +164,12 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId }) => {
                 ].map((opt) => (
                   <button
                     key={opt.id}
-                    onClick={() => setDiaryData({...diaryData, weather: opt.id as any})}
+                    onClick={() =>
+                      setDiaryData({
+                        ...diaryData,
+                        weather: opt.id as WeatherType,
+                      })
+                    }
                     className={`flex flex-col items-center gap-4 p-8 rounded-4xl border transition-all duration-300
                       ${diaryData.weather === opt.id 
                         ? 'bg-amber-500 border-amber-500 text-black shadow-xl' 

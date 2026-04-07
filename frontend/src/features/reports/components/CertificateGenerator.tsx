@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+ 
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { 
   FileCheck, 
@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from "../../../features/auth/AuthContext";
 import Button from "../../../components/ui/Button";
-import { db } from "../../../lib/database/database";
+import { db, type BillItem } from "../../../lib/database/database";
 
 /* ======================================================
     OFFICE MODULE RESOLUTION (OFFLINE-READY)
@@ -75,7 +75,10 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({ projectId, 
       
       // 2. Aggregate Work Executed (Sum of all priced takeoff items)
       const billItems = await db.bill_items.where('project_id').equals(projectId).toArray();
-      const totalExecuted = billItems.reduce((acc: number, item: any) => acc + (item.quantity * item.rate), 0);
+      const totalExecuted = billItems.reduce(
+        (acc: number, item: BillItem) => acc + item.quantity * item.rate,
+        0,
+      );
 
       setData(prev => ({
         ...prev,
@@ -125,11 +128,11 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({ projectId, 
   }
 
   return (
-    <section className="flex-1 flex flex-col space-y-8 p-5 sm:p-6 animate-in fade-in slide-in-from-bottom-4 duration-700 text-left">
+    <section className="flex-1 flex flex-col space-y-8 p-4 sm:p-6 animate-in fade-in slide-in-from-bottom-4 duration-700 text-left min-w-0 overflow-x-hidden">
       
       {/* 1. REPORT HEADER: MASTER ACTIONS */}
-      <header className="flex shrink-0 flex-col items-start justify-between gap-5 lg:flex-row lg:items-end">
-        <div className="space-y-2">
+      <header className="flex shrink-0 flex-col items-start justify-between gap-5 lg:flex-row lg:items-end min-w-0">
+        <div className="space-y-2 min-w-0">
           <div className="flex items-center gap-3 text-amber-500 mb-2">
             <FileCheck size={24} className="stroke-[2.5px]" />
             <h2 className={`text-3xl sm:text-4xl font-black uppercase italic tracking-tighter leading-none
@@ -142,7 +145,7 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({ projectId, 
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-3 max-w-full">
           <Button 
             variant="outline" 
             className="theme-admin-control px-5" 
@@ -161,7 +164,7 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({ projectId, 
       </header>
 
       {/* 2. PROJECT OVERVIEW NODES */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 min-w-0">
         {[
           { label: 'Work Area', value: projectName, icon: Building2 },
           { label: 'Primary Client', value: data.contractor, icon: UserCheck },
@@ -182,7 +185,7 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({ projectId, 
       </div>
 
       {/* 3. PROFESSIONAL VALUATION LEDGER */}
-      <div className={`rounded-[2rem] border backdrop-blur-3xl overflow-hidden transition-all duration-500
+      <div className={`rounded-[2rem] border backdrop-blur-3xl overflow-hidden transition-all duration-500 min-w-0
         ${theme === 'dark' ? 'bg-zinc-900/20 border-zinc-800 shadow-2xl shadow-black' : 'bg-white border-zinc-200'}`}>
         
         <div className="space-y-8 p-5 sm:p-6">
@@ -238,7 +241,7 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({ projectId, 
           </div>
 
           {/* Section 03: Final Net Total */}
-          <div className={`rounded-[1.7rem] border transition-all duration-500 flex flex-col md:flex-row justify-between items-center gap-8 p-6 sm:p-8
+          <div className={`rounded-[1.7rem] border transition-all duration-500 flex flex-col md:flex-row justify-between items-center gap-8 p-6 sm:p-8 min-w-0
             ${theme === 'dark' ? 'bg-zinc-950/60 border-zinc-800 shadow-inner' : 'bg-zinc-50 border-zinc-100 shadow-inner'}`}>
             <div className="text-left space-y-3">
               <div className="flex items-center gap-3 text-emerald-500">

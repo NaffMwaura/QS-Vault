@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+ 
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   BarChart3, 

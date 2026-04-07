@@ -16,7 +16,12 @@ import {
 } from 'lucide-react';
 import { useAuth } from "../../auth/AuthContext";
 import Button from "../../../components/ui/Button";
-import { db, syncEngine } from "../../../lib/database/database";
+import {
+  db,
+  syncEngine,
+  type MaterialLogistics,
+  type TimeClock,
+} from "../../../lib/database/database";
 
 /* ======================================================
     OFFICE MODULE RESOLUTION (STABILIZED)
@@ -45,7 +50,7 @@ const ResourceGantt: React.FC<ResourceGanttProps> = ({ projectId }) => {
   // LIVE DATA STATES
   const [tasks, setTasks] = useState<GanttTask[]>([]);
   const [laborCount, setLaborCount] = useState(0);
-  const [logistics, setLogistics] = useState<any[]>([]);
+  const [logistics, setLogistics] = useState<MaterialLogistics[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // UI STATES
@@ -67,7 +72,11 @@ const ResourceGantt: React.FC<ResourceGanttProps> = ({ projectId }) => {
       
       const [storedTasks, activeLabor, recentDeliveries] = await Promise.all([
         db.gantt_tasks.where('project_id').equals(projectId).toArray(),
-        db.timeclock.where('project_id').equals(projectId).filter((t: any) => t.clock_out === null).toArray(),
+        db.timeclock
+          .where('project_id')
+          .equals(projectId)
+          .filter((t: TimeClock) => t.clock_out === null)
+          .toArray(),
         db.material_logistics.where('project_id').equals(projectId).reverse().limit(5).toArray()
       ]);
 
@@ -305,7 +314,7 @@ const ResourceGantt: React.FC<ResourceGanttProps> = ({ projectId }) => {
           )}
 
           <div className="space-y-4">
-             {logistics.length > 0 ? logistics.map((log: any) => (
+             {logistics.length > 0 ? logistics.map((log: MaterialLogistics) => (
                <div key={log.id} className="p-6 rounded-2xl bg-zinc-950/40 border border-zinc-800/60 flex justify-between items-center group hover:border-amber-500/20 transition-all text-left">
                   <div>
                      <p className="text-[9px] font-black uppercase text-amber-500 mb-1 leading-none tracking-widest">Verified Material</p>

@@ -78,11 +78,11 @@ const BoQGenerator: React.FC<BoQGeneratorProps> = ({ projectId, projectName, ini
   }, [items]);
 
   return (
-    <section className="flex-1 flex flex-col space-y-8 p-5 sm:p-6 animate-in fade-in slide-in-from-bottom-4 duration-700 overflow-hidden">
+    <section className="flex-1 flex flex-col space-y-8 p-4 sm:p-6 animate-in fade-in slide-in-from-bottom-4 duration-700 overflow-hidden min-w-0">
       
       {/* 1. Valuation Summary Header */}
-      <header className="flex shrink-0 flex-col items-start justify-between gap-5 lg:flex-row lg:items-end">
-        <div className="space-y-2 text-left">
+      <header className="flex shrink-0 flex-col items-start justify-between gap-5 lg:flex-row lg:items-end min-w-0">
+        <div className="space-y-2 text-left min-w-0">
           <h2 className="theme-title text-3xl sm:text-4xl font-black uppercase italic tracking-tighter leading-none">
             Bill of <span className="text-amber-500">Quantities.</span>
           </h2>
@@ -91,7 +91,7 @@ const BoQGenerator: React.FC<BoQGeneratorProps> = ({ projectId, projectName, ini
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-3 max-w-full">
           <button className="theme-button-muted theme-muted theme-admin-control flex items-center gap-3 transition-all active:scale-95">
             <Printer size={16} /> Print Draft
           </button>
@@ -102,7 +102,7 @@ const BoQGenerator: React.FC<BoQGeneratorProps> = ({ projectId, projectName, ini
       </header>
 
       {/* 2. Professional BoQ Ledger Table */}
-      <div className="theme-surface-overlay flex flex-1 flex-col overflow-hidden rounded-[2rem] border backdrop-blur-3xl transition-all duration-500">
+      <div className="theme-surface-overlay flex flex-1 flex-col overflow-hidden rounded-[2rem] border backdrop-blur-3xl transition-all duration-500 min-w-0">
         
         {isLoading ? (
           <div className="flex flex-1 flex-col items-center justify-center p-16 opacity-30">

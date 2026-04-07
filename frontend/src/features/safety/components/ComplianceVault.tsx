@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+ 
 import React, { useState, useEffect, useCallback } from "react";
 import {
   ShieldCheck,
@@ -14,7 +14,11 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../auth/AuthContext";
 import Button from "../../../components/ui/Button";
-import { db, syncEngine } from "../../../lib/database/database";
+import {
+  db,
+  syncEngine,
+  type ComplianceCheck as ComplianceCheckRecord,
+} from "../../../lib/database/database";
 
 /* ======================================================
     OFFICE MODULE RESOLUTION (PRODUCTION READY)
@@ -22,14 +26,10 @@ import { db, syncEngine } from "../../../lib/database/database";
 
 /** --- TYPES --- **/
 
-interface ComplianceCheck {
-  id: string;
-  category: "HSE" | "Quality" | "Structural";
-  title: string;
-  is_compliant: boolean;
-  notes: string;
-  timestamp: string;
-}
+type ComplianceCheck = Pick<
+  ComplianceCheckRecord,
+  "id" | "category" | "title" | "is_compliant" | "notes" | "timestamp"
+>;
 
 interface Permit {
   id: string;
@@ -239,7 +239,8 @@ const ComplianceVault: React.FC<ComplianceVaultProps> = ({ projectId }) => {
                         onChange={(e) =>
                           setNewCheck({
                             ...newCheck,
-                            category: e.target.value as any,
+                            category:
+                              e.target.value as typeof newCheck.category,
                           })
                         }
                         className="theme-input w-full p-5 rounded-2xl border outline-none focus:border-amber-500 font-bold text-xs"
