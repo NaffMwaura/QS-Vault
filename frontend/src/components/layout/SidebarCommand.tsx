@@ -56,7 +56,7 @@ const SidebarLink = ({
     className={`theme-admin-control flex w-full items-center gap-3.5 border text-left transition-all ${
       active
         ? 'bg-amber-500 text-black border-amber-500 shadow-lg shadow-amber-500/20'
-        : 'theme-muted border-transparent hover:bg-zinc-500/5 hover:text-[var(--app-fg)]'
+        : 'theme-muted border-transparent hover:bg-zinc-500/5 hover:text-[(--app-fg)]'
     }`}
   >
     <Icon size={18} />
@@ -94,7 +94,7 @@ const SidebarContent = ({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-[color:var(--app-divider)] px-5 py-5 lg:px-6 lg:py-6">
+      <div className="flex items-center justify-between border-b border-[(--app-divider)] px-5 py-5 lg:px-6 lg:py-6">
         <button
           type="button"
           onClick={() => handleNavigate('projects')}
