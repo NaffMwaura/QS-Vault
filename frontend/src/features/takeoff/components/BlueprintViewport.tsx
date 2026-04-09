@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { 
+import {
   ZoomIn, 
   ZoomOut, 
   MousePointer2, 
@@ -8,31 +8,37 @@ import {
   Upload,
   FileSearch,
   Loader2,
+  BadgeCheck,
+  Ruler,
 } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
+import type {
+  PDFDocumentProxy,
+  RenderTask,
+} from 'pdfjs-dist/types/src/display/api';
 import { useAuth } from "../../auth/AuthContext";
+import type { Measurement, MeasurementTool, Point } from "../types/takeoff";
 
 /** * PDF ENGINE CONFIGURATION
  * We use a standardized worker for high-speed drawing interpretation.
  */
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://esm.sh/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
-/** --- TYPES --- **/
-
-interface Point { x: number; y: number; }
-
 interface BlueprintViewportProps {
-  pdfDoc: any;
-  setPdfDoc: (doc: any) => void;
+  pdfDoc: PDFDocumentProxy | null;
+  setPdfDoc: (doc: PDFDocumentProxy | null) => void;
   pageNum: number;
   scale: number;
   setScale: React.Dispatch<React.SetStateAction<number>>;
   isMeasuring: boolean;
   setIsMeasuring: (val: boolean) => void;
-  activeTool: 'length' | 'area' | 'count';
+  activeTool: MeasurementTool;
   currentPoints: Point[];
   setCurrentPoints: React.Dispatch<React.SetStateAction<Point[]>>;
-  measurements: any[];
+  measurements: Measurement[];
+  activeSection: string;
+  scaleFactor: number;
+  unit: "m" | "mm";
   onCanvasClick: (e: React.MouseEvent<HTMLCanvasElement>) => void;
 }
 
@@ -50,19 +56,22 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
   currentPoints,
   setCurrentPoints,
   measurements,
+  activeSection,
+  scaleFactor,
+  unit,
   onCanvasClick
 }) => {
   const { theme } = useAuth();
   const [isRendering, setIsRendering] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const renderTaskRef = useRef<any>(null);
+  const renderTaskRef = useRef<RenderTask | null>(null);
 
   /** * RENDERING ENGINE
    * Translates PDF vectors into a high-precision pixel canvas.
    * Includes cancellation logic to prevent "flicker" during rapid zooming.
    */
-  const renderPage = useCallback(async (pdf: any, pNum: number, zoom: number) => {
+  const renderPage = useCallback(async (pdf: PDFDocumentProxy, pNum: number, zoom: number) => {
     if (!canvasRef.current || !pdf) return;
     
     try {
@@ -83,6 +92,7 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
         canvas.width = viewport.width;
 
         const renderContext = {
+          canvas,
           canvasContext: context,
           viewport: viewport
         };
@@ -91,8 +101,15 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
         await renderTaskRef.current.promise;
       }
       setIsRendering(false);
-    } catch (err: any) {
-      if (err.name !== 'RenderingCancelledException') {
+    } catch (err: unknown) {
+      if (
+        !(
+          typeof err === "object" &&
+          err !== null &&
+          "name" in err &&
+          err.name === "RenderingCancelledException"
+        )
+      ) {
         console.error("Viewport Engine: Render failure.", err);
       }
     }
@@ -149,7 +166,7 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
       ${theme === 'dark' ? 'bg-[#09090b]' : 'bg-zinc-200'}`}>
       
       {/* 1. VIEWPORT HUD (Floating Controls) */}
-      <div className="absolute top-6 left-6 flex flex-col gap-2 z-30 bg-zinc-950/80 p-1.5 rounded-2xl border border-zinc-800 shadow-2xl backdrop-blur-xl">
+      <div className="absolute top-4 left-4 sm:top-6 sm:left-6 flex flex-col gap-2 z-30 bg-zinc-950/80 p-1.5 rounded-2xl border border-zinc-800 shadow-2xl backdrop-blur-xl">
         <button 
           onClick={() => setScale(s => Math.min(s + 0.25, 5))} 
           className="p-3 text-zinc-400 hover:text-amber-500 transition-all active:scale-90"
@@ -177,10 +194,32 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
         </button>
       </div>
 
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-30 max-w-[min(22rem,calc(100%-2rem))]">
+        <div className="bg-zinc-950/85 border border-zinc-800 rounded-[1.75rem] p-4 sm:p-5 shadow-2xl backdrop-blur-xl">
+          <div className="flex items-center gap-3 mb-3">
+            <Ruler size={16} className="text-amber-500" />
+            <p className="text-[9px] font-black uppercase tracking-[0.28em] text-zinc-500">
+              Takeoff workflow
+            </p>
+          </div>
+          <p className="text-sm font-semibold text-zinc-100 leading-snug">
+            Upload the drawing, confirm the ratio, then capture measurements for the active work section.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <span className="px-3 py-2 rounded-full bg-zinc-900 border border-zinc-800 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400">
+              Section: {activeSection}
+            </span>
+            <span className="px-3 py-2 rounded-full bg-zinc-900 border border-zinc-800 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400">
+              Scale: 1 unit = {scaleFactor.toFixed(3)} {unit}
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* 2. MAIN DRAWING WORKSPACE */}
-      <div className="relative shadow-[0_0_80px_rgba(0,0,0,0.6)] bg-white rounded-sm overflow-auto max-h-full max-w-full custom-scrollbar scroll-smooth">
+      <div className="relative shadow-[0_0_80px_rgba(0,0,0,0.6)] bg-white rounded-sm overflow-auto max-h-full max-w-full custom-scrollbar scroll-smooth mt-28 sm:mt-32">
         {!pdfDoc ? (
-          <div className="p-10 sm:p-24 text-center bg-zinc-950/50 backdrop-blur-md rounded-[3rem] border border-zinc-800 flex flex-col items-center gap-8 m-10">
+          <div className="p-8 sm:p-24 text-center bg-zinc-950/50 backdrop-blur-md rounded-[3rem] border border-zinc-800 flex flex-col items-center gap-8 m-4 sm:m-10">
             <div className="relative">
               <div className="absolute inset-0 bg-amber-500/10 rounded-full blur-3xl animate-pulse" />
               <div className="p-12 rounded-full bg-zinc-900 border border-zinc-800 shadow-inner relative">
@@ -196,6 +235,9 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
                 <h3 className="text-xl font-black text-white italic uppercase tracking-tighter">
                   Drawing Required for Takeoff
                 </h3>
+                <p className="text-sm text-zinc-400 max-w-lg mx-auto">
+                  Start with a PDF drawing, then verify the ratio in the calibration panel before placing measurements.
+                </p>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -213,6 +255,20 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
                 </button>
               </div>
               <input type="file" ref={fileInputRef} onChange={onFileChange} accept=".pdf" className="hidden" />
+              <div className="grid gap-3 text-left w-full max-w-2xl mx-auto">
+                {[
+                  "1. Load a drawing or open the practice sheet.",
+                  "2. Confirm a standard ratio or point-to-point calibration.",
+                  "3. Select a section and start measuring.",
+                ].map((step) => (
+                  <div
+                    key={step}
+                    className="rounded-2xl border border-zinc-800 bg-zinc-900/60 px-4 py-3 text-sm font-semibold text-zinc-300"
+                  >
+                    {step}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
@@ -245,7 +301,7 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
               {measurements.map(m => (
                 <polyline 
                   key={m.id} 
-                  points={m.points.map((p: any) => `${p.x},${p.y}`).join(' ')} 
+                  points={(m.points ?? []).map((p) => `${p.x},${p.y}`).join(' ')} 
                   fill={m.type === 'area' ? 'rgba(16,185,129,0.08)' : 'none'} 
                   stroke="#10b981" 
                   strokeWidth="3" 
@@ -272,7 +328,7 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
       </div>
       
       {/* 3. SYSTEM STATUS INDICATOR */}
-      <div className="absolute bottom-8 right-8 z-30">
+      <div className="absolute bottom-4 right-4 sm:bottom-8 sm:right-8 z-30">
         <div className="bg-zinc-950/80 backdrop-blur-xl border border-zinc-800 px-6 py-4 rounded-2xl flex items-center gap-4 shadow-2xl">
           <div className="text-right">
             <p className="text-[8px] font-black uppercase text-zinc-500 tracking-[0.25em] leading-none mb-1.5">Precision Monitor</p>
@@ -282,6 +338,14 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
                  {isRendering ? 'Refining Vectors...' : pdfDoc ? 'Drawing Synchronized' : 'Standby Mode'}
                </p>
             </div>
+            {pdfDoc && (
+              <div className="mt-2 flex items-center justify-end gap-2">
+                <BadgeCheck size={10} className="text-emerald-500" />
+                <span className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-500">
+                  {measurements.length} saved mark{measurements.length === 1 ? "" : "s"}
+                </span>
+              </div>
+            )}
           </div>
           <div className={`w-2.5 h-2.5 rounded-full ${isRendering ? 'bg-amber-500 animate-pulse shadow-[0_0_10px_rgba(245,158,11,0.5)]' : pdfDoc ? 'bg-emerald-500' : 'bg-zinc-800'}`} />
         </div>
