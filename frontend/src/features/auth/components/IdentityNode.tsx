@@ -12,8 +12,6 @@ import {
   CheckCircle2,
   Lock,
   UserCheck,
-  ShieldCheck,
-  X
 } from 'lucide-react';
 
 /* ======================================================
