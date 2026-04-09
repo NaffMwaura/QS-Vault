@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { 
   FileCheck, 
@@ -75,6 +74,7 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({ projectId, 
       
       // 2. Aggregate Work Executed (Sum of all priced takeoff items)
       const billItems = await db.bill_items.where('project_id').equals(projectId).toArray();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const totalExecuted = billItems.reduce((acc: number, item: any) => acc + (item.quantity * item.rate), 0);
 
       setData(prev => ({
