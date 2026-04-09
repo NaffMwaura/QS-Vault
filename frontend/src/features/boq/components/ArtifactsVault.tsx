@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+ 
 import React, { useState, useEffect } from 'react';
-import { 
+import {
   FileText, 
   FileSpreadsheet, 
   Download, 
@@ -13,7 +13,7 @@ import {
   Database
 } from 'lucide-react';
 import { useAuth } from "../../../features/auth/AuthContext";
-import { db } from "../../../lib/database/database";
+import { db, type Project } from "../../../lib/database/database";
 
 /** --- TYPES --- **/
 
@@ -113,7 +113,7 @@ const ArtifactsVault: React.FC = () => {
         // Fetch real projects to generate a "Document List"
         const activeProjects = await db.projects.where('user_id').equals(user.id).toArray();
         
-        const documentList: ReportItem[] = activeProjects.map((p: any) => ({
+        const documentList: ReportItem[] = activeProjects.map((p: Project) => ({
           id: p.id,
           title: `Bill of Quantities`,
           projectName: p.name,

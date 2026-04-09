@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+ 
 import React, { useState } from 'react';
 import { 
   Target, 
@@ -6,6 +6,7 @@ import {
   CheckCircle2, 
   Ruler,
   Zap,
+  Info,
 } from 'lucide-react';
 import { useAuth } from "../../auth/AuthContext";
 
@@ -45,6 +46,23 @@ const CalibrationNode: React.FC<CalibrationNodeProps> = ({
       ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800 shadow-2xl' : 'bg-white border-zinc-200 shadow-xl'}`}>
       
       <div className="flex flex-col space-y-8">
+        <div className={`rounded-[2rem] border p-5 text-left ${
+          theme === 'dark' ? 'bg-zinc-950/60 border-zinc-800' : 'bg-zinc-50 border-zinc-100'
+        }`}>
+          <div className="flex items-start gap-3">
+            <Info size={16} className="text-amber-500 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.28em] text-zinc-500 mb-2">
+                Calibration Guide
+              </p>
+              <p className={`text-sm font-semibold leading-snug ${
+                theme === 'dark' ? 'text-zinc-300' : 'text-zinc-700'
+              }`}>
+                Choose a common drawing ratio for speed, or use point-to-point when the sheet has a known dimension you can trust on site.
+              </p>
+            </div>
+          </div>
+        </div>
         
         {/* 1. Header Information */}
         <div className="flex justify-between items-start">

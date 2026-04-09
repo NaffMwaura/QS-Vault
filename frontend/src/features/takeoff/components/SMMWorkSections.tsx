@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+ 
 import React from 'react';
 import { 
   Hash, 
@@ -64,7 +64,7 @@ const SMMWorkSections: React.FC<SMMWorkSectionsProps> = ({
   };
 
   return (
-    <aside className={`w-full flex flex-col space-y-10 p-6 sm:p-10 transition-colors duration-500 h-full overflow-hidden
+    <aside className={`w-full flex flex-col space-y-10 p-6 sm:p-10 transition-colors duration-500 h-auto overflow-visible
       ${theme === 'dark' ? 'bg-transparent' : 'bg-zinc-50/30'}`}>
       
       {/* 1. TOOL SELECTION HUB */}
@@ -98,12 +98,12 @@ const SMMWorkSections: React.FC<SMMWorkSectionsProps> = ({
       </div>
 
       {/* 2. SMM COMPLIANCE CATEGORIES */}
-      <div className="flex-1 space-y-5 overflow-hidden flex flex-col">
+      <div className="space-y-5 flex flex-col">
         <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 ml-1 italic block text-left">
           Standard Work Sections (SMM-KE)
         </label>
         
-        <div className="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-3">
+        <div className="space-y-4 pr-0 sm:pr-3">
           {SMM_REGISTRY.map((section) => {
             const isActive = activeSection === section.label;
             return (
