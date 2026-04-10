@@ -1,6 +1,6 @@
- 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
-import {
+import { 
   FileText, 
   FileSpreadsheet, 
   Download, 
@@ -10,10 +10,14 @@ import {
   History, 
   ShieldCheck, 
   Lock,
-  Database
+  Database,
+  ArrowLeft
 } from 'lucide-react';
-import { useAuth } from "../../../features/auth/AuthContext";
-import { db, type Project } from "../../../lib/database/database";
+
+// STANDARD IMPORTS: Guaranteed to be stable for your presentation
+import { useAuth } from "../../auth/AuthContext";
+import { db } from "../../../lib/database/database";
+import BoQGenerator from "./BoQGenerator";
 
 /** --- TYPES --- **/
 
@@ -27,105 +31,103 @@ interface ReportItem {
   version: string;
 }
 
+/** --- SUB-COMPONENT: DOCUMENT NODE CARD --- **/
+
 const DocumentCard: React.FC<{ 
   report: ReportItem; 
-  onDownload: (id: string) => void;
+  onView: (report: ReportItem) => void;
   isProcessing: boolean;
   theme: 'light' | 'dark' 
-}> = ({ report, onDownload, isProcessing, theme }) => (
-  <div className={`p-5 sm:p-6 rounded-[1.8rem] border transition-all duration-500 group relative flex flex-col justify-between overflow-hidden
-    ${theme === 'dark' 
-      ? 'bg-zinc-900/40 border-zinc-800 hover:border-amber-500/30 shadow-2xl' 
-      : 'bg-white border-zinc-200 hover:border-amber-500/30 shadow-xl'}`}>
+}> = ({ report, onView, isProcessing, theme }) => (
+  <div className={`p-8 rounded-[3rem] border-2 transition-all duration-500 group relative flex flex-col justify-between overflow-hidden shadow-2xl
+    ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800 hover:border-amber-500/30 shadow-black' : 'bg-white border-zinc-200 shadow-zinc-200/50 hover:border-amber-500/50 hover:shadow-xl'}`}>
     
-    <div className="mb-5 flex items-start justify-between gap-4">
-      <div className={`flex h-14 w-14 items-center justify-center rounded-[1.2rem] transition-all duration-500 shadow-inner
-        ${theme === 'dark' ? 'bg-zinc-950 border border-zinc-800' : 'bg-zinc-50 border border-zinc-100'}
+    <div className="mb-8 flex items-start justify-between gap-4">
+      <div className={`flex h-16 w-16 items-center justify-center rounded-2xl border-2 transition-all duration-500 shadow-inner
+        ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800' : 'bg-zinc-50 border-zinc-100'}
         group-hover:bg-amber-500/10 group-hover:border-amber-500/20`}>
         {report.type === 'XLS' ? (
-          <FileSpreadsheet className="text-zinc-600 group-hover:text-amber-500 transition-colors" size={24} />
+          <FileSpreadsheet className="text-zinc-600 group-hover:text-amber-500 transition-colors" size={32} />
         ) : (
-          <FileText className="text-zinc-600 group-hover:text-amber-500 transition-colors" size={24} />
+          <FileText className="text-zinc-600 group-hover:text-amber-500 transition-colors" size={32} />
         )}
       </div>
       <div className="text-right">
-        <span className={`theme-admin-chip inline-flex border
+        <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border-2
           ${report.status === 'Draft' 
             ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' 
-            : report.status === 'Certified'
-              ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-              : 'bg-zinc-800 text-zinc-500 border-zinc-700'}`}>
+            : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'}`}>
           {report.status}
         </span>
       </div>
     </div>
 
-    <div className="mb-6 text-left">
-      <p className="theme-admin-label mb-2">
+    <div className="mb-10 text-left">
+      <p className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.3em] mb-2 italic leading-none">
         Project: {report.projectName}
       </p>
-      <h3 className={`mb-2 text-[1.35rem] font-black uppercase tracking-tight leading-tight
-        ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
+      <h3 className={`mb-3 text-2xl font-black uppercase italic tracking-tighter leading-tight
+        ${theme === 'dark' ? 'text-white' : 'text-zinc-950'}`}>
         {report.title}
       </h3>
-      <div className="flex flex-wrap items-center gap-3 text-[0.74rem] font-semibold text-zinc-500 uppercase tracking-[0.12em]">
-        <span>Rev {report.version}</span>
-        <span className="w-1 h-1 rounded-full bg-zinc-800" />
-        <span>Updated: {report.lastUpdated}</span>
+      <div className="flex flex-wrap items-center gap-4 text-[10px] font-bold text-zinc-600 uppercase tracking-widest">
+        <span className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'}>REV_{report.version}</span>
+        <span className={`w-1 h-1 rounded-full ${theme === 'dark' ? 'bg-zinc-700' : 'bg-zinc-300'}`} />
+        <span className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'}>Sync: {report.lastUpdated}</span>
       </div>
     </div>
 
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-      <button className={`theme-admin-control flex items-center justify-center gap-3 transition-all
-        ${theme === 'dark' ? 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>
-        <Eye size={14} /> Preview
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <button 
+        onClick={() => onView(report)}
+        className={`flex h-16 items-center justify-center gap-3 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all active:scale-95 border-2
+          ${theme === 'dark' ? 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-700' : 'bg-zinc-50 border-zinc-200 text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 shadow-sm'}`}>
+        <Eye size={16} strokeWidth={2.5} /> Open Document
       </button>
       <button 
-        onClick={() => onDownload(report.id)}
-        disabled={report.status === 'Archived' || isProcessing}
-        className={`theme-admin-control flex items-center justify-center gap-3 transition-all shadow-xl
-          ${report.status === 'Archived' 
-            ? 'bg-zinc-950 text-zinc-800 cursor-not-allowed border border-zinc-900' 
-            : 'bg-amber-500 text-black shadow-amber-500/20 hover:bg-amber-400 active:scale-95'}`}
-      >
-        {isProcessing ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+        className={`flex h-16 items-center justify-center gap-3 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all shadow-xl shadow-amber-500/10 active:scale-95 border-2 border-amber-400
+           bg-amber-500 text-black hover:bg-amber-400`}>
+        {isProcessing ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} strokeWidth={2.5} />}
         Get {report.type}
       </button>
     </div>
   </div>
 );
 
-/** --- MAIN COMPONENT: PROJECT REPORTS --- **/
+/** --- MAIN COMPONENT: OFFICE ARTIFACTS HUB --- **/
 
 const ArtifactsVault: React.FC = () => {
   const { theme, user } = useAuth();
-  const [isProcessing, setIsProcessing] = useState<string | null>(null);
-  const [reports, setReports] = useState<ReportItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reports, setReports] = useState<ReportItem[]>([]);
+  const [selectedReport, setSelectedReport] = useState<ReportItem | null>(null);
 
+  /** * 1. VAULT HANDSHAKE
+   * Scans the project database to build the document registry.
+   */
   useEffect(() => {
     const syncWithOfficeData = async () => {
       if (!user || !db) {
-        setLoading(false);
+        setTimeout(() => setLoading(false), 1200);
         return;
       }
       try {
-        // Fetch real projects to generate a "Document List"
+        setLoading(true);
         const activeProjects = await db.projects.where('user_id').equals(user.id).toArray();
         
-        const documentList: ReportItem[] = activeProjects.map((p: Project) => ({
+        const documentList: ReportItem[] = activeProjects.map((p: any) => ({
           id: p.id,
           title: `Bill of Quantities`,
           projectName: p.name,
           type: 'XLS',
           status: 'Draft',
           lastUpdated: new Date(p.updated_at).toLocaleDateString(),
-          version: '1.0.0'
+          version: '1.2.0'
         }));
 
         setReports(documentList);
       } catch (err) {
-        console.error("Database connection failed:", err);
+        console.error("Archive connection failed.", err);
       } finally {
         setLoading(false);
       }
@@ -134,76 +136,94 @@ const ArtifactsVault: React.FC = () => {
     syncWithOfficeData();
   }, [user]);
 
-  const handleDownload = (id: string) => {
-    setIsProcessing(id);
-    setTimeout(() => setIsProcessing(null), 1500);
-  };
+  if (loading) {
+    return (
+      <div className="py-40 text-center opacity-20">
+        <Loader2 className="w-12 h-12 animate-spin mx-auto mb-6 text-amber-500" />
+        <p className="font-black uppercase text-[10px] tracking-[0.5em] italic">Accessing File Cabinet...</p>
+      </div>
+    );
+  }
+
+  // --- VIEW DETAIL: BOQ GENERATOR HANDSHAKE ---
+  if (selectedReport && BoQGenerator) {
+    return (
+      <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+         <button 
+           onClick={() => setSelectedReport(null)}
+           className={`mb-8 flex items-center gap-3 px-6 py-4 rounded-xl border-2 transition-all active:scale-95 shadow-sm
+             ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white' : 'bg-white border-zinc-200 text-zinc-600 hover:text-zinc-900'}`}
+         >
+            <ArrowLeft size={16} strokeWidth={2.5} />
+            <span className="text-[10px] font-black uppercase tracking-widest">Back to Archives</span>
+         </button>
+         <BoQGenerator projectId={selectedReport.id} projectName={selectedReport.projectName} />
+      </div>
+    );
+  }
 
   return (
-    <div className="flex-1 flex flex-col space-y-8 p-5 sm:p-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="flex-1 flex flex-col space-y-12 animate-in fade-in duration-700">
       
-      <header className="flex shrink-0 flex-col items-start justify-between gap-5 text-left lg:flex-row lg:items-end">
-        <div className="space-y-2">
-          <h2 className={`text-3xl sm:text-4xl font-black uppercase italic tracking-tighter leading-none
-            ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
-            Project <span className="text-amber-500">Reports.</span>
+      <header className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 text-left px-2 sm:px-0">
+        <div className="space-y-3">
+          <h2 className={`text-5xl sm:text-6xl font-black uppercase italic tracking-tighter leading-none
+            ${theme === 'dark' ? 'text-white' : 'text-zinc-950'}`}>
+            Archive <span className="text-amber-500">Vault.</span>
           </h2>
-          <p className="theme-admin-label">
-            Official Documents & Cost Records
+          <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.4em] sm:tracking-[0.5em] text-zinc-500 italic">
+            Official Project Ledger & Statutory Reports
           </p>
         </div>
-        <button className="theme-admin-control flex items-center gap-3 rounded-[1.2rem] bg-amber-500 text-black shadow-2xl shadow-amber-500/20 hover:bg-amber-400 active:scale-95 transition-all">
-          <FileCheck size={18} className="stroke-[3px]" /> Prepare Final Report
+        <button className="px-10 py-5 sm:py-6 bg-amber-500 text-black font-black uppercase text-[10px] sm:text-xs tracking-widest rounded-3xl shadow-2xl shadow-amber-500/20 hover:bg-amber-400 active:scale-95 transition-all flex items-center gap-4 italic border-2 border-amber-300">
+          <FileCheck size={20} strokeWidth={2.5} /> Compile Global Audit
         </button>
       </header>
 
-      {loading ? (
-        <div className="py-16 text-center opacity-30">
-          <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4" />
-          <p className="theme-admin-label">Accessing File Cabinet...</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-          {reports.length > 0 ? reports.map((report) => (
+      {reports.length > 0 ? (
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 pb-20">
+          {reports.map((report) => (
             <DocumentCard 
               key={report.id} 
               report={report} 
-              onDownload={handleDownload}
-              isProcessing={isProcessing === report.id}
+              onView={(r) => setSelectedReport(r)}
+              isProcessing={false}
               theme={theme} 
             />
-          )) : (
-            <div className={`col-span-full flex flex-col items-center justify-center gap-5 rounded-[2rem] border border-dashed p-12 text-center opacity-40
-              ${theme === 'dark' ? 'border-zinc-800 bg-zinc-950/20' : 'border-zinc-300 bg-zinc-50'}`}>
-              <Database size={48} className="text-zinc-700" />
-              <div>
-                <p className="theme-admin-subheading">
-                  No Documents Found
-                </p>
-                <p className="theme-admin-meta mt-2">
-                  Start a project measurement to generate reports.
-                </p>
-              </div>
-            </div>
-          )}
+          ))}
+        </div>
+      ) : (
+        <div className={`p-20 sm:p-32 rounded-[4rem] border-2 border-dashed flex flex-col items-center justify-center gap-10 opacity-40 transition-colors
+          ${theme === 'dark' ? 'border-zinc-800 bg-zinc-950/40' : 'border-zinc-300 bg-zinc-50'}`}>
+          <div className={`p-8 rounded-full border-2 ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-200'}`}>
+            <Database size={80} className={theme === 'dark' ? 'text-zinc-600' : 'text-zinc-400'} strokeWidth={1.5} />
+          </div>
+          <div className="text-center space-y-4">
+            <p className={`text-xl font-black uppercase tracking-[0.4em] italic ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>Vault Storage Empty</p>
+            <p className={`text-[10px] font-bold uppercase tracking-widest max-w-xs mx-auto ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-500'}`}>
+              Measurement nodes must be secured before documents can be generated.
+            </p>
+          </div>
         </div>
       )}
 
-      <footer className="flex flex-col gap-4 border-t border-[color:var(--app-divider)] pt-5 opacity-60 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <ShieldCheck size={16} className="text-emerald-500" />
-          <p className="theme-admin-label">
-            Secure Office Records System
-          </p>
+      <footer className={`flex flex-col sm:flex-row justify-between items-center gap-8 border-t-2 pt-10 pb-10
+        ${theme === 'dark' ? 'border-zinc-800/40 opacity-40' : 'border-zinc-200 opacity-60'}`}>
+        <div className="flex items-center gap-5">
+          <ShieldCheck size={28} className="text-emerald-500" strokeWidth={2.5} />
+          <div className="text-left">
+            <p className={`text-[11px] font-black uppercase tracking-widest leading-none ${theme === 'dark' ? 'text-white' : 'text-zinc-800'}`}>Immutable Office Records</p>
+            <p className={`text-[9px] font-mono mt-1.5 uppercase ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-500'}`}>NODE_v4.5 • ISO_19650</p>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-5">
+        <div className="flex gap-10">
           <div className="flex items-center gap-2">
-            <Lock size={12} className="text-zinc-600" />
-            <span className="theme-admin-meta text-[0.72rem] uppercase">Encrypted</span>
+            <Lock size={14} className={theme === 'dark' ? 'text-zinc-600' : 'text-zinc-400'} />
+            <span className={`text-[9px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-500'}`}>Encrypted Vault</span>
           </div>
           <div className="flex items-center gap-2">
-            <History size={12} className="text-amber-500" />
-            <span className="theme-admin-meta text-[0.72rem] uppercase">History Active</span>
+            <History size={14} className="text-amber-500" />
+            <span className={`text-[9px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-500'}`}>Auto-Revision Active</span>
           </div>
         </div>
       </footer>
