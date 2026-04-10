@@ -44,6 +44,16 @@ export interface Project {
   username?: string; 
 }
 
+export interface RateItem {
+  id: string;
+  name: string;
+  category: 'material' | 'labor' | 'plant';
+  unit: string;
+  rate: number;
+  code: string;
+  updated_at?: string;
+}
+
 /* --- FIELD ENGINE (SITE EXECUTION) --- */
 export interface SiteDiary {
   id: string;
@@ -173,7 +183,7 @@ export interface BillItem {
   project_id: string;
   item_code: string | null;
   description: string;
-  unit: 'm3' | 'm2' | 'm' | 'nr' | 'kg' | 't';
+  unit: string;
   rate: number;
   quantity: number;
   updated_at: string;
@@ -203,6 +213,7 @@ export interface SyncQueueItem {
   operation: 'INSERT' | 'UPDATE' | 'DELETE';
   record_id: string;
   payload: any;
+  retry_count: number;
   created_at: number;
 }
 
@@ -213,6 +224,7 @@ class QSPocketKnifeDB extends Dexie {
   projects!: Table<Project, string>;
   bill_items!: Table<BillItem, string>;
   measurements!: Table<Measurement, string>;
+  rates_library!: Table<RateItem, string>; // RESTORED: Missing rate table
   site_diary!: Table<SiteDiary, string>;
   site_logs!: Table<SiteLog, string>;
   site_photos!: Table<SitePhoto, string>;
@@ -230,12 +242,14 @@ class QSPocketKnifeDB extends Dexie {
   constructor() {
     super("QSPocketKnifeDB");
     
-    this.version(4).stores({
+    // Version 13: Full schema with all site execution nodes and stable rates
+    this.version(13).stores({
       profiles: "id, username, role",
       projects: "id, user_id, updated_at",
       bill_items: "id, project_id, item_code",
       measurements: "id, project_id, bill_item_id, sectionCode, timestamp",
-      site_diary: "id, project_id, date",
+      rates_library: "id, code, category",
+      site_diary: "id, project_id, date, [project_id+date]",
       site_logs: "id, diary_id, category",
       site_photos: "id, project_id, task_tag",
       issues: "id, project_id, status, assigned_subcontractor",
@@ -258,27 +272,25 @@ export const db = new QSPocketKnifeDB();
 
 let isProcessing = false;
 
+const TABLE_MAPPING: Record<string, string> = {
+  'rates': 'rates_library',
+  'diary': 'site_diary',
+  'tasks': 'gantt_tasks'
+};
+
 export const syncEngine = {
-  /** * sanitizePayload
-   * Standardizes payloads for PostgreSQL compatibility.
-   * Maps camelCase to snake_case and removes UI fields.
-   */
   sanitizePayload: (table: string, payload: any) => {
-    const { synced_at, is_local, amount, ...clean } = payload;
+    if (!payload) return {};
+    const { synced_at, is_local, amount, retry_count, ...clean } = payload;
     
-    // Hard mapping for SMM columns to ensure no schema mismatch
-    if (table === 'measurements') {
-      if (clean.sectionCode !== undefined) {
-        clean.section_code = clean.sectionCode;
-        delete clean.sectionCode;
-      }
+    if (table === 'measurements' && clean.sectionCode !== undefined) {
+      clean.section_code = clean.sectionCode;
+      delete clean.sectionCode;
     }
 
-    if (table === 'bill_items') {
-      if (clean.itemCode !== undefined) {
-        clean.item_code = clean.itemCode;
-        delete clean.itemCode;
-      }
+    if (table === 'bill_items' && clean.itemCode !== undefined) {
+      clean.item_code = clean.itemCode;
+      delete clean.itemCode;
     }
 
     return clean;
@@ -289,32 +301,44 @@ export const syncEngine = {
     
     try {
       isProcessing = true;
-      const queue = await db.sync_queue.orderBy('id').toArray();
-      
+      const queue = await db.sync_queue.orderBy('id').limit(15).toArray();
       if (queue.length === 0) return;
 
       for (const item of queue) {
         try {
+          const targetTable = TABLE_MAPPING[item.table] || item.table;
+          
+          if (!item.payload && item.operation !== 'DELETE') {
+             await db.sync_queue.delete(item.id!);
+             continue;
+          }
+
           const cleanData = syncEngine.sanitizePayload(item.table, item.payload);
 
           const { error } = item.operation === 'DELETE' 
-            ? await supabase.from(item.table).delete().eq('id', item.record_id)
-            : await supabase.from(item.table).upsert(cleanData, { onConflict: 'id' });
+            ? await supabase.from(targetTable).delete().eq('id', item.record_id)
+            : await supabase.from(targetTable).upsert(cleanData, { onConflict: 'id' });
 
           if (!error) {
             await db.sync_queue.delete(item.id!);
-            const targetTable = (db as any)[item.table];
-            if (targetTable) {
-              await targetTable.update(item.record_id, { synced_at: new Date().toISOString() });
+            const vaultTable = (db as any)[targetTable];
+            if (vaultTable) {
+              await vaultTable.update(item.record_id, { synced_at: new Date().toISOString() });
             }
           } else {
-            console.error(`[Sync Engine] ${item.table} upload paused:`, error.message);
+            console.error(`[Sync Engine] ${targetTable} upload paused:`, error.message);
             
-            // Critical schema error check
-            if (error.message.includes("column") || error.code === "42703" || error.message.includes("section_code")) {
-              console.warn(`[Sync Engine] Schema Mismatch on ${item.table}. Skipping record to unblock ledger.`);
-              await db.sync_queue.delete(item.id!);
-              continue;
+            if (error.message.includes("404") || error.code === "42703" || error.code === "PGRST116") {
+               console.warn("Terminal Sync Error: Skipping invalid node.");
+               await db.sync_queue.delete(item.id!);
+               continue;
+            }
+
+            const nextRetries = (item.retry_count || 0) + 1;
+            if (nextRetries >= 3) {
+                await db.sync_queue.delete(item.id!);
+            } else {
+                await db.sync_queue.update(item.id!, { retry_count: nextRetries });
             }
             break; 
           }
@@ -328,17 +352,13 @@ export const syncEngine = {
     }
   },
 
-  queueChange: async (
-    table: string, 
-    id: string, 
-    op: 'INSERT' | 'UPDATE' | 'DELETE', 
-    data: any
-  ) => {
+  queueChange: async (table: string, id: string, op: 'INSERT' | 'UPDATE' | 'DELETE', data: any) => {
     await db.sync_queue.add({
       table,
       record_id: id,
       operation: op,
       payload: data,
+      retry_count: 0,
       created_at: Date.now()
     });
 
