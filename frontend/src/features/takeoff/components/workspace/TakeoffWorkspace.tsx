@@ -204,7 +204,7 @@ const TakeoffWorkspace = (props: TakeoffWorkspaceProps) => {
   };
 
   return (
-    <div className={`flex-1 flex flex-col overflow-y-auto overflow-x-hidden custom-scrollbar p-4 sm:p-12 space-y-12 sm:space-y-24 animate-in fade-in duration-700 pb-40 text-left transition-colors duration-500
+    <div className={`flex-1 flex flex-col overflow-y-auto overflow-x-hidden custom-scrollbar p-4 sm:p-12 space-y-12 sm:space-y-24 animate-in fade-in duration-700 pb-40 text-left transition-colors
       ${theme === 'dark' ? 'bg-[#050505]' : 'bg-zinc-50'}`}>
       
       {!isExpanded && (
@@ -218,7 +218,7 @@ const TakeoffWorkspace = (props: TakeoffWorkspaceProps) => {
         </div>
       )}
 
-      <div className={`${isExpanded ? `fixed inset-0 z-[200] p-4 sm:p-8 flex flex-col m-0 ${theme === 'dark' ? 'bg-[#050505]' : 'bg-zinc-100'}` : 'max-w-6xl mx-auto w-full space-y-10'} transition-all duration-500`}>
+      <div className={`${isExpanded ? `fixed inset-0 z-200] p-4 sm:p-8 flex flex-col m-0 ${theme === 'dark' ? 'bg-[#050505]' : 'bg-zinc-100'}` : 'max-w-6xl mx-auto w-full space-y-10'} transition-all duration-500`}>
         
         {!isExpanded && (
           <div className="flex items-center justify-between px-8 border-l-4 border-amber-500">
@@ -257,7 +257,7 @@ const TakeoffWorkspace = (props: TakeoffWorkspaceProps) => {
           {isExpanded && (
              <button 
                onClick={() => setIsExpanded(false)} 
-               className="absolute top-8 right-8 z-[210] px-8 py-5 bg-amber-500 text-black rounded-3xl shadow-2xl hover:bg-amber-400 active:scale-90 transition-all flex items-center gap-4 font-black uppercase text-xs tracking-widest italic shadow-amber-500/20"
+               className="absolute top-8 right-8 z-210] px-8 py-5 bg-amber-500 text-black rounded-3xl shadow-2xl hover:bg-amber-400 active:scale-90 transition-all flex items-center gap-4 font-black uppercase text-xs tracking-widest italic shadow-amber-500/20"
              >
                 <Minimize2 size={24} strokeWidth={3} /> Restore Workspace
              </button>
@@ -295,7 +295,7 @@ const TakeoffWorkspace = (props: TakeoffWorkspaceProps) => {
                  <div className={`w-10 h-10 rounded-full border flex items-center justify-center text-[10px] font-black text-zinc-500 shadow-inner ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-200'}`}>03</div>
                  <h4 className={`text-xl font-black uppercase tracking-widest italic ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-700'}`}>Calibration</h4>
               </div>
-              <div className={`rounded-[3.5rem] border p-10 flex items-center justify-center min-h-[350px] shadow-inner transition-colors duration-500
+              <div className={`rounded-[3.5rem] border p-10 flex items-center justify-center min-h-350px] shadow-inner transition-colors duration-500
                  ${theme === 'dark' ? 'bg-zinc-950/40 border-zinc-800' : 'bg-zinc-100 border-zinc-200'}`}>
                  <CalibrationNode
                    currentScale={props.scaleFactor}

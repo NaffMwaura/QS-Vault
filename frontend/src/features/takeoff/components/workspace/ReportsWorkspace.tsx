@@ -1,16 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React from "react";
 import { 
   Maximize2, 
   Database, 
   Archive, 
   LayoutGrid, 
   Calculator, 
-  MessageSquare, 
-  FileCheck, 
+  MessageSquare,
   Zap,
-  ChevronRight,
   ShieldCheck
 } from "lucide-react";
 import BoQGenerator from "../../../boq/components/BoQGenerator";
@@ -42,7 +37,7 @@ const ReportsWorkspace = ({
   );
 
   return (
-    <div className={`flex-1 flex flex-col overflow-y-auto overflow-x-hidden custom-scrollbar p-4 sm:p-14 space-y-16 sm:space-y-32 animate-in fade-in duration-700 pb-40 transition-colors duration-500
+    <div className={`flex-1 flex flex-col overflow-y-auto overflow-x-hidden custom-scrollbar p-4 sm:p-14 space-y-16 sm:space-y-32 animate-in fade-in duration-700 pb-40 transition-colors
       ${theme === 'dark' ? 'bg-[#050505]' : 'bg-zinc-50'}`}>
       
       {/* 1. MASTER HUB INTRO */}
