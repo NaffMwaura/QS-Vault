@@ -1,15 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   MessageSquare, 
-  Share2, 
   Send, 
   CheckCircle2, 
   Copy,
   Smartphone,
-  ShieldCheck,
-  Zap,
   Loader2
 } from 'lucide-react';
 
@@ -36,7 +32,7 @@ interface WhatsAppExportProps {
 
 /** --- MAIN COMPONENT: QUICK PROJECT SHARE --- **/
 
-const WhatsAppExport: React.FC<WhatsAppExportProps> = ({ projectId, projectName, data: manualData }) => {
+const WhatsAppExport: React.FC<WhatsAppExportProps> = ({  projectName, data: manualData }) => {
   const { theme } = useAuth();
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(manualData ? false : true);
@@ -207,7 +203,7 @@ const WhatsAppExport: React.FC<WhatsAppExportProps> = ({ projectId, projectName,
           <div className="absolute top-4 right-4 opacity-20 group-hover:opacity-100 transition-opacity">
             <MessageSquare size={14} className="text-amber-500" />
           </div>
-          <p className={`text-[11px] font-mono leading-relaxed whitespace-pre-wrap break-words
+          <p className={`text-[11px] font-mono leading-relaxed whitespace-pre-wrap wrap-break-word
             ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'}`}>
             {generatePlainMessage()}
           </p>
