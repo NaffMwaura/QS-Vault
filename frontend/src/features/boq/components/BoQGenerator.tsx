@@ -171,7 +171,7 @@ const BoQGenerator: React.FC<BoQGeneratorProps> = ({ projectId, projectName }) =
   }
 
   return (
-    <div className={`space-y-12 animate-in fade-in duration-700 text-left transition-colors duration-500 ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
+    <div className={`space-y-12 animate-in fade-in duration-700 text-left transition-colors ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
       <header className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 mb-4 p-4 sm:p-0">
         <div className="space-y-3">
           <h2 className={`text-4xl sm:text-6xl font-black uppercase italic tracking-tighter leading-none
@@ -202,7 +202,7 @@ const BoQGenerator: React.FC<BoQGeneratorProps> = ({ projectId, projectName }) =
       <div className={`rounded-[4rem] border-2 backdrop-blur-3xl overflow-hidden flex flex-col transition-all duration-500 shadow-2xl
         ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800' : 'bg-white border-zinc-200'}`}>
         <div className="overflow-x-auto custom-scrollbar">
-          <table className="w-full text-left border-collapse min-w-[1000px]">
+          <table className="w-full text-left border-collapse min-w-1000px]">
             <thead className={`border-b-2 ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800' : 'bg-zinc-50 border-zinc-200'}`}>
               <tr className={`text-[11px] font-black uppercase tracking-[0.3em] italic ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-500'}`}>
                 <th className="p-10 whitespace-nowrap">Item Code</th>
