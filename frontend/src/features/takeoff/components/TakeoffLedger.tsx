@@ -20,88 +20,86 @@ interface TakeoffLedgerProps {
   activeSection: string;
 }
 
+/** --- SUB-COMPONENT: HIGH-VISIBILITY DATA ROW --- **/
 const MeasurementEntry: React.FC<{
   item: Measurement;
   onDeleteRequest: (id: string) => void;
   theme: "light" | "dark";
 }> = ({ item, onDeleteRequest, theme }) => (
   <div
-    className={`p-5 sm:p-6 rounded-4xl border transition-all duration-300 group hover:scale-[1.01] relative ${
+    className={`p-6 sm:p-8 rounded-[2.5rem] border-2 transition-all duration-300 group hover:scale-[1.01] relative flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 ${
       theme === "dark"
-        ? "bg-zinc-900/40 border-zinc-800 hover:border-amber-500/30 shadow-xl"
-        : "bg-white border-zinc-200 hover:border-amber-500/30 shadow-lg"
+        ? "bg-zinc-950/80 border-zinc-800 hover:border-amber-500/50 shadow-xl"
+        : "bg-white border-zinc-200 hover:border-amber-500/50 shadow-md"
     }`}
   >
-    <div className="flex justify-between items-start mb-5 gap-4">
-      <div className="flex items-center gap-4 text-left min-w-0">
-        <div
-          className={`p-3 rounded-xl border transition-all shrink-0 ${
-            theme === "dark"
-              ? "bg-zinc-950 border-zinc-800 text-zinc-600"
-              : "bg-zinc-50 border-zinc-100 text-zinc-400"
-          } group-hover:text-black group-hover:border-amber-500 group-hover:bg-amber-500`}
-        >
-          {item.type === "length" ? (
-            <Ruler size={16} />
-          ) : item.type === "area" ? (
-            <Maximize2 size={16} />
-          ) : (
-            <CheckSquare size={16} />
-          )}
-        </div>
-        <div className="text-left min-w-0">
-          <p className="text-[9px] font-black uppercase text-zinc-500 tracking-widest leading-none mb-1.5">
-            {item.sectionCode} · {item.type}
-          </p>
-          <h5
-            className={`text-sm font-black uppercase truncate leading-none tracking-tight ${
-              theme === "dark"
-                ? "text-zinc-200 group-hover:text-white"
-                : "text-zinc-900"
-            }`}
-          >
-            {item.label || "Site Record"}
-          </h5>
-        </div>
-      </div>
-
-      <button
-        onClick={() => onDeleteRequest(item.id)}
-        className="p-2.5 text-zinc-700 hover:text-rose-500 transition-colors active:scale-90 shrink-0"
-        title="Delete Record"
+    {/* Left Side: Identity */}
+    <div className="flex items-center gap-6 text-left min-w-0 flex-1">
+      <div
+        className={`p-4 rounded-2xl border-2 transition-all shrink-0 ${
+          theme === "dark"
+            ? "bg-zinc-900 border-zinc-800 text-zinc-500"
+            : "bg-zinc-50 border-zinc-200 text-zinc-400"
+        } group-hover:text-black group-hover:border-amber-500 group-hover:bg-amber-500`}
       >
-        <Trash2 size={16} />
-      </button>
-    </div>
-
-    <div
-      className={`pt-5 border-t flex justify-between items-end gap-4 ${
-        theme === "dark" ? "border-zinc-800/60" : "border-zinc-100"
-      }`}
-    >
-      <div className="text-left min-w-0">
-        <p className="text-[8px] font-black uppercase text-zinc-600 mb-2 leading-none tracking-widest">
-          Measured Quantity
-        </p>
-        <p className="text-2xl sm:text-3xl font-black text-amber-500 tracking-tighter leading-none italic">
-          {item.value.toLocaleString(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          })}
-          <span className="text-[10px] ml-1.5 opacity-40 not-italic uppercase font-bold">
-            {item.unit}
-          </span>
-        </p>
+        {item.type === "length" ? (
+          <Ruler size={24} strokeWidth={2.5} />
+        ) : item.type === "area" ? (
+          <Maximize2 size={24} strokeWidth={2.5} />
+        ) : (
+          <CheckSquare size={24} strokeWidth={2.5} />
+        )}
       </div>
-      <div className="flex flex-col items-end shrink-0">
-        <span className="text-[7px] font-mono text-zinc-700 uppercase tracking-widest leading-none">
+      <div className="text-left min-w-0">
+        <p className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.3em] leading-none mb-2 italic">
+          {item.sectionCode} • {item.type}
+        </p>
+        <h5
+          className={`text-xl font-black uppercase truncate leading-tight tracking-tight ${
+            theme === "dark"
+              ? "text-zinc-200 group-hover:text-white"
+              : "text-zinc-900"
+          }`}
+        >
+          {item.label || "Captured Site Record"}
+        </h5>
+        <span className="text-[8px] font-mono text-zinc-500 uppercase tracking-[0.2em] leading-none block mt-2">
           REF: {item.id.slice(0, 8).toUpperCase()}
         </span>
       </div>
     </div>
+
+    {/* Right Side: Values & Actions */}
+    <div className="flex items-center gap-8 shrink-0 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-4 sm:pt-0 border-zinc-800/40">
+      <div className="text-left sm:text-right">
+        <p className="text-[9px] font-black uppercase text-zinc-500 mb-1 leading-none tracking-widest italic">
+          Measured Quantity
+        </p>
+        <p className="text-3xl sm:text-4xl font-black text-amber-500 tracking-tighter leading-none">
+          {item.value.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
+          <span className="text-sm ml-2 opacity-50 uppercase font-bold tracking-widest">
+            {item.unit}
+          </span>
+        </p>
+      </div>
+
+      <button
+        onClick={() => onDeleteRequest(item.id)}
+        className={`p-4 rounded-2xl transition-all active:scale-90 shrink-0 ${
+          theme === "dark" ? 'bg-zinc-900 text-zinc-600 hover:bg-rose-500 hover:text-white' : 'bg-zinc-100 text-zinc-400 hover:bg-rose-500 hover:text-white'
+        }`}
+        title="Delete Record"
+      >
+        <Trash2 size={20} strokeWidth={2.5} />
+      </button>
+    </div>
   </div>
 );
 
+/** --- MAIN COMPONENT: TAKEOFF LEDGER --- **/
 const TakeoffLedger: React.FC<TakeoffLedgerProps> = ({
   measurements,
   onDelete,
@@ -114,6 +112,7 @@ const TakeoffLedger: React.FC<TakeoffLedgerProps> = ({
       item.sectionCode === activeSection || activeSection === "All Sections",
   );
 
+  // EXACT ORIGINAL DB LOGIC PRESERVED
   const handleDeleteMeasurement = async (id: string) => {
     if (db) {
       try {
@@ -125,122 +124,107 @@ const TakeoffLedger: React.FC<TakeoffLedgerProps> = ({
         console.error("Ledger: Access to local vault denied.", err);
       }
     }
-
     onDelete(id);
   };
 
   return (
-    <aside
-      className={`w-full h-full flex flex-col p-5 sm:p-8 space-y-6 sm:space-y-8 overflow-hidden transition-colors duration-500 ${
-        theme === "dark" ? "bg-transparent" : "bg-zinc-50/50"
+    <div
+      className={`w-full flex flex-col p-6 sm:p-12 space-y-8 sm:space-y-10 transition-colors duration-500 ${
+        theme === "dark" ? "bg-transparent" : "bg-transparent"
       }`}
     >
-      <div className="flex flex-col gap-4 shrink-0 sm:flex-row sm:items-end sm:justify-between">
-        <div className="text-left space-y-1">
-          <h3
-            className={`text-2xl font-black italic tracking-tighter uppercase leading-none ${
-              theme === "dark" ? "text-white" : "text-zinc-900"
-            }`}
-          >
-            Takeoff Ledger<span className="text-amber-500">.</span>
-          </h3>
-          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500">
-            Live measurement stream for quantity capture and review
-          </p>
+      {/* 1. FILTER SUMMARY HEADER */}
+      <div className={`p-6 sm:p-8 rounded-[2.5rem] border-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 transition-colors duration-500 ${
+          theme === "dark"
+            ? "bg-zinc-950/50 border-zinc-800"
+            : "bg-white border-zinc-200 shadow-sm"
+        }`}
+      >
+        <div className="flex items-start gap-4">
+          <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-xl shrink-0">
+             <ClipboardList size={24} strokeWidth={2.5} />
+          </div>
+          <div className="text-left space-y-1.5">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 italic">
+              Active Filter
+            </p>
+            <p className={`text-lg font-bold leading-snug ${theme === "dark" ? "text-zinc-200" : "text-zinc-800"}`}>
+              Displaying records for: <span className="text-emerald-500 uppercase">{activeSection}</span>
+            </p>
+          </div>
         </div>
+
         <div
-          className={`px-4 py-2 rounded-2xl border flex items-center gap-3 self-start ${
+          className={`px-6 py-4 rounded-2xl border-2 flex items-center gap-4 self-start sm:self-auto shrink-0 ${
             theme === "dark"
-              ? "bg-zinc-950 border-zinc-800"
-              : "bg-white border-zinc-200 shadow-sm"
+              ? "bg-zinc-900 border-zinc-800 text-zinc-300"
+              : "bg-zinc-50 border-zinc-200 text-zinc-700 shadow-inner"
           }`}
         >
-          <Hash size={12} className="text-amber-500" />
-          <span className="text-[10px] font-black text-zinc-500 tracking-widest uppercase">
-            {filteredMeasurements.length} Records
+          <Hash size={18} className="text-emerald-500" />
+          <span className="text-xs font-black tracking-widest uppercase">
+            {filteredMeasurements.length} Records Found
           </span>
         </div>
       </div>
 
-      <div
-        className={`rounded-[2rem] border p-4 sm:p-5 ${
-          theme === "dark"
-            ? "bg-zinc-950/50 border-zinc-800/80"
-            : "bg-white border-zinc-200"
-        }`}
-      >
-        <div className="flex items-start gap-3">
-          <ClipboardList size={18} className="text-amber-500 mt-0.5 shrink-0" />
-          <div className="text-left">
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-500">
-              Current Focus
-            </p>
-            <p className="text-sm font-bold text-zinc-300 dark:text-zinc-300">
-              Capture and verify measurements as you work through the drawing and prepare them for reporting.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 sm:pr-3 space-y-4">
+      {/* 2. DATA GRID (Scrollable Container) */}
+      <div className="flex-1 max-h-600px] overflow-y-auto custom-scrollbar pr-2 sm:pr-4 space-y-4">
         {filteredMeasurements.length > 0 ? (
           filteredMeasurements.map((item) => (
             <MeasurementEntry
               key={item.id}
               item={item}
               onDeleteRequest={handleDeleteMeasurement}
-              theme={theme}
+              theme={theme as "light" | "dark"}
             />
           ))
         ) : (
           <div
-            className={`py-16 px-6 text-center space-y-6 border-2 border-dashed rounded-[2.5rem] ${
+            className={`py-24 px-8 text-center flex flex-col items-center justify-center space-y-8 border-2 border-dashed rounded-[3.5rem] transition-colors duration-500 ${
               theme === "dark"
-                ? "border-zinc-800 bg-zinc-950/20"
-                : "border-zinc-200 bg-white"
+                ? "border-zinc-800 bg-zinc-950/30"
+                : "border-zinc-300 bg-zinc-50/50"
             }`}
           >
-            <Database size={52} className="mx-auto text-zinc-600" />
-            <div className="space-y-3 max-w-md mx-auto">
-              <p className="font-black uppercase text-xs tracking-[0.35em] text-zinc-500">
-                No Records Yet
+            <div className={`p-8 rounded-full border-2 ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-200 shadow-sm'}`}>
+               <Database size={64} className="text-zinc-500" strokeWidth={1.5} />
+            </div>
+            <div className="space-y-3 max-w-lg mx-auto">
+              <p className="font-black uppercase text-sm tracking-[0.4em] text-zinc-500 italic">
+                Registry Empty
               </p>
-              <p className="text-sm font-semibold text-zinc-400 dark:text-zinc-400">
-                Upload a drawing, confirm the scale, then start marking quantities for the active work section.
+              <p className={`text-base font-bold ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'}`}>
+                Draw on the blueprint above to automatically populate this ledger with measured quantities.
               </p>
             </div>
           </div>
         )}
       </div>
 
+      {/* 3. AUDIT STATUS */}
       <div
-        className={`p-5 rounded-[2rem] border shrink-0 text-left ${
+        className={`p-6 sm:p-8 rounded-[2.5rem] border-2 flex items-center justify-between transition-colors duration-500 ${
           theme === "dark"
-            ? "bg-zinc-950/40 border-zinc-800/60"
-            : "bg-white border-zinc-200 shadow-xl"
+            ? "bg-zinc-950 border-zinc-800"
+            : "bg-white border-zinc-200 shadow-sm"
         }`}
       >
-        <div className="flex items-center gap-3 mb-3">
-          <AlertCircle size={16} className="text-amber-500 opacity-70" />
-          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
-            Audit Trail Active
-          </p>
+        <div className="flex items-center gap-4">
+          <AlertCircle size={20} className="text-amber-500" />
+          <div className="text-left">
+             <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 leading-none mb-1.5">
+               System Audit Trail
+             </p>
+             <p className={`text-[11px] font-bold leading-none ${theme === "dark" ? "text-zinc-400" : "text-zinc-600"}`}>
+               All measurements are tracked and synced to the secure vault.
+             </p>
+          </div>
         </div>
-        <div className="flex items-center justify-between gap-4">
-          <p
-            className={`text-[11px] font-bold leading-snug ${
-              theme === "dark" ? "text-zinc-400" : "text-zinc-600"
-            }`}
-          >
-            Active section:{" "}
-            <span className="text-amber-500 italic uppercase">
-              {activeSection}
-            </span>
-          </p>
-          <CheckCircle2 size={14} className="text-emerald-500/50 shrink-0" />
-        </div>
+        <CheckCircle2 size={24} className="text-emerald-500 shrink-0" />
       </div>
-    </aside>
+
+    </div>
   );
 };
 

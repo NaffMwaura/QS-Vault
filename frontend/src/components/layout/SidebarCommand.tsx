@@ -36,7 +36,7 @@ const navLinks = [
   { id: 'resources' as DashboardView, label: 'Schedule', icon: Calendar },
   { id: 'collab' as DashboardView, label: 'Team Chat', icon: MessageSquare },
   { id: 'rates' as DashboardView, label: 'Rates', icon: Database },
-  { id: 'settings' as DashboardView, label: 'Reports', icon: Settings },
+  { id: 'settings' as DashboardView, label: 'Settings', icon: Settings },
 ];
 
 const SidebarLink = ({
