@@ -33,19 +33,19 @@ interface AppShellProps {
 
 /** --- UI: NATIVE APP LOADER --- **/
 const OfficeLoader = ({ isOnline }: { isOnline: boolean }) => (
-  <div className="fixed inset-0 z-100] flex flex-col items-center justify-center bg-[#09090b] p-6 text-center">
+  <div className="theme-page fixed inset-0 z-[100] flex flex-col items-center justify-center p-6 text-center">
     <div className="relative mb-12 h-32 w-32">
-      <div className="absolute inset-0 rounded-full border-4 border-zinc-900" />
-      <div className="absolute inset-0 animate-[spin_3s_linear_infinite] rounded-full border-4 border-amber-500 border-t-transparent" />
-      <div className="absolute inset-4 rounded-full border-2 border-zinc-800" />
-      <div className="absolute inset-4 animate-[spin_2s_linear_infinite_reverse] rounded-full border-2 border-amber-400 border-b-transparent" />
-      <div className="absolute inset-10 animate-pulse rounded-full border border-amber-500/10 shadow-[0_0_40px_rgba(245,158,11,0.2)]" />
+      <div className="theme-border absolute inset-0 rounded-full border-4" />
+      <div className="theme-accent absolute inset-0 animate-[spin_3s_linear_infinite] rounded-full border-4 border-current border-t-transparent" />
+      <div className="theme-border absolute inset-4 rounded-full border-2 opacity-50" />
+      <div className="theme-accent absolute inset-4 animate-[spin_2s_linear_infinite_reverse] rounded-full border-2 border-current border-b-transparent opacity-75" />
+      <div className="theme-accent-surface absolute inset-10 animate-pulse rounded-full border border-current shadow-lg shadow-current" />
     </div>
     <div className="space-y-4">
-      <h2 className="text-sm font-black uppercase tracking-[0.8em] text-amber-500 italic">
+      <h2 className="theme-heading text-sm font-black uppercase tracking-[0.8em] italic">
         QS VAULT
       </h2>
-      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 animate-pulse italic">
+      <p className="theme-meta text-[10px] font-black uppercase tracking-[0.4em] animate-pulse italic">
         {isOnline ? "Syncing Workspace Nodes..." : "Accessing Local Vault..."}
       </p>
     </div>
@@ -59,8 +59,7 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
     isOnline,
     activeView,
     setActiveView,
-    user,
-    theme
+    user
   } = useAuth();
   
   const location = useLocation();
@@ -72,8 +71,7 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
   }
 
   return (
-    <div className={`h-screen w-full overflow-hidden font-sans transition-colors duration-500 selection:bg-amber-500/30 
-      ${theme === 'dark' ? 'bg-[#09090b] text-zinc-100' : 'bg-zinc-50 text-zinc-900'}`}>
+    <div className="theme-page h-screen w-full overflow-hidden font-sans transition-colors duration-500">
       
       <div className="flex h-full">
         {/* SIDEBAR: Left Control Node */}
@@ -96,10 +94,8 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
             
             {/* Background Aesthetic Nodes (Hardware Accelerated) */}
             <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden opacity-30">
-              <div className={`absolute right-0 top-0 h-2/3 w-2/3 -translate-y-1/4 translate-x-1/4 rounded-full blur-[160px] 
-                ${theme === 'dark' ? 'bg-amber-500/5' : 'bg-amber-500/10'}`} />
-              <div className={`absolute bottom-0 left-0 h-[40%] w-[40%] -translate-x-1/4 translate-y-1/4 rounded-full blur-[120px]
-                ${theme === 'dark' ? 'bg-zinc-500/5' : 'bg-zinc-500/10'}`} />
+              <div className="theme-accent-surface absolute right-0 top-0 h-2/3 w-2/3 -translate-y-1/4 translate-x-1/4 rounded-full blur-[160px]" />
+              <div className="theme-accent-surface absolute bottom-0 left-0 h-[40%] w-[40%] -translate-x-1/4 translate-y-1/4 rounded-full blur-[120px] opacity-30" />
             </div>
 
             <section className="relative z-10 mx-auto flex min-h-full w-full max-w-7xl flex-col px-4 py-8 sm:px-10">
@@ -115,8 +111,8 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
               >
                 {children || (
                   <div className="flex min-h-[60vh] flex-col items-center justify-center opacity-20">
-                    <ShieldCheck size={64} className="mb-6 text-amber-500" />
-                    <p className="font-black text-sm uppercase tracking-[0.6em] italic">
+                    <ShieldCheck size={64} className="mb-6 theme-accent" />
+                    <p className="theme-heading font-black text-sm uppercase tracking-[0.6em] italic">
                       Node Optimized
                     </p>
                   </div>
@@ -124,13 +120,13 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
               </div>
 
               {/* Legal & Compliance Footer */}
-              <footer className="mt-auto hidden pb-12 pt-24 text-center opacity-10 md:block select-none">
+              <footer className="mt-auto hidden pb-12 pt-24 text-center opacity-40 md:block select-none">
                 <div className="mb-6 flex items-center justify-center gap-10">
-                  <div className="h-px w-32 bg-zinc-800" />
-                  <HardHat size={20} className="text-zinc-600" />
-                  <div className="h-px w-32 bg-zinc-800" />
+                  <div className="h-px w-32 bg-[var(--app-border)]" />
+                  <HardHat size={20} className="theme-icon" />
+                  <div className="h-px w-32 bg-[var(--app-border)]" />
                 </div>
-                <p className="text-[10px] font-black uppercase tracking-[1em] text-zinc-600 italic">
+                <p className="theme-meta text-[10px] font-black uppercase tracking-[1em] italic">
                   QS VAULT • PRECISION OS
                 </p>
               </footer>
@@ -154,8 +150,8 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
 
         .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 20px; transition: background 0.3s; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--app-border); border-radius: 20px; transition: background 0.3s; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--app-accent-strong); }
 
         @keyframes workspace-entry {
           0% { 
