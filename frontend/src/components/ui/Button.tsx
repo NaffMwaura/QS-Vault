@@ -32,19 +32,19 @@ const Button: React.FC<ButtonProps> = ({
    * - font-black: Maximum readability.
    * - tracking-[0.2em]: Professional letter spacing.
    */
-  const baseStyles = "px-6 py-3.5 rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 cursor-pointer select-none";
+  const baseStyles = "px-6 py-3.5 rounded-sm font-black uppercase text-[10px] tracking-[0.2em] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 cursor-pointer select-none";
   
   // High-Contrast Variant Logic
   const variants: Record<ButtonVariant, string> = {
-    primary: "bg-amber-500 hover:bg-amber-400 text-black shadow-lg shadow-amber-500/20 border border-amber-500/10",
+    primary: "theme-button-primary shadow-lg",
     
-    secondary: "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-md border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700",
+    secondary: "theme-button-secondary shadow-md",
     
-    ghost: "text-zinc-500 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-amber-500 hover:bg-amber-500/5 border border-transparent",
+    ghost: "text-[var(--app-meta)] hover:text-[var(--app-accent-strong)] hover:bg-[color-mix(in_srgb,var(--app-accent-strong)_5%,transparent)] border border-transparent",
     
-    outline: "bg-transparent border border-zinc-300 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 backdrop-blur-md",
+    outline: "bg-transparent border-2 border-[var(--app-border)] text-[var(--app-body)] hover:bg-[color-mix(in_srgb,var(--app-body)_5%,transparent)] backdrop-blur-md",
     
-    danger: "bg-rose-500/10 dark:bg-rose-500/5 text-rose-600 dark:text-rose-500 border border-rose-500/20 hover:bg-rose-500 hover:text-white"
+    danger: "theme-status-error shadow-sm hover:bg-[var(--app-error)] hover:text-white"
   };
 
   return (
