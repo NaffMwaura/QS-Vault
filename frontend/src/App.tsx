@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import React, { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -12,6 +12,24 @@ import { useSync } from "./hooks/useSync";
 // Layout
 import AppShell from "./components/layout/AppShell";
 
+function ThemeBridge() {
+  const { theme } = useAuth();
+  
+  React.useEffect(() => {
+    document.documentElement.classList.remove("light", "dark");
+    document.documentElement.classList.add(theme);
+    document.documentElement.dataset.theme = theme;
+    
+    // Update theme-color meta tag
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute("content", theme === "dark" ? "#283618" : "#E0E1DD");
+    }
+  }, [theme]);
+  
+  return null;
+}
+
 const MarketingPage = lazy(() => import("./components/pages/MarketingPage"));
 const LoginPage = lazy(() => import("./components/pages/LoginPage"));
 const DashboardPage = lazy(() => import("./components/pages/DashboardPage"));
@@ -21,7 +39,7 @@ const AdminDashboardPage = lazy(() => import("./components/pages/AdminDashboardP
 const RouteFallback = () => (
   <div className="theme-page flex min-h-[50vh] items-center justify-center">
     <div className="flex flex-col items-center gap-4 text-center">
-      <Loader2 className="h-10 w-10 animate-spin text-amber-500" />
+      <Loader2 className="theme-accent h-10 w-10 animate-spin" />
       <p className="theme-public-label">Loading workspace</p>
     </div>
   </div>
@@ -32,7 +50,7 @@ const RouteFallback = () => (
  * It separates "Office Management" (with sidebar) from "Technical Takeoff" (fullscreen).
  */
 const RootComponent = () => {
-  const { session, isLoading, theme, role } = useAuth();
+  const { session, isLoading, role } = useAuth();
   const navigate = useNavigate();
   const isOnline = useOnlineStatus();
 
@@ -41,17 +59,16 @@ const RootComponent = () => {
   // LOADING / SPLASH SCREEN
   if (isLoading || (session && role === null)) {
     return (
-      <div className={`h-screen w-screen flex flex-col items-center justify-center gap-8 transition-colors duration-700 
-        ${theme === 'dark' ? 'bg-[#09090b]' : 'bg-zinc-100'}`}>
+      <div className="theme-page h-screen w-screen flex flex-col items-center justify-center gap-8 transition-colors duration-700">
         <div className="relative">
-          <Loader2 className={`w-16 h-16 animate-spin ${theme === 'dark' ? 'text-amber-500' : 'text-amber-600'}`} />
-          <div className="absolute inset-0 blur-2xl bg-amber-500/20 animate-pulse" />
+          <Loader2 className="theme-accent w-16 h-16 animate-spin" />
+          <div className="theme-accent-surface absolute inset-0 blur-2xl animate-pulse rounded-full" />
         </div>
         <div className="space-y-4 text-center">
-          <h2 className={`font-black uppercase tracking-[0.6em] text-sm italic ${theme === 'dark' ? 'text-amber-500' : 'text-zinc-900'}`}>
+          <h2 className="theme-heading font-black uppercase tracking-[0.6em] text-sm italic">
             INITIALIZING OFFICE...
           </h2>
-          <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.4em] animate-pulse">
+          <p className="theme-meta text-[10px] font-black uppercase tracking-[0.4em] animate-pulse">
             {isOnline ? "Syncing Cloud Data..." : "Opening Offline Project Files..."}
           </p>
         </div>
@@ -105,6 +122,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <ThemeBridge />
         <Router>
           <RootComponent />
         </Router>
