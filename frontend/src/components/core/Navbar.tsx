@@ -72,19 +72,22 @@ export const NavigationBar = ({
         <div className="max-w-7xl mx-auto px-6 sm:px-10 flex justify-between items-center gap-4">
           <div className="flex items-center gap-4 sm:gap-8">
             <div className="flex items-center gap-3">
-              <div className="bg-amber-500 p-2 rounded-xl shadow-xl shadow-amber-500/20">
-                <HardHat size={20} className="text-black" />
+              <div 
+                className="p-2 rounded-xl shadow-xl"
+                style={{ backgroundColor: 'var(--app-accent-strong)', color: 'var(--app-bg)' }}
+              >
+                <HardHat size={20} />
               </div>
               <span className="theme-title text-2xl font-black uppercase tracking-tighter italic">
-                QS VAULT<span className="text-amber-500">.</span>
+                QS VAULT<span className="theme-accent">.</span>
               </span>
             </div>
 
             <div
-              className={`theme-public-chip hidden lg:flex items-center gap-3 border transition-all duration-500 ${
+              className={`theme-public-chip hidden lg:flex items-center gap-3 transition-all duration-500 ${
                 isOnline
-                  ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
-                  : "bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400 animate-pulse"
+                  ? "theme-status-online"
+                  : "theme-status-offline animate-pulse"
               }`}
             >
               {isOnline ? <Wifi size={14} /> : <WifiOff size={14} />}
@@ -96,7 +99,7 @@ export const NavigationBar = ({
             <button
               type="button"
               onClick={handleThemeToggle}
-              className="theme-button-muted theme-muted theme-public-icon-button hidden sm:flex items-center justify-center transition-all active:scale-90 border border-transparent hover:border-amber-500/20 hover:text-amber-500"
+              className="theme-button-muted theme-muted theme-public-icon-button hidden sm:flex items-center justify-center transition-all active:scale-90 hover:text-[var(--app-accent-strong)]"
               aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
             >
               {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
@@ -121,7 +124,7 @@ export const NavigationBar = ({
             <button
               type="button"
               onClick={() => setMobileMenuOpen((current) => !current)}
-              className="theme-surface-inset theme-muted theme-public-icon-button flex sm:hidden items-center justify-center border"
+              className="theme-surface-inset theme-muted theme-public-icon-button flex sm:hidden items-center justify-center"
               aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-navigation-menu"
@@ -167,7 +170,7 @@ export const NavigationBar = ({
                 <button
                   type="button"
                   onClick={handleThemeToggle}
-                  className="theme-button-muted theme-muted flex w-full items-center justify-between rounded-2xl border px-4 py-4 text-left transition-all hover:border-amber-500/20 hover:text-amber-500"
+                  className="theme-button-muted theme-muted flex w-full items-center justify-between px-4 py-4 text-left transition-all hover:text-[var(--app-accent-strong)]"
                 >
                   <span className="text-xs font-black uppercase tracking-[0.2em]">
                     {theme === "dark" ? "Light Mode" : "Dark Mode"}
