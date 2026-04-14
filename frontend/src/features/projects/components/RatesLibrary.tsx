@@ -123,7 +123,7 @@ const RatesLibrary: React.FC = () => {
   }, [rateSearch, activeRateCategory, rates]);
 
   return (
-    <div className="theme-surface-overlay p-8 sm:p-12 rounded-[4rem] border backdrop-blur-3xl transition-all duration-500 relative">
+    <div className="theme-panel p-8 sm:p-12 transition-all duration-500 relative">
       
       {/* 1. Price Book Header */}
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-10 mb-16 text-left">
@@ -159,10 +159,10 @@ const RatesLibrary: React.FC = () => {
           <button 
             key={cat.id} 
             onClick={() => setActiveRateCategory(cat.id)}
-            className={`flex items-center gap-3 px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border shrink-0
+            className={`theme-admin-control flex px-6 py-4 items-center gap-3 text-[10px] font-black uppercase tracking-widest shrink-0 transition-all border-2
               ${activeRateCategory === cat.id 
-                ? 'bg-amber-500 text-black border-amber-500 shadow-2xl shadow-amber-500/10' 
-                : 'theme-surface-card theme-muted hover:border-zinc-500'}`}
+                ? 'bg-amber-500 border-amber-500 text-black' 
+                : 'text-zinc-500 border-transparent hover:border-amber-500/50 hover:bg-[color-mix(in_srgb,var(--app-heading)_5%,transparent)]'}`}
           >
             <cat.icon size={14} />
             {cat.label}
@@ -179,7 +179,7 @@ const RatesLibrary: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
           {filteredRates.length > 0 ? filteredRates.map(r => (
-            <div key={r.id} className="theme-surface-card p-10 rounded-[3.5rem] border shadow-2xl group hover:border-amber-500/30 transition-all flex flex-col justify-between h-85 text-left">
+            <div key={r.id} className="theme-card p-10 shadow-2xl group hover:border-amber-500/30 transition-all flex flex-col justify-between h-80 text-left">
               
               <div className="flex justify-between items-start mb-10 text-left">
                 <div className="space-y-1 text-left">
@@ -240,7 +240,7 @@ const RatesLibrary: React.FC = () => {
       {/* --- EDIT RATE MODAL OVERLAY --- */}
       {editingRate && (
         <div className="fixed inset-0 z-100 flex items-center justify-center p-6 backdrop-blur-2xl bg-black/60 animate-in fade-in duration-300">
-           <div className="theme-surface-card w-full max-w-xl p-10 sm:p-14 rounded-[3.5rem] border shadow-2xl transition-all duration-500 transform animate-in zoom-in-95">
+           <div className="theme-panel w-full max-w-xl p-10 sm:p-14 shadow-2xl transition-all duration-500 transform animate-in zoom-in-95">
              
              <div className="flex justify-between items-start mb-12">
                 <div className="text-left space-y-2">
