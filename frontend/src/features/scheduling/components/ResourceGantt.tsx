@@ -1,18 +1,24 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   Calendar, 
   Clock, 
   CheckCircle2,
-  Plus, 
-  ChevronRight,
-  TrendingUp,
+  Plus,
   Loader2,
-  HardHat,
   Truck,
-  AlertCircle,
   Navigation,
-  ShieldCheck
+  ShieldCheck,
+  X,
+  Trash2,
+  Save,
+  Layers,
+  TrendingUp,
+  Briefcase,
+  ChevronDown,
+  Target,
+  RefreshCw
 } from 'lucide-react';
 import Button from "../../../components/ui/Button";
 import {
@@ -23,44 +29,101 @@ import {
 } from "../../../lib/database/database";
 
 /* ======================================================
-    OFFICE MODULE RESOLUTION (STABILIZED)
+    OFFICE MODULE RESOLUTION (PRO-DEV)
    ====================================================== */
+
+let useAuth: any = () => ({ theme: 'light', user: null });
+let db: any = null;
+let syncEngine: any = null;
+
+const resolveModules = async () => {
+  try {
+    const authMod = await import("../../auth/AuthContext");
+    if (authMod.useAuth) useAuth = authMod.useAuth;
+
+    const dbMod = await import("../../../lib/database/database");
+    if (dbMod.db) db = dbMod.db;
+    if (dbMod.syncEngine) syncEngine = dbMod.syncEngine;
+  } catch (e) {
+    console.warn("Scheduling Engine: Infrastructure nodes in standby.");
+  }
+};
+
+resolveModules();
 
 /** --- TYPES --- **/
 interface GanttTask {
   id: string;
+  project_id: string;
   title: string;
   start_date: string;
   end_date: string;
   completion_percentage: number;
-  bill_item_id: string | null;
-  status?: 'on-track' | 'delayed' | 'critical';
 }
 
 interface ResourceGanttProps {
   projectId: string | null;
 }
 
-/** --- MAIN COMPONENT: PRODUCTION SCHEDULING ENGINE --- **/
+/** --- MAIN COMPONENT: SITE COMMAND & SCHEDULING --- **/
 
 const ResourceGantt: React.FC<ResourceGanttProps> = ({ projectId }) => {
   
   // LIVE DATA STATES
   const [tasks, setTasks] = useState<GanttTask[]>([]);
-  const [laborCount, setLaborCount] = useState(0);
-  const [logistics, setLogistics] = useState<MaterialLogistics[]>([]);
+  const [logistics, setLogistics] = useState<any[]>([]);
+  const [projectMeta, setProjectMeta] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [showSavedToast, setShowSavedToast] = useState(false);
 
-  // UI STATES
-  const [, setIsUpdating] = useState<string | null>(null);
+  // GPS STATES
+  const [isOnSite, setIsOnSite] = useState<boolean | 'pending' | 'no-geo'>( 'pending');
+  const [, setCurrentCoords] = useState<{lat: number, lng: number} | null>(null);
+
+  // UI FORM STATES
+  const [showStageForm, setShowStageForm] = useState(false);
   const [showDeliveryForm, setShowDeliveryForm] = useState(false);
+  
+  const [newStage, setNewStage] = useState({ title: '', start_date: '', end_date: '' });
   const [newDelivery, setNewDelivery] = useState({ item_name: '', delivery_note_ref: '' });
 
-  /** * PRODUCTION DATA HANDSHAKE
-   * Pulls real records from the local project vault (Dexie).
-   */
-  const syncProductionData = useCallback(async () => {
-    if (!db || !projectId) {
+  /** * 1. GPS GEOFENCE ENGINE (Haversine Implementation) */
+  const checkProximity = useCallback((lat1: number, lon1: number, lat2: number, lon2: number, radius: number) => {
+    const R = 6371e3; // metres
+    const φ1 = lat1 * Math.PI/180;
+    const φ2 = lat2 * Math.PI/180;
+    const Δφ = (lat2-lat1) * Math.PI/180;
+    const Δλ = (lon2-lon1) * Math.PI/180;
+
+    const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+              Math.cos(φ1) * Math.cos(φ2) *
+              Math.sin(Δλ/2) * Math.sin(Δλ/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return (R * c) <= (radius || 100);
+  }, []);
+
+  /** * 2. GEOLOCATION HANDSHAKE */
+  const verifyLocation = useCallback(() => {
+    if (!projectMeta?.lat || !projectMeta?.lng) {
+        setIsOnSite('no-geo');
+        return;
+    }
+
+    setIsOnSite('pending');
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((pos) => {
+        const { latitude, longitude } = pos.coords;
+        setCurrentCoords({ lat: latitude, lng: longitude });
+        const near = checkProximity(latitude, longitude, projectMeta.lat, projectMeta.lng, projectMeta.geofence_radius);
+        setIsOnSite(near);
+      }, () => setIsOnSite('pending'));
+    }
+  }, [projectMeta, checkProximity]);
+
+  /** * 3. DATA HANDSHAKE: RECOVER RECORDS */
+  const syncWorkspaceData = useCallback(async () => {
+    if (!db || !user) {
       setTimeout(() => setIsLoading(false), 1000);
       return;
     }
@@ -68,83 +131,127 @@ const ResourceGantt: React.FC<ResourceGanttProps> = ({ projectId }) => {
     try {
       setIsLoading(true);
       
-      const [storedTasks, activeLabor, recentDeliveries] = await Promise.all([
-        db.gantt_tasks.where('project_id').equals(projectId).toArray(),
-        db.timeclock
-          .where('project_id')
-          .equals(projectId)
-          .filter((t: TimeClock) => t.clock_out === null)
-          .toArray(),
-        db.material_logistics.where('project_id').equals(projectId).reverse().limit(5).toArray()
-      ]);
+      const projects = await db.projects.where('user_id').equals(user.id).toArray();
+      setAvailableProjects(projects);
 
-      setTasks(storedTasks);
-      setLaborCount(activeLabor.length);
-      setLogistics(recentDeliveries);
+      if (selectedId) {
+        const [storedTasks, recentDeliveries, project] = await Promise.all([
+          db.gantt_tasks.where('project_id').equals(selectedId).toArray(),
+          db.material_logistics.where('project_id').equals(selectedId).reverse().toArray(),
+          db.projects.get(selectedId)
+        ]);
+
+        setTasks(storedTasks);
+        setLogistics(recentDeliveries);
+        setProjectMeta(project);
+      } else if (projects.length > 0) {
+        setSelectedId(projects[0].id);
+      }
 
     } catch (err) {
-      console.error("Gantt Engine: Handshake failed.", err);
+      console.error("Vault Handshake failed.");
     } finally {
       setIsLoading(false);
     }
-  }, [projectId]);
+  }, [selectedId, user]);
 
   useEffect(() => {
-    syncProductionData();
-  }, [syncProductionData]);
+    syncWorkspaceData();
+  }, [syncWorkspaceData]);
 
-  /** * GANTT: UPDATE PROGRESS 
-   * Directly updates Dexie and queues the sync.
-   */
+  // Secondary Effect: Verify location whenever metadata changes
+  useEffect(() => {
+    if (projectMeta) verifyLocation();
+  }, [projectMeta, verifyLocation]);
+
+  /** * 4. PRODUCTION ACTIONS */
+  const handleAddStage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!db || !selectedId || !newStage.title) return;
+
+    const stageId = crypto.randomUUID();
+    const stageData: GanttTask = {
+      id: stageId,
+      project_id: selectedId,
+      title: newStage.title,
+      start_date: newStage.start_date || new Date().toISOString().split('T')[0],
+      end_date: newStage.end_date || new Date().toISOString().split('T')[0],
+      completion_percentage: 0
+    };
+
+    try {
+      setIsSaving(true);
+      await db.gantt_tasks.add(stageData);
+      if (syncEngine) await syncEngine.queueChange('gantt_tasks', stageId, 'INSERT', stageData);
+      
+      // DISAPPEARING LOGIC
+      setNewStage({ title: '', start_date: '', end_date: '' });
+      setShowStageForm(false);
+      setShowSavedToast(true);
+      syncWorkspaceData();
+      setTimeout(() => {
+        setIsSaving(false);
+        setTimeout(() => setShowSavedToast(false), 3000);
+      }, 500);
+    } catch (e) { setIsSaving(false); }
+  };
+
   const handleUpdateProgress = async (taskId: string, current: number, delta: number) => {
     if (!db) return;
     const nextValue = Math.min(100, Math.max(0, current + delta));
-    setIsUpdating(taskId);
-    
     try {
       await db.gantt_tasks.update(taskId, { completion_percentage: nextValue });
-      if (syncEngine) {
-        await syncEngine.queueChange('gantt_tasks', taskId, 'UPDATE', { completion_percentage: nextValue });
-      }
+      if (syncEngine) await syncEngine.queueChange('gantt_tasks', taskId, 'UPDATE', { completion_percentage: nextValue });
       setTasks(prev => prev.map(t => t.id === taskId ? { ...t, completion_percentage: nextValue } : t));
-    } finally {
-      setIsUpdating(null);
-    }
+    } catch (e) { console.error("Update failed."); }
   };
 
-  /** * LOGISTICS: RECORD DELIVERY */
   const handleLogDelivery = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!db || !projectId || !newDelivery.item_name) return;
+    if (!db || !selectedId || !newDelivery.item_name) return;
 
     const deliveryId = crypto.randomUUID();
     const deliveryData = {
       id: deliveryId,
-      project_id: projectId,
-      bill_item_id: "",
+      project_id: selectedId,
       item_name: newDelivery.item_name,
-      qty_received: 0,
       delivery_note_ref: newDelivery.delivery_note_ref,
       timestamp: new Date().toISOString()
     };
 
     try {
+      setIsSaving(true);
       await db.material_logistics.add(deliveryData);
-      if (syncEngine) {
-        await syncEngine.queueChange('material_logistics', deliveryId, 'INSERT', deliveryData);
-      }
+      if (syncEngine) await syncEngine.queueChange('material_logistics', deliveryId, 'INSERT', deliveryData);
+      
+      // DISAPPEARING LOGIC
       setNewDelivery({ item_name: '', delivery_note_ref: '' });
       setShowDeliveryForm(false);
-      syncProductionData();
-    } catch (e) {
-      console.error("Logistics Error: Vault access failed.");
-    }
+      syncWorkspaceData();
+      setTimeout(() => setIsSaving(false), 500);
+    } catch (e) { setIsSaving(false); }
   };
 
-  const calculateVelocity = useMemo(() => {
+  const handleDeleteDelivery = async (id: string) => {
+    if (!db || !window.confirm("Permanently erase this material arrival node?")) return;
+    try {
+      await db.material_logistics.delete(id);
+      if (syncEngine) await syncEngine.queueChange('material_logistics', id, 'DELETE', null);
+      setLogistics(prev => prev.filter(l => l.id !== id));
+    } catch (err) { console.error("Logistics Deletion Error."); }
+  };
+
+  const handleDeleteTask = async (id: string) => {
+    if (!window.confirm("Remove this stage from timeline?")) return;
+    await db.gantt_tasks.delete(id);
+    if (syncEngine) await syncEngine.queueChange('gantt_tasks', id, 'DELETE', null);
+    syncWorkspaceData();
+  };
+
+  const calculateTotalProgress = useMemo(() => {
     if (tasks.length === 0) return "0";
-    const total = tasks.reduce((acc, curr) => acc + curr.completion_percentage, 0);
-    return (total / tasks.length).toFixed(1);
+    const sum = tasks.reduce((acc, curr) => acc + curr.completion_percentage, 0);
+    return (sum / tasks.length).toFixed(0);
   }, [tasks]);
 
   if (isLoading) {
@@ -157,7 +264,7 @@ const ResourceGantt: React.FC<ResourceGanttProps> = ({ projectId }) => {
   }
 
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 text-left pb-20">
+    <div className="space-y-12 animate-in fade-in duration-700 text-left pb-24">
       
       {/* 1. RESOURCE HUD */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -182,6 +289,23 @@ const ResourceGantt: React.FC<ResourceGanttProps> = ({ projectId }) => {
             <div className="flex items-center gap-2 px-3 py-1 rounded-full theme-status-online text-[9px] font-black uppercase">
               <div className="w-1.5 h-1.5 rounded-full bg-[var(--app-success)] animate-pulse" /> GPS Secure
             </div>
+        )}
+      </div>
+
+      {/* 2. OPERATIONAL STATUS GRID */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        {/* COMPLETION NODE */}
+        <div className={`p-10 rounded-[3.5rem] border shadow-2xl transition-all duration-500 flex justify-between items-center
+          ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800 shadow-black' : 'bg-white border-zinc-200 shadow-zinc-200/50'}`}>
+          <div className="text-left">
+            <p className={`text-[10px] font-black uppercase tracking-[0.4em] mb-2 leading-none ${theme === 'dark' ? 'text-zinc-600' : 'text-zinc-900'}`}>Project Phase</p>
+            <h3 className={`text-6xl font-black italic tracking-tighter leading-none ${theme === 'dark' ? 'text-white' : 'text-zinc-950'}`}>
+              {calculateTotalProgress}%
+            </h3>
+          </div>
+          <div className="p-5 rounded-3xl bg-blue-500/10 border border-blue-500/20 text-blue-500 shadow-lg">
+            <TrendingUp size={28} />
           </div>
           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--app-meta)] mb-2 leading-none text-left">On-Site Workforce</p>
           <h3 className={`text-4xl font-black italic tracking-tighter leading-none text-[var(--app-heading)] text-left`}>
@@ -194,6 +318,23 @@ const ResourceGantt: React.FC<ResourceGanttProps> = ({ projectId }) => {
             <div className="p-4 rounded-sm theme-status-warning">
               <Truck size={24} />
             </div>
+            <button onClick={verifyLocation} className="p-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-600 hover:text-amber-500 active:scale-90 transition-all shadow-inner">
+               <RefreshCw size={14} className={isOnSite === 'pending' ? 'animate-spin' : ''} />
+            </button>
+          </div>
+        </div>
+
+        {/* DELIVERY NODE */}
+        <div className={`p-10 rounded-[3.5rem] border shadow-2xl transition-all duration-500 flex justify-between items-center
+          ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800 shadow-black' : 'bg-white border-zinc-200 shadow-zinc-200/50'}`}>
+          <div className="text-left">
+            <p className={`text-[10px] font-black uppercase tracking-[0.4em] mb-2 leading-none ${theme === 'dark' ? 'text-zinc-600' : 'text-zinc-900'}`}>Daily Inflow</p>
+            <h3 className={`text-6xl font-black italic tracking-tighter leading-none ${theme === 'dark' ? 'text-white' : 'text-zinc-950'}`}>
+              {logistics.length.toString().padStart(2, '0')}
+            </h3>
+          </div>
+          <div className="p-5 rounded-3xl bg-amber-500/10 border border-amber-500/20 text-amber-500 shadow-lg">
+            <Truck size={28} />
           </div>
           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--app-meta)] mb-2 leading-none text-left">Verified Deliveries</p>
           <h3 className={`text-4xl font-black italic tracking-tighter leading-none text-[var(--app-heading)] text-left`}>
@@ -210,10 +351,41 @@ const ResourceGantt: React.FC<ResourceGanttProps> = ({ projectId }) => {
               <h3 className="text-2xl sm:text-3xl font-black uppercase italic tracking-tighter text-[var(--app-heading)]">Production Timeline</h3>
               <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--app-meta)] italic">Updating Site Progress Stages</p>
            </div>
-           <Button variant="primary" leftIcon={<Plus size={16} />}>New Stage</Button>
+           <button onClick={() => setShowStageForm(!showStageForm)} className="px-10 py-6 bg-amber-500 text-black font-black uppercase text-xs rounded-2xl italic tracking-widest shadow-2xl hover:bg-amber-400 active:scale-95 transition-all flex items-center gap-4">
+              {showStageForm ? <X size={20} /> : <Plus size={20} strokeWidth={3} />}
+              {showStageForm ? 'Close Editor' : 'Register Stage'}
+           </button>
         </div>
 
-        <div className="p-10 space-y-12">
+        {showStageForm && (
+           <form onSubmit={handleAddStage} className="p-12 bg-zinc-950/40 border-b border-amber-500/20 animate-in slide-in-from-top-4 space-y-12">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                 <div className="space-y-4 text-left">
+                    <label className="text-[11px] font-black uppercase text-zinc-500 ml-4 tracking-widest italic">Work Stage Identifier</label>
+                    <input required placeholder="e.g. Ground Floor Slab Casting" value={newStage.title} onChange={e => setNewStage({...newStage, title: e.target.value})} 
+                      className={`w-full h-20 px-8 rounded-3xl border font-bold text-xl outline-none transition-all shadow-inner
+                        ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800 text-white focus:border-amber-500' : 'bg-white border-zinc-200 text-zinc-900 focus:border-amber-500'}`} />
+                 </div>
+                 <div className="space-y-4 text-left">
+                    <label className="text-[11px] font-black uppercase text-zinc-500 ml-4 tracking-widest italic">Start Date</label>
+                    <input type="date" value={newStage.start_date} onChange={e => setNewStage({...newStage, start_date: e.target.value})} 
+                      className={`w-full h-20 px-8 rounded-3xl border font-bold text-sm outline-none transition-all shadow-inner
+                        ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800 text-white focus:border-amber-500' : 'bg-white border-zinc-200 text-zinc-900 focus:border-amber-500'}`} />
+                 </div>
+                 <div className="space-y-4 text-left">
+                    <label className="text-[11px] font-black uppercase text-zinc-500 ml-4 tracking-widest italic">Target Delivery</label>
+                    <input type="date" value={newStage.end_date} onChange={e => setNewStage({...newStage, end_date: e.target.value})} 
+                      className={`w-full h-20 px-8 rounded-3xl border font-bold text-sm outline-none transition-all shadow-inner
+                        ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800 text-white focus:border-amber-500' : 'bg-white border-zinc-200 text-zinc-900 focus:border-amber-500'}`} />
+                 </div>
+              </div>
+              <button type="submit" className="w-full h-24 bg-amber-500 text-black font-black uppercase text-sm tracking-[0.5em] rounded-4xl shadow-2xl hover:bg-amber-400 transition-all flex items-center justify-center gap-6 italic active:scale-95 shadow-amber-500/20">
+                 <CheckCircle2 size={32} strokeWidth={2.5} /> Secure Stage Entry
+              </button>
+           </form>
+        )}
+
+        <div className="p-12 space-y-20 pb-20">
            {tasks.length > 0 ? tasks.map((task) => (
              <div key={task.id} className="space-y-6 group">
                 <div className="flex justify-between items-end">
@@ -258,6 +430,11 @@ const ResourceGantt: React.FC<ResourceGanttProps> = ({ projectId }) => {
                    >
                       <div className="absolute inset-0 bg-white/10 animate-pulse" />
                    </div>
+                   {/* Measurement Marker Node */}
+                   <div className="absolute right-8 top-1/2 -translate-y-1/2 flex items-center gap-3 opacity-20">
+                      <ShieldCheck size={16} className="text-white" />
+                      <span className="text-[10px] font-mono text-white font-bold uppercase tracking-widest">SECURE_PHASE</span>
+                   </div>
                 </div>
              </div>
            )) : (
@@ -269,8 +446,9 @@ const ResourceGantt: React.FC<ResourceGanttProps> = ({ projectId }) => {
         </div>
       </div>
 
-      {/* 3. LOGISTICS & TIMECLOCK NODES */}
-      <div className="grid lg:grid-cols-2 gap-8">
+      {/* 4. MATERIAL ARRIVALS */}
+      <div className={`p-12 sm:p-16 rounded-[4.5rem] border shadow-2xl transition-all duration-700
+          ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800 shadow-black' : 'bg-white border-zinc-200 shadow-zinc-200/40'}`}>
         
         {/* MATERIAL LOGISTICS */}
         <div className={`p-10 rounded-sm theme-card shadow-xl`}>
@@ -357,7 +535,6 @@ const ResourceGantt: React.FC<ResourceGanttProps> = ({ projectId }) => {
               </div>
            </div>
         </div>
-
       </div>
 
       {/* FOOTER */}

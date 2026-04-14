@@ -2,28 +2,50 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { 
   BarChart3, 
   Plus, 
-  AlertCircle, 
-  DollarSign, 
+  AlertCircle,  
   CheckCircle2, 
   Clock, 
-  ArrowRight,
   TrendingUp,
   FileEdit,
+  Trash2,
+  Loader2,
   HardHat,
-  Calculator,
+  X,
+  Save,
+  Briefcase,
+  ChevronDown,
+  ChevronRight,
+  ShieldCheck,
 } from 'lucide-react';
-import { useAuth } from "../../auth/AuthContext";
-import Button from "../../../components/ui/Button";
-import { db, syncEngine } from "../../../lib/database/database";
 
 /* ======================================================
-    OFFICE MODULE RESOLUTION (OFFLINE-FIRST)
+    OFFICE MODULE RESOLUTION (PRO-DEV)
    ====================================================== */
+
+let useAuth: any = () => ({ theme: 'light', user: null });
+let db: any = null;
+let syncEngine: any = null;
+
+const resolveModules = async () => {
+  try {
+    const authMod = await import("../../auth/AuthContext");
+    if (authMod.useAuth) useAuth = authMod.useAuth;
+
+    const dbMod = await import("../../../lib/database/database");
+    if (dbMod.db) db = dbMod.db; 
+    if (dbMod.syncEngine) syncEngine = dbMod.syncEngine;
+  } catch (e) {
+    console.warn("Bridge Engine: Infrastructure nodes in standby.");
+  }
+};
+
+resolveModules();
 
 /** --- TYPES --- **/
 
 interface Variation {
   id: string;
+  project_id: string;
   description: string;
   qs_pricing_status: 'unpriced' | 'pending' | 'approved';
   estimated_cost: number;
@@ -35,66 +57,73 @@ interface VariationBridgeProps {
   projectId: string | null;
 }
 
-/** --- MAIN COMPONENT: THE QS ↔ CM BRIDGE --- **/
+/** --- MAIN COMPONENT: THE SITE CHANGE HUB --- **/
 
 const VariationBridge: React.FC<VariationBridgeProps> = ({ projectId }) => {
   const { user } = useAuth();
   
-  // Data States
+  // WORKSPACE CONTEXT
+  const [selectedId, setSelectedId] = useState<string | null>(initialId);
+  const [availableProjects, setAvailableProjects] = useState<any[]>([]);
+  
+  // DATA STATES
   const [variations, setVariations] = useState<Variation[]>([]);
-  const [, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [showSavedToast, setShowSavedToast] = useState(false);
 
-  // Form States
+  // FORM STATES
   const [showAddForm, setShowAddForm] = useState(false);
   const [newVariation, setNewVariation] = useState({
     description: '',
     estimated_cost: 0
   });
 
-  /** * DATA HANDSHAKE: VAULT RECOVERY
-   * Pulls site changes from the local device (Dexie).
-   * Works 100% offline.
-   */
-  const refreshVariationData = useCallback(async () => {
-    if (!db || !projectId) {
-      setTimeout(() => setIsLoading(false), 1000);
-      return;
+  /** * 1. DATA HANDSHAKE: RECOVER SITE CHANGES */
+  const syncBridgeData = useCallback(async () => {
+    if (!db || !user) {
+        setTimeout(() => setIsLoading(false), 800);
+        return;
     }
 
     try {
       setIsLoading(true);
-      const storedVariations = await db.variations
-        .where('project_id')
-        .equals(projectId)
-        .reverse()
-        .toArray();
+      
+      // Fetch available project nodes
+      const projects = await db.projects.where('user_id').equals(user.id).toArray();
+      setAvailableProjects(projects);
 
-      setVariations(storedVariations);
+      if (selectedId) {
+        const storedVariations = await db.variations
+          .where('project_id')
+          .equals(selectedId)
+          .reverse()
+          .toArray();
+        setVariations(storedVariations);
+      } else if (projects.length > 0) {
+        setSelectedId(projects[0].id);
+      }
     } catch (err) {
-      console.error("Bridge Engine: Local vault access failed.", err);
+      console.error("Bridge Engine: Vault access failed.");
     } finally {
       setIsLoading(false);
     }
-  }, [projectId]);
+  }, [selectedId, user]);
 
   useEffect(() => {
-    refreshVariationData();
-  }, [refreshVariationData]);
+    syncBridgeData();
+  }, [syncBridgeData]);
 
-  /** * LOG SITE CHANGE (Save & Sync)
-   * Commits to local memory instantly so the Site Manager can get back to work.
-   */
+  /** * 2. LOG SITE CHANGE (SAVE PROTOCOL) */
   const handleLogChange = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!projectId || !db || !user) return;
+    if (!selectedId || !db || !user) return;
 
     setIsSaving(true);
     const variationId = crypto.randomUUID();
     const variationData = {
       id: variationId,
-      project_id: projectId,
-      site_log_id: null,
+      project_id: selectedId,
       description: newVariation.description,
       estimated_cost: newVariation.estimated_cost,
       qs_pricing_status: 'unpriced' as const,
@@ -102,29 +131,48 @@ const VariationBridge: React.FC<VariationBridgeProps> = ({ projectId }) => {
     };
 
     try {
-      // 1. SAVE TO LOCAL DEVICE (DEXIE)
       await db.variations.add(variationData);
-      
-      // 2. QUEUE FOR CLOUD (Background)
       if (syncEngine) {
         await syncEngine.queueChange('variations', variationId, 'INSERT', variationData);
       }
 
       setNewVariation({ description: '', estimated_cost: 0 });
       setShowAddForm(false);
-      refreshVariationData();
+      setShowSavedToast(true);
+      syncBridgeData();
+      setTimeout(() => {
+        setIsSaving(false);
+        setTimeout(() => setShowSavedToast(false), 3000);
+      }, 600);
     } catch (err) {
-      console.error("Bridge: Could not vault site change.", err);
-    } finally {
       setIsSaving(false);
     }
   };
 
-  const unpricedCount = variations.filter(v => v.qs_pricing_status === 'unpriced').length;
-  const totalPotentialValue = variations.reduce((acc, curr) => acc + (curr.estimated_cost || 0), 0);
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Permanently erase this site change record?")) return;
+    await db.variations.delete(id);
+    if (syncEngine) await syncEngine.queueChange('variations', id, 'DELETE', null);
+    syncBridgeData();
+  };
+
+  const totals = useMemo(() => {
+    const unpriced = variations.filter(v => v.qs_pricing_status === 'unpriced').length;
+    const value = variations.reduce((acc, curr) => acc + (curr.estimated_cost || 0), 0);
+    return { unpriced, value };
+  }, [variations]);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center p-40 opacity-30">
+        <Loader2 className="w-12 h-12 animate-spin mb-4 text-amber-500" />
+        <p className={`font-black text-[10px] uppercase tracking-[0.5em] ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-950'}`}>Syncing Change Ledger...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 text-left">
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 text-left pb-10">
       
       {/* 1. OPERATIONAL HUD (Summary Cards) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -135,8 +183,8 @@ const VariationBridge: React.FC<VariationBridgeProps> = ({ projectId }) => {
               {unpricedCount.toString().padStart(2, '0')} Nodes
             </p>
           </div>
-          <div className="p-4 bg-amber-500/10 rounded-2xl border border-amber-500/20 text-amber-500">
-            <AlertCircle size={24} />
+          <div className={`p-6 rounded-3xl border ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800' : 'bg-zinc-50 border-zinc-100'} text-amber-500 shadow-lg`}>
+            <AlertCircle size={32} strokeWidth={2.5} />
           </div>
         </div>
 
@@ -147,8 +195,8 @@ const VariationBridge: React.FC<VariationBridgeProps> = ({ projectId }) => {
               KES {(totalPotentialValue / 1000).toFixed(1)}k
             </p>
           </div>
-          <div className="p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 text-emerald-500">
-            <TrendingUp size={24} />
+          <div className={`p-6 rounded-3xl border ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800' : 'bg-zinc-50 border-zinc-100'} text-emerald-500 shadow-lg`}>
+            <TrendingUp size={32} strokeWidth={2.5} />
           </div>
         </div>
       </div>
@@ -161,13 +209,13 @@ const VariationBridge: React.FC<VariationBridgeProps> = ({ projectId }) => {
               <h3 className="text-3xl font-black uppercase italic tracking-tighter leading-none text-[var(--app-heading)]">Site Change Bridge</h3>
               <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--app-meta)] italic">Syncing site events with QS valuations</p>
            </div>
-           <Button 
-             variant="primary"
+           <button 
              onClick={() => setShowAddForm(!showAddForm)}
-             leftIcon={<Plus size={16} className="stroke-[3px]" />}
+             className="px-10 py-6 bg-amber-500 text-black font-black uppercase text-xs rounded-2xl italic tracking-[0.2em] shadow-2xl hover:bg-amber-400 transition-all flex items-center gap-4 active:scale-95 shadow-amber-500/20"
            >
-              Log Site Change
-           </Button>
+              {showAddForm ? <X size={22} /> : <Plus size={22} strokeWidth={3} />}
+              {showAddForm ? 'Close Editor' : 'Log Site Change'}
+           </button>
         </div>
 
         {/* LOG FORM NODE */}
@@ -178,7 +226,7 @@ const VariationBridge: React.FC<VariationBridgeProps> = ({ projectId }) => {
                    <label className="text-[10px] font-black uppercase text-[var(--app-meta)] ml-2 tracking-widest">Description of Change</label>
                    <input 
                      required
-                     placeholder="e.g. Relocating drainage due to rock..."
+                     placeholder="e.g. Relocating foundation due to rock..."
                      value={newVariation.description}
                      onChange={e => setNewVariation({...newVariation, description: e.target.value})}
                      className={`w-full p-6 rounded-2xl border font-bold transition-all theme-input outline-none focus:border-[var(--app-accent-strong)]`}
@@ -190,7 +238,7 @@ const VariationBridge: React.FC<VariationBridgeProps> = ({ projectId }) => {
                       <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 text-[var(--app-meta)]" size={18} />
                       <input 
                         type="number"
-                        placeholder="0.00"
+                        placeholder="0"
                         value={newVariation.estimated_cost || ''}
                         onChange={e => setNewVariation({...newVariation, estimated_cost: parseInt(e.target.value)})}
                         className={`w-full p-6 pl-14 rounded-2xl border font-black text-xl transition-all theme-input outline-none focus:border-[var(--app-accent-strong)]`}
@@ -218,8 +266,8 @@ const VariationBridge: React.FC<VariationBridgeProps> = ({ projectId }) => {
           </form>
         )}
 
-        {/* LOGGED VARIATIONS LIST */}
-        <div className="p-10 space-y-6">
+        {/* LOGGED SITE CHANGES LIST */}
+        <div className="p-12 space-y-8">
            {variations.length > 0 ? variations.map((v) => (
              <div key={v.id} className="p-8 rounded-[2.5rem] theme-card hover:border-[var(--app-accent-strong)] group transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
                 <div className="flex-1 text-left space-y-4">
@@ -234,12 +282,12 @@ const VariationBridge: React.FC<VariationBridgeProps> = ({ projectId }) => {
                    </h4>
                    <div className="flex items-center gap-6 opacity-40 text-[var(--app-heading)]">
                       <div className="flex items-center gap-2">
-                        <Clock size={12} />
-                        <span className="text-[9px] font-black uppercase tracking-widest">{new Date(v.created_at).toLocaleDateString()}</span>
+                        <Clock size={16} />
+                        <span className="text-[10px] font-black uppercase tracking-widest">{new Date(v.created_at).toDateString()}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <HardHat size={12} />
-                        <span className="text-[9px] font-black uppercase tracking-widest italic">Logged by Site Team</span>
+                        <HardHat size={16} />
+                        <span className="text-[10px] font-black uppercase tracking-widest italic leading-none">Logged by Field Node</span>
                       </div>
                    </div>
                 </div>
@@ -272,6 +320,18 @@ const VariationBridge: React.FC<VariationBridgeProps> = ({ projectId }) => {
            <p className="text-[9px] font-mono text-[var(--app-meta)] uppercase tracking-tighter">SECURE_BRIDGE_PROTOCOL_v4.5</p>
         </div>
       </div>
+
+      <footer className="pt-24 pb-12 text-center opacity-20 select-none flex flex-col items-center gap-8">
+         <div className="h-px w-80 bg-zinc-800" />
+         <p className="text-[11px] font-black uppercase tracking-[2em] text-zinc-600 italic leading-none text-center">
+           CHANGE MONITOR ENGINE • QS VAULT
+         </p>
+      </footer>
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 20px; }
+      `}</style>
     </div>
   );
 };

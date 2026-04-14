@@ -19,6 +19,7 @@ interface TakeoffLedgerProps {
   activeSection: string;
 }
 
+/** --- SUB-COMPONENT: HIGH-VISIBILITY DATA ROW --- **/
 const MeasurementEntry: React.FC<{
   item: Measurement;
   onDeleteRequest: (id: string) => void;
@@ -64,7 +65,7 @@ const MeasurementEntry: React.FC<{
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
           })}
-          <span className="text-[10px] ml-1.5 opacity-40 not-italic uppercase font-bold">
+          <span className="text-sm ml-2 opacity-50 uppercase font-bold tracking-widest">
             {item.unit}
           </span>
         </p>
@@ -78,6 +79,7 @@ const MeasurementEntry: React.FC<{
   </div>
 );
 
+/** --- MAIN COMPONENT: TAKEOFF LEDGER --- **/
 const TakeoffLedger: React.FC<TakeoffLedgerProps> = ({
   measurements,
   onDelete,
@@ -88,6 +90,7 @@ const TakeoffLedger: React.FC<TakeoffLedgerProps> = ({
       item.sectionCode === activeSection || activeSection === "All Sections",
   );
 
+  // EXACT ORIGINAL DB LOGIC PRESERVED
   const handleDeleteMeasurement = async (id: string) => {
     if (db) {
       try {
@@ -133,9 +136,23 @@ const TakeoffLedger: React.FC<TakeoffLedgerProps> = ({
             </p>
           </div>
         </div>
+
+        <div
+          className={`px-6 py-4 rounded-2xl border-2 flex items-center gap-4 self-start sm:self-auto shrink-0 ${
+            theme === "dark"
+              ? "bg-zinc-900 border-zinc-800 text-zinc-300"
+              : "bg-zinc-50 border-zinc-200 text-zinc-700 shadow-inner"
+          }`}
+        >
+          <Hash size={18} className="text-emerald-500" />
+          <span className="text-xs font-black tracking-widest uppercase">
+            {filteredMeasurements.length} Records Found
+          </span>
+        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 sm:pr-3 space-y-4">
+      {/* 2. DATA GRID (Scrollable Container) */}
+      <div className="flex-1 max-h-600px] overflow-y-auto custom-scrollbar pr-2 sm:pr-4 space-y-4">
         {filteredMeasurements.length > 0 ? (
           filteredMeasurements.map((item) => (
             <MeasurementEntry
@@ -175,8 +192,10 @@ const TakeoffLedger: React.FC<TakeoffLedgerProps> = ({
           </p>
           <CheckCircle2 size={14} className="theme-icon shrink-0 text-emerald-500" />
         </div>
+        <CheckCircle2 size={24} className="text-emerald-500 shrink-0" />
       </div>
-    </aside>
+
+    </div>
   );
 };
 

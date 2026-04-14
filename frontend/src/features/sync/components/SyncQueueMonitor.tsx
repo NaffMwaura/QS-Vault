@@ -1,16 +1,15 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   RefreshCw, Cloud, CloudOff, Database, Zap, FileUp, FileText, 
   FileSpreadsheet, FileCode, Loader2, X, Plus, ShieldCheck
 } from 'lucide-react';
-import { useAuth } from "../../auth/AuthContext";
-import { db, syncEngine } from "../../../lib/database/database";
 
 const SyncQueueMonitor: React.FC = () => {
   const { isOnline } = useAuth();
   const [pendingCount, setPendingCount] = useState(0);
   const [isSyncing, setIsSyncing] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [localBuffer, setLocalBuffer] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -22,11 +21,11 @@ const SyncQueueMonitor: React.FC = () => {
           setPendingCount(count);
         }
       } catch (err) {
-        console.warn("Sync Hub: Monitoring deferred.");
+        console.warn("Sync Monitor: Scanning vault...");
       }
     };
 
-    const interval = setInterval(checkOutbox, 3000);
+    const interval = setInterval(checkOutbox, 2000);
     checkOutbox();
     return () => clearInterval(interval);
   }, []);
@@ -47,15 +46,12 @@ const SyncQueueMonitor: React.FC = () => {
   const onFileIntake = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-
     const newAssets = Array.from(files).map(file => ({
       id: Math.random().toString(36).substr(2, 9),
       name: file.name,
       type: file.name.split('.').pop()?.toUpperCase() || 'FILE',
-      size: (file.size / 1024).toFixed(1) + ' KB',
-      timestamp: new Date().toLocaleTimeString()
+      size: (file.size / 1024).toFixed(1) + ' KB'
     }));
-
     setLocalBuffer(prev => [...newAssets, ...prev]);
   };
 
@@ -71,18 +67,24 @@ const SyncQueueMonitor: React.FC = () => {
             ) : (
               <CloudOff className="theme-icon" size={28} />
             )}
+
+            {/* Micro status heartbeat */}
+            <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-[#09090b]
+               ${isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
           </div>
           
           <div className="space-y-1">
             <h4 className="theme-heading text-xl font-black uppercase italic tracking-tighter leading-none">
               Cloud Sync Status
             </h4>
-            <div className="flex items-center gap-2">
-              <span className={`text-[9px] font-black uppercase tracking-[0.15em] px-3 py-1 rounded-full border
-                ${isOnline 
-                  ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' 
-                  : 'bg-rose-500/10 border-rose-500/20 text-rose-500 animate-pulse'}`}>
-                {isOnline ? 'System Online' : 'Offline Mode'}
+            <div className="flex items-center gap-3">
+              <span className={`text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full border transition-colors
+                ${isSyncing 
+                  ? 'bg-amber-500/10 border-amber-500/20 text-amber-500'
+                  : isOnline 
+                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' 
+                    : 'bg-rose-500/10 border-rose-500/20 text-rose-500 animate-pulse'}`}>
+                {isSyncing ? 'Pushing Site Data...' : isOnline ? 'System Connected' : 'Local Standby'}
               </span>
             </div>
           </div>
@@ -97,6 +99,13 @@ const SyncQueueMonitor: React.FC = () => {
               ${pendingCount > 0 ? 'theme-total-value' : 'theme-meta opacity-50'}`}>
               {pendingCount.toString().padStart(2, '0')}
             </p>
+            <div className="flex items-baseline gap-3 justify-end">
+               <p className={`text-6xl font-black italic tracking-tighter leading-none transition-colors
+                 ${pendingCount > 0 ? 'text-amber-500' : theme === 'dark' ? 'text-zinc-800' : 'text-zinc-200'}`}>
+                 {pendingCount.toString().padStart(2, '0')}
+               </p>
+               {isSyncing && <Loader2 size={20} className="animate-spin text-amber-500/40" />}
+            </div>
           </div>
 
           <button 
@@ -138,7 +147,7 @@ const SyncQueueMonitor: React.FC = () => {
         </div>
 
         {localBuffer.length > 0 && (
-          <div className="space-y-2 max-h-40 overflow-y-auto custom-scrollbar pr-2 animate-in fade-in duration-500">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-500">
             {localBuffer.map(file => (
               <div key={file.id} className="theme-card flex items-center justify-between p-4 rounded-2xl shadow-sm">
                 <div className="flex items-center gap-4 overflow-hidden text-left">
@@ -180,6 +189,28 @@ const SyncQueueMonitor: React.FC = () => {
       </div>
     </div>
   );
+};
+
+/** --- MAIN COMPONENT: DATA SYNC MONITOR (MODULE GUARD) --- **/
+
+const SyncQueueMonitor: React.FC = () => {
+  const [isResolved, setIsResolved] = useState(false);
+  
+  // Resolve modules and trigger guard
+  useEffect(() => {
+    resolveModules().then(() => setIsResolved(true));
+  }, []);
+
+  // Rules of Hooks fix: Top-level call to useAuth only happens in the guarded child
+  if (!isResolved) return null;
+
+  return <MonitorGuard />;
+};
+
+// Internal wrapper to safely call the resolved useAuth hook
+const MonitorGuard: React.FC = () => {
+    const { theme, isOnline } = useAuth();
+    return <SyncMonitorContent theme={theme} isOnline={isOnline} />;
 };
 
 export default SyncQueueMonitor;

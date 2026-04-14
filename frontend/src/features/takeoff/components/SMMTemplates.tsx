@@ -6,7 +6,7 @@ import {
   MinusCircle, 
   PlusCircle, 
   Activity,
-  Zap
+  Zap,
 } from 'lucide-react';
 import type { SmmParams } from "../types/takeoff";
 
@@ -59,7 +59,6 @@ const SMMTemplates: React.FC<SMMTemplatesProps> = ({
           <div className="theme-card p-3 rounded-2xl shadow-inner">
             <Calculator size={18} className="theme-accent" />
           </div>
-        </div>
 
         <div className="theme-card p-5 rounded-4xl flex items-center gap-5 transition-all duration-500">
           <div className="theme-accent-surface p-4 rounded-2xl text-amber-500 shadow-lg">
@@ -78,14 +77,15 @@ const SMMTemplates: React.FC<SMMTemplatesProps> = ({
             Vertical Specifications
           </label>
 
-          <div className="space-y-5">
+          <div className="space-y-4">
+            {/* Conditional Depth for Concrete */}
             {category === 'Concrete' && (
-              <div className="space-y-3 text-left">
+              <div className="space-y-2.5 text-left">
                 <div className="flex justify-between items-center ml-2">
                   <span className="theme-meta text-[9px] font-bold uppercase tracking-widest">Slab / Footing Depth (m)</span>
                   <span className="theme-accent text-[8px] font-mono opacity-60 uppercase font-black">Result: m³</span>
                 </div>
-                <div className="relative group">
+                <div className="relative group h-16">
                   <input 
                     type="number" step="0.001" value={depth}
                     onChange={(e) => setDepth(e.target.value)}
@@ -96,13 +96,14 @@ const SMMTemplates: React.FC<SMMTemplatesProps> = ({
               </div>
             )}
 
+            {/* Conditional Height for Walling */}
             {category === 'Walling' && (
-              <div className="space-y-3 text-left">
+              <div className="space-y-2.5 text-left">
                 <div className="flex justify-between items-center ml-2">
                   <span className="theme-meta text-[9px] font-bold uppercase tracking-widest">Wall Height (m)</span>
                   <span className="theme-accent text-[8px] font-mono opacity-60 uppercase font-black">Result: m²</span>
                 </div>
-                <div className="relative group">
+                <div className="relative group h-16">
                   <input 
                     type="number" step="0.001" value={height}
                     onChange={(e) => setHeight(e.target.value)}
@@ -135,24 +136,31 @@ const SMMTemplates: React.FC<SMMTemplatesProps> = ({
             <button 
               type="button" 
               onClick={() => setIsDeductionMode(false)}
-              className={`flex-1 flex items-center justify-center gap-3 py-5 rounded-2xl border transition-all active:scale-95 shadow-lg
+              className={`flex items-center justify-between px-8 h-22 rounded-2xl border-2 transition-all active:scale-95
                 ${!isDeductionMode 
                   ? 'bg-emerald-500 text-black border-emerald-500 shadow-emerald-500/20' 
                   : 'theme-button-secondary opacity-60'}`}
             >
-              <PlusCircle size={14} className={!isDeductionMode ? 'fill-current' : ''} />
-              <span className="text-[10px] font-black uppercase tracking-widest">Addition</span>
+              <div className="flex items-center gap-4">
+                <PlusCircle size={24} strokeWidth={2.5} className={!isDeductionMode ? 'fill-black/10' : ''} />
+                <span className="text-sm font-black uppercase tracking-widest">Addition</span>
+              </div>
+              {!isDeductionMode && <div className="w-2 h-2 rounded-full bg-black animate-pulse" />}
             </button>
+
             <button 
               type="button" 
               onClick={() => setIsDeductionMode(true)}
-              className={`flex-1 flex items-center justify-center gap-3 py-5 rounded-2xl border transition-all active:scale-95 shadow-lg
+              className={`flex items-center justify-between px-8 h-22 rounded-2xl border-2 transition-all active:scale-95
                 ${isDeductionMode 
                   ? 'bg-rose-500 text-white border-rose-500 shadow-rose-500/20' 
                   : 'theme-button-secondary opacity-60'}`}
             >
-              <MinusCircle size={14} className={isDeductionMode ? 'fill-current' : ''} />
-              <span className="text-[10px] font-black uppercase tracking-widest">Deduction</span>
+              <div className="flex items-center gap-4">
+                <MinusCircle size={24} strokeWidth={2.5} className={isDeductionMode ? 'fill-black/20' : ''} />
+                <span className="text-sm font-black uppercase tracking-widest">Deduction (Void)</span>
+              </div>
+              {isDeductionMode && <div className="w-2 h-2 rounded-full bg-white animate-pulse" />}
             </button>
           </div>
         </div>
