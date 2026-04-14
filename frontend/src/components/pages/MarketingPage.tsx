@@ -18,8 +18,8 @@ const MarketingPage = ({ onGetStarted }: { onGetStarted: () => void }) => {
 
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #52525b; border-radius: 20px; transition: background 0.3s; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--app-border); border-radius: 20px; transition: background 0.3s; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--app-accent-strong); }
 
         @keyframes fade-in {
           from { opacity: 0; transform: translateY(10px); }
