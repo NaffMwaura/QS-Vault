@@ -20,7 +20,6 @@ import type {
   PDFDocumentProxy,
   RenderTask,
 } from 'pdfjs-dist/types/src/display/api';
-import { useAuth } from "../../auth/AuthContext";
 import type { Measurement, MeasurementTool, Point } from "../types/takeoff";
 
 /** * PDF ENGINE CONFIGURATION */
@@ -67,7 +66,6 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
   onCanvasDoubleClick,
   onCompleteMeasurement
 }) => {
-  const { theme } = useAuth();
   const [isRendering, setIsRendering] = useState(false);
   
   // Drag / Pan State
@@ -175,8 +173,7 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
   };
 
   return (
-    <section className={`flex-1 w-full h-full relative overflow-hidden flex flex-col items-center justify-center transition-colors duration-500 rounded-[3rem] sm:rounded-[4rem]
-      ${theme === 'dark' ? 'bg-[#050505]' : 'bg-zinc-100/50'}`}>
+    <section className={`flex-1 relative overflow-hidden flex flex-col items-center justify-center transition-colors duration-500 bg-[var(--app-bg)]`}>
       
       {/* 1. VIEWPORT HUD (Floating Controls) */}
       <div className={`absolute top-4 left-4 sm:top-6 sm:left-6 flex flex-col gap-2 z-40 p-1.5 rounded-2xl border shadow-2xl backdrop-blur-xl transition-colors

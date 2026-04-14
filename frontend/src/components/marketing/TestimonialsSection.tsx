@@ -4,11 +4,11 @@ import { testimonials } from "./marketingContent";
 export const TestimonialsSection = () => (
   <section className="theme-page py-28 sm:py-44 px-6 sm:px-12 overflow-hidden relative transition-colors duration-500">
     <div className="max-w-7xl mx-auto text-center relative z-10">
-      <p className="text-amber-600 dark:text-amber-400 text-[11px] font-black uppercase tracking-[0.4em] mb-6 sm:mb-8">
+      <p className="theme-accent text-[11px] font-black uppercase tracking-[0.4em] mb-6 sm:mb-8">
         Trusted Teams
       </p>
       <h2 className="theme-title text-4xl sm:text-7xl font-black uppercase tracking-tighter mb-14 sm:mb-24 italic leading-none">
-        Authorized by <span className="text-amber-500">Industry</span>
+        Authorized by <span className="theme-accent">Industry</span>
         <br className="hidden sm:block" /> Professionals.
       </h2>
 

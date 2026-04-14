@@ -13,7 +13,7 @@ import {
   CheckCircle2,
   Zap
 } from 'lucide-react';
-import { useAuth } from "../../auth/AuthContext";
+/** --- TYPES --- **/
 
 export type MeasurementTool = 'length' | 'area' | 'count';
 
@@ -46,7 +46,6 @@ const SMMWorkSections: React.FC<SMMWorkSectionsProps> = ({
   activeTool, 
   setActiveTool 
 }) => {
-  const { theme } = useAuth();
 
   const handleSectionSelect = (section: SMMSection) => {
     setActiveSection(section.label);
@@ -54,7 +53,7 @@ const SMMWorkSections: React.FC<SMMWorkSectionsProps> = ({
   };
 
   return (
-    <div className={`w-full h-full flex flex-col justify-between space-y-10 animate-in fade-in duration-500 ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
+    <aside className={`w-full flex flex-col space-y-10 p-6 sm:p-10 transition-colors duration-500 h-auto overflow-visible bg-[var(--app-bg)]`}>
       
       {/* 1. GUIDANCE HEADER */}
       <div className={`p-6 rounded-4xl border-2 transition-colors duration-500
@@ -76,13 +75,9 @@ const SMMWorkSections: React.FC<SMMWorkSectionsProps> = ({
 
       {/* 2. TOOL SELECTION HUB */}
       <div className="space-y-5">
-        <div className="flex items-center gap-3">
-           <Zap size={16} className="text-zinc-500" />
-           <label className={`text-[11px] font-black uppercase tracking-widest italic leading-none
-              ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'}`}>
-             Active Tool
-           </label>
-        </div>
+        <label className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--app-meta)] ml-1 italic block text-left">
+          Measurement Tools
+        </label>
         <div className="grid grid-cols-3 gap-4">
           {[
             { id: 'area', icon: Target, label: 'Area' },
@@ -92,12 +87,10 @@ const SMMWorkSections: React.FC<SMMWorkSectionsProps> = ({
             <button
               key={tool.id}
               onClick={() => setActiveTool(tool.id as MeasurementTool)}
-              className={`flex flex-col items-center justify-center gap-3 h-24 rounded-3xl border-2 transition-all active:scale-95
+              className={`flex flex-col items-center justify-center gap-3 py-6 rounded-2xl border-2 transition-all active:scale-95 shadow-xl
                 ${activeTool === tool.id 
-                  ? 'bg-amber-500 border-amber-500 text-black shadow-lg shadow-amber-500/20' 
-                  : theme === 'dark' 
-                    ? 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-white' 
-                    : 'bg-white border-zinc-200 text-zinc-500 hover:border-amber-500/50 hover:text-zinc-900 shadow-sm'}`}
+                  ? 'bg-[var(--app-accent-strong)] text-[var(--app-primary-fg)] border-[var(--app-accent-strong)] shadow-lg' 
+                  : 'bg-[var(--app-surface)] text-[var(--app-meta)] border-[var(--app-border)] hover:border-[var(--app-accent-strong)] hover:text-[var(--app-accent-strong)]'}`}
             >
               <tool.icon size={28} strokeWidth={activeTool === tool.id ? 2.5 : 2} />
               <span className={`text-[10px] font-black uppercase tracking-widest leading-none ${activeTool === tool.id ? 'opacity-80' : ''}`}>
@@ -108,15 +101,11 @@ const SMMWorkSections: React.FC<SMMWorkSectionsProps> = ({
         </div>
       </div>
 
-      {/* 3. SMM COMPLIANCE CATEGORIES */}
-      <div className={`space-y-5 pt-4 border-t ${theme === 'dark' ? 'border-zinc-800/30' : 'border-zinc-200'}`}>
-        <div className="flex items-center gap-3">
-           <Layers size={16} className="text-zinc-500" />
-           <label className={`text-[11px] font-black uppercase tracking-widest italic leading-none
-              ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'}`}>
-             Standard Work Sections (SMM-KE)
-           </label>
-        </div>
+      {/* 2. SMM COMPLIANCE CATEGORIES */}
+      <div className="space-y-5 flex flex-col">
+        <label className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--app-meta)] ml-1 italic block text-left">
+          Standard Work Sections (SMM-KE)
+        </label>
         
         <div className="space-y-3">
           {SMM_REGISTRY.map((section) => {
@@ -125,52 +114,69 @@ const SMMWorkSections: React.FC<SMMWorkSectionsProps> = ({
               <button
                 key={section.id}
                 onClick={() => handleSectionSelect(section)}
-                className={`w-full flex items-center justify-between p-4 rounded-4xl border-2 transition-all duration-300 group relative overflow-hidden
+                className={`w-full flex items-center justify-between p-5 rounded-2xl border-2 transition-all duration-500 group relative overflow-hidden
                   ${isActive 
-                    ? 'bg-amber-500/10 border-amber-500/50 shadow-md' 
-                    : theme === 'dark' 
-                      ? 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700' 
-                      : 'bg-white border-zinc-200 text-zinc-600 hover:border-amber-500/30 shadow-sm'}`}
+                    ? 'theme-status-warning shadow-2xl' 
+                    : 'bg-[var(--app-surface)] text-[var(--app-meta)] border-[var(--app-border)] hover:border-[var(--app-accent-strong)] hover:text-[var(--app-heading)] shadow-sm'}`}
               >
+                {/* Decorative Background Pulse for Active Node */}
+                {isActive && (
+                  <div className="absolute inset-0 bg-[var(--app-accent-strong)] opacity-5 animate-pulse" />
+                )}
+
                 <div className="flex items-center gap-5 relative z-10">
-                  <div className={`p-3.5 rounded-xl border-2 transition-all duration-300
-                    ${isActive 
-                      ? 'bg-amber-500 text-black border-amber-500 shadow-xl' 
-                      : theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-zinc-50 border-zinc-200'}`}>
-                    <section.icon size={20} strokeWidth={2.5} />
+                  <div className={`p-4 rounded-xl border-2 transition-all duration-500 shadow-inner
+                    ${isActive ? 'bg-[var(--app-accent-strong)] text-[var(--app-primary-fg)] border-[var(--app-accent-strong)] scale-110 shadow-xl' : 'bg-[var(--app-surface)] border-[var(--app-border)] shadow-black'}`}>
+                    <section.icon size={18} />
                   </div>
                   <div className="text-left">
-                    <p className={`text-[10px] font-black uppercase tracking-[0.3em] leading-none mb-1.5 italic
-                      ${isActive ? 'text-amber-500' : 'text-zinc-500'}`}>
+                    <p className={`text-[9px] font-black uppercase tracking-[0.2em] leading-none mb-2
+                      ${isActive ? 'text-[var(--app-accent-strong)]' : 'text-[var(--app-meta)]'}`}>
                       {section.code}
                     </p>
-                    <h5 className={`text-[14px] font-black uppercase tracking-tight leading-none
-                      ${isActive ? (theme === 'dark' ? 'text-white' : 'text-zinc-900') : (theme === 'dark' ? 'text-zinc-300 group-hover:text-white' : 'text-zinc-700 group-hover:text-black')}`}>
+                    <h5 className={`text-[12px] font-black uppercase tracking-tight leading-none
+                      ${isActive ? 'text-[var(--app-heading)]' : 'text-[var(--app-meta)] group-hover:text-[var(--app-heading)]'}`}>
                       {section.label}
                     </h5>
                   </div>
                 </div>
-                {isActive && (
-                   <ChevronRight size={24} strokeWidth={3} className="text-amber-500 animate-in slide-in-from-left-4 duration-500 mr-2" />
-                )}
+                {isActive && <ChevronRight size={18} className="text-[var(--app-accent-strong)] animate-in slide-in-from-left-4 duration-500" />}
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* 4. COMPLIANCE FOOTER */}
-      <div className={`flex items-center justify-between pt-6 border-t opacity-60 ${theme === 'dark' ? 'border-zinc-800/30' : 'border-zinc-200'}`}>
-         <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500 leading-none">
-           Engine Status
-         </p>
-         <div className="flex items-center gap-2 text-amber-500">
-            <CheckCircle2 size={14} />
-            <span className="text-[9px] font-bold uppercase tracking-[0.2em] italic leading-none">Auto-Arming Active</span>
-         </div>
+      {/* 3. OPERATIONAL TRACE SUMMARY */}
+      <div className={`p-8 rounded-2xl border-2 border-[var(--app-border)] bg-[var(--app-surface-elevated)] text-left transition-all duration-500 relative overflow-hidden shadow-inner`}>
+        
+        <div className="flex items-center gap-3 mb-4">
+           <Zap size={14} className="text-[var(--app-accent-strong)] animate-pulse" />
+           <p className="text-[10px] font-black uppercase text-[var(--app-meta)] tracking-[0.3em] italic leading-none">
+             Engine Armed
+           </p>
+        </div>
+        
+        <p className={`text-[11px] font-bold leading-relaxed text-[var(--app-meta)]`}>
+          Active Tool: <span className="text-[var(--app-accent-strong)] italic uppercase">{activeTool}</span>
+          <br/>
+          Current Node: <span className="text-[var(--app-accent-strong)] italic uppercase">{activeSection}</span>
+        </p>
+
+        <div className="mt-6 pt-6 border-t border-[var(--app-border)] flex items-center gap-3 opacity-40">
+           <Info size={14} className="text-[var(--app-meta)]" />
+           <p className="text-[8px] font-black uppercase tracking-widest text-[var(--app-meta)]">
+             Logic following SMM-KE 2026 Protocol
+           </p>
+        </div>
       </div>
 
-    </div>
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--app-border); border-radius: 20px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--app-accent-strong); }
+      `}</style>
+    </aside>
   );
 };
 

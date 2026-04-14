@@ -216,9 +216,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // 5. Persistence Handlers
   useEffect(() => {
     localStorage.setItem("qs_active_view", activeView);
-    document.documentElement.classList.remove("light", "dark");
-    document.documentElement.classList.add(theme);
-  }, [activeView, theme]);
+  }, [activeView]);
 
   useEffect(() => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") {

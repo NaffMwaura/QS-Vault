@@ -161,8 +161,7 @@ const RatesLibrary: React.FC = () => {
   }
 
   return (
-    <div className={`p-8 sm:p-12 rounded-[4rem] border backdrop-blur-3xl transition-all duration-500 relative shadow-2xl
-      ${theme === 'dark' ? 'bg-zinc-900/20 border-zinc-800' : 'bg-white border-zinc-200'}`}>
+    <div className="theme-panel p-8 sm:p-12 transition-all duration-500 relative">
       
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-10 mb-16 text-left">
         <div className="text-left space-y-1">
@@ -191,26 +190,41 @@ const RatesLibrary: React.FC = () => {
           { id: 'labor', label: 'Labor Nodes', icon: HardHat },
           { id: 'plant', label: 'Equipment', icon: Truck },
         ].map(cat => (
-          <button key={cat.id} onClick={() => setActiveRateCategory(cat.id)}
-            className={`flex items-center gap-3 px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border shrink-0
-              ${activeRateCategory === cat.id ? 'bg-amber-500 text-black border-amber-500 shadow-xl' : 'bg-zinc-900/40 text-zinc-500 border-zinc-800 hover:text-zinc-300'}`}>
-            <cat.icon size={14} /> {cat.label}
+          <button 
+            key={cat.id} 
+            onClick={() => setActiveRateCategory(cat.id)}
+            className={`theme-admin-control flex px-6 py-4 items-center gap-3 text-[10px] font-black uppercase tracking-widest shrink-0 transition-all border-2
+              ${activeRateCategory === cat.id 
+                ? 'bg-amber-500 border-amber-500 text-black' 
+                : 'text-zinc-500 border-transparent hover:border-amber-500/50 hover:bg-[color-mix(in_srgb,var(--app-heading)_5%,transparent)]'}`}
+          >
+            <cat.icon size={14} />
+            {cat.label}
           </button>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-        {filteredRates.map(r => (
-          <div key={r.id} className={`p-10 rounded-[3.5rem] border shadow-2xl transition-all flex flex-col justify-between h-85 text-left group
-            ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800 hover:border-amber-500/20' : 'bg-white border-zinc-100 shadow-zinc-200/50 hover:border-amber-500'}`}>
-            
-            <div className="flex justify-between items-start mb-10">
-              <div className="space-y-1">
-                <span className={`px-3 py-1 rounded-lg text-[10px] font-mono font-black border transition-colors leading-none
-                  ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800 text-zinc-600 group-hover:text-amber-500' : 'bg-zinc-50 border-zinc-200 text-zinc-400 group-hover:text-amber-600'}`}>
-                  {r.code}
-                </span>
-                <p className="text-[9px] font-black uppercase text-zinc-700 tracking-widest mt-2">{r.category}</p>
+      {/* 3. Rate Entries Grid */}
+      {isLoading ? (
+        <div className="py-40 text-center opacity-20">
+          <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4" />
+          <p className="font-black uppercase text-xs tracking-widest">Opening Rate Schedule...</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+          {filteredRates.length > 0 ? filteredRates.map(r => (
+            <div key={r.id} className="theme-card p-10 shadow-2xl group hover:border-amber-500/30 transition-all flex flex-col justify-between h-80 text-left">
+              
+              <div className="flex justify-between items-start mb-10 text-left">
+                <div className="space-y-1 text-left">
+                  <span className="theme-surface-inset theme-muted px-3 py-1 rounded-lg text-[10px] font-mono font-black border transition-colors leading-none group-hover:text-amber-500">
+                    {r.code}
+                  </span>
+                  <p className="text-[9px] font-black uppercase text-zinc-700 tracking-widest mt-2">{r.category}</p>
+                </div>
+                <div className="theme-button-muted theme-muted p-4 rounded-3xl transition-all shadow-lg group-hover:text-amber-500 group-hover:bg-amber-500/10">
+                  {r.category === 'labor' ? <HardHat size={20}/> : r.category === 'plant' ? <Truck size={20}/> : <Package size={20}/>}
+                </div>
               </div>
               <div className={`p-4 rounded-3xl transition-all shadow-lg ${theme === 'dark' ? 'bg-zinc-800 text-zinc-600 group-hover:text-amber-500' : 'bg-zinc-100 text-zinc-400'}`}>
                 {r.category === 'labor' ? <HardHat size={20}/> : r.category === 'plant' ? <Truck size={20}/> : <Package size={20}/>}
@@ -242,9 +256,8 @@ const RatesLibrary: React.FC = () => {
 
       {/* --- EDIT RATE MODAL --- */}
       {editingRate && (
-        <div className="fixed inset-0 z-100] flex items-center justify-center p-6 backdrop-blur-2xl bg-black/60 animate-in fade-in duration-300">
-           <div className={`w-full max-w-xl p-12 sm:p-16 rounded-[4rem] border shadow-2xl transition-all duration-500 transform animate-in zoom-in-95
-             ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-white shadow-black' : 'bg-white border-zinc-200 text-zinc-950'}`}>
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-6 backdrop-blur-2xl bg-black/60 animate-in fade-in duration-300">
+           <div className="theme-panel w-full max-w-xl p-10 sm:p-14 shadow-2xl transition-all duration-500 transform animate-in zoom-in-95">
              
              <div className="flex justify-between items-start mb-12">
                 <div className="text-left space-y-3">

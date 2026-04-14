@@ -53,10 +53,10 @@ const SidebarLink = ({
   <button
     type="button"
     onClick={onClick}
-    className={`theme-admin-control flex w-full items-center gap-3.5 border text-left transition-all ${
+    className={`theme-admin-control flex w-full items-center gap-4 px-5 py-3 border-2 text-left transition-all ${
       active
-        ? 'bg-amber-500 text-black border-amber-500 shadow-lg shadow-amber-500/20'
-        : 'theme-muted border-transparent hover:bg-zinc-500/5 hover:text-[(--app-fg)]'
+        ? 'bg-[var(--app-accent-strong)] text-[var(--app-primary-fg)] border-[var(--app-accent-strong)] shadow-lg shadow-[var(--app-shadow-card)]'
+        : 'text-[var(--app-meta)] border-transparent hover:text-[var(--app-heading)] hover:bg-[color-mix(in_srgb,var(--app-heading)_5%,transparent)]'
     }`}
   >
     <Icon size={18} />
@@ -93,8 +93,8 @@ const SidebarContent = ({
   };
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-[(--app-divider)] px-5 py-5 lg:px-6 lg:py-6">
+    <div className="flex h-full flex-col min-h-0 overflow-hidden">
+      <div className="flex h-[4.5rem] sm:min-h-20 shrink-0 items-center justify-between border-b border-[var(--app-border)] px-5 lg:px-6">
         <button
           type="button"
           onClick={() => handleNavigate('projects')}
@@ -140,14 +140,14 @@ const SidebarContent = ({
           <button
             type="button"
             onClick={toggleTheme}
-            className="theme-button-muted theme-muted theme-admin-icon-button-compact flex items-center justify-center border"
+            className="theme-button-secondary rounded-xl flex items-center justify-center p-3 border-2 hover:bg-[color-mix(in_srgb,var(--app-heading)_5%,transparent)]"
           >
             {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
           </button>
         </div>
       </div>
 
-      <nav className="flex-1 space-y-2 px-5 py-2">
+      <nav className="flex-1 space-y-2 px-5 py-2 overflow-y-auto custom-scrollbar min-h-0">
         {navLinks.map((link) => (
           <SidebarLink
             key={link.id}
@@ -157,18 +157,20 @@ const SidebarContent = ({
             onClick={() => handleNavigate(link.id)}
           />
         ))}
+      </nav>
 
+      <div className="shrink-0 px-5 pb-5 pt-3 mt-auto">
         <button
           type="button"
           onClick={signOut}
-          className="theme-admin-control mt-3 flex w-full items-center gap-3.5 border border-rose-500/15 bg-rose-500/6 text-left text-rose-500 transition-all hover:bg-rose-500/10"
+          className="px-5 py-3.5 flex w-full items-center font-black rounded-lg gap-4 text-left transition-all bg-[var(--app-error)] text-white border-2 border-[var(--app-error)] hover:opacity-90 shadow-lg shadow-[color-mix(in_srgb,var(--app-error)_30%,transparent)]"
         >
           <LogOut size={18} />
           <span className="text-[0.72rem] font-black uppercase tracking-[0.14em] leading-none">
             Log Out
           </span>
         </button>
-      </nav>
+      </div>
     </div>
   );
 };
@@ -181,21 +183,19 @@ const SidebarCommand: React.FC<SidebarCommandProps> = ({
 }) => {
   return (
     <>
-      <aside className="theme-surface-overlay sticky top-0 hidden h-screen w-72 shrink-0 border-r backdrop-blur-3xl lg:flex">
-        <div className="h-full w-full overflow-y-auto custom-scrollbar">
-          <SidebarContent activeView={activeView} setActiveView={setActiveView} />
-        </div>
+      <aside className="theme-surface-overlay sticky top-0 hidden h-screen w-72 shrink-0 border-r flex-col lg:flex">
+        <SidebarContent activeView={activeView} setActiveView={setActiveView} />
       </aside>
 
       {mobileOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
+        <div className="fixed inset-0 z-50 lg:hidden flex">
           <button
             type="button"
             onClick={onClose}
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             aria-label="Close navigation"
           />
-          <aside className="theme-surface-overlay relative z-10 h-full w-[88vw] max-w-sm border-r backdrop-blur-3xl">
+          <aside className="theme-surface-overlay relative z-10 flex h-full w-[88vw] max-w-sm flex-col border-r">
             <SidebarContent
               activeView={activeView}
               setActiveView={setActiveView}

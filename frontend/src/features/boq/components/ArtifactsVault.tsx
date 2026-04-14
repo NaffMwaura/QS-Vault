@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
 import { 
   FileText, 
@@ -37,57 +36,56 @@ const DocumentCard: React.FC<{
   report: ReportItem; 
   onView: (report: ReportItem) => void;
   isProcessing: boolean;
-  theme: 'light' | 'dark' 
-}> = ({ report, onView, isProcessing, theme }) => (
-  <div className={`p-8 rounded-[3rem] border-2 transition-all duration-500 group relative flex flex-col justify-between overflow-hidden shadow-2xl
-    ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800 hover:border-amber-500/30 shadow-black' : 'bg-white border-zinc-200 shadow-zinc-200/50 hover:border-amber-500/50 hover:shadow-xl'}`}>
+}> = ({ report, onDownload, isProcessing }) => (
+  <div className={`p-5 sm:p-6 rounded-sm border transition-all duration-500 group relative flex flex-col justify-between overflow-hidden theme-card hover:border-[var(--app-accent-strong)]`}>
     
-    <div className="mb-8 flex items-start justify-between gap-4">
-      <div className={`flex h-16 w-16 items-center justify-center rounded-2xl border-2 transition-all duration-500 shadow-inner
-        ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800' : 'bg-zinc-50 border-zinc-100'}
-        group-hover:bg-amber-500/10 group-hover:border-amber-500/20`}>
+    <div className="mb-5 flex items-start justify-between gap-4">
+      <div className={`flex h-14 w-14 items-center justify-center rounded-sm transition-all duration-500 shadow-inner theme-card text-[var(--app-meta)] group-hover:bg-[color-mix(in_srgb,var(--app-accent-strong)_10%,transparent)] group-hover:border-[color-mix(in_srgb,var(--app-accent-strong)_20%,transparent)]`}>
         {report.type === 'XLS' ? (
-          <FileSpreadsheet className="text-zinc-600 group-hover:text-amber-500 transition-colors" size={32} />
+          <FileSpreadsheet className="group-hover:text-[var(--app-accent-strong)] transition-colors" size={24} />
         ) : (
-          <FileText className="text-zinc-600 group-hover:text-amber-500 transition-colors" size={32} />
+          <FileText className="group-hover:text-[var(--app-accent-strong)] transition-colors" size={24} />
         )}
       </div>
       <div className="text-right">
         <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border-2
           ${report.status === 'Draft' 
-            ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' 
-            : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'}`}>
+            ? 'theme-status-warning' 
+            : report.status === 'Certified'
+              ? 'theme-status-online'
+              : 'theme-status-offline'}`}>
           {report.status}
         </span>
       </div>
     </div>
 
-    <div className="mb-10 text-left">
-      <p className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.3em] mb-2 italic leading-none">
+    <div className="mb-6 text-left">
+      <p className="theme-admin-label mb-2 text-[var(--app-meta)]">
         Project: {report.projectName}
       </p>
-      <h3 className={`mb-3 text-2xl font-black uppercase italic tracking-tighter leading-tight
-        ${theme === 'dark' ? 'text-white' : 'text-zinc-950'}`}>
+      <h3 className={`mb-2 text-[1.35rem] font-black uppercase tracking-tight leading-tight text-[var(--app-heading)]`}>
         {report.title}
       </h3>
-      <div className="flex flex-wrap items-center gap-4 text-[10px] font-bold text-zinc-600 uppercase tracking-widest">
-        <span className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'}>REV_{report.version}</span>
-        <span className={`w-1 h-1 rounded-full ${theme === 'dark' ? 'bg-zinc-700' : 'bg-zinc-300'}`} />
-        <span className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'}>Sync: {report.lastUpdated}</span>
+      <div className="flex flex-wrap items-center gap-3 text-[0.74rem] font-semibold text-[var(--app-meta)] uppercase tracking-[0.12em]">
+        <span>Rev {report.version}</span>
+        <span className="w-1 h-1 rounded-full bg-[var(--app-border)]" />
+        <span>Updated: {report.lastUpdated}</span>
       </div>
     </div>
 
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <button 
-        onClick={() => onView(report)}
-        className={`flex h-16 items-center justify-center gap-3 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all active:scale-95 border-2
-          ${theme === 'dark' ? 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-700' : 'bg-zinc-50 border-zinc-200 text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 shadow-sm'}`}>
-        <Eye size={16} strokeWidth={2.5} /> Open Document
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <button className={`theme-admin-control flex items-center justify-center gap-3 transition-all theme-button-secondary hover:bg-[color-mix(in_srgb,var(--app-secondary-fg)_10%,transparent)]`}>
+        <Eye size={14} /> Preview
       </button>
       <button 
-        className={`flex h-16 items-center justify-center gap-3 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all shadow-xl shadow-amber-500/10 active:scale-95 border-2 border-amber-400
-           bg-amber-500 text-black hover:bg-amber-400`}>
-        {isProcessing ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} strokeWidth={2.5} />}
+        onClick={() => onDownload(report.id)}
+        disabled={report.status === 'Archived' || isProcessing}
+        className={`theme-admin-control flex items-center justify-center gap-3 transition-all shadow-xl
+          ${report.status === 'Archived' 
+            ? 'bg-[var(--app-surface-elevated)] text-[var(--app-body)] cursor-not-allowed border-[var(--app-border)]' 
+            : 'bg-[var(--app-accent-strong)] text-[var(--app-primary-fg)] hover:opacity-90 active:scale-95 border-transparent'}`}
+      >
+        {isProcessing ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
         Get {report.type}
       </button>
     </div>
@@ -97,7 +95,9 @@ const DocumentCard: React.FC<{
 /** --- MAIN COMPONENT: OFFICE ARTIFACTS HUB --- **/
 
 const ArtifactsVault: React.FC = () => {
-  const { theme, user } = useAuth();
+  const { user } = useAuth();
+  const [isProcessing, setIsProcessing] = useState<string | null>(null);
+  const [reports, setReports] = useState<ReportItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [reports, setReports] = useState<ReportItem[]>([]);
   const [selectedReport, setSelectedReport] = useState<ReportItem | null>(null);
@@ -165,65 +165,65 @@ const ArtifactsVault: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col space-y-12 animate-in fade-in duration-700">
       
-      <header className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 text-left px-2 sm:px-0">
-        <div className="space-y-3">
-          <h2 className={`text-5xl sm:text-6xl font-black uppercase italic tracking-tighter leading-none
-            ${theme === 'dark' ? 'text-white' : 'text-zinc-950'}`}>
-            Archive <span className="text-amber-500">Vault.</span>
+      <header className="flex shrink-0 flex-col items-start justify-between gap-5 text-left lg:flex-row lg:items-end">
+        <div className="space-y-2">
+          <h2 className={`text-3xl sm:text-4xl font-black uppercase italic tracking-tighter leading-none text-[var(--app-heading)]`}>
+            Project <span className="text-[var(--app-accent-strong)]">Reports.</span>
           </h2>
-          <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.4em] sm:tracking-[0.5em] text-zinc-500 italic">
-            Official Project Ledger & Statutory Reports
+          <p className="theme-admin-label text-[var(--app-heading)]">
+            Official Documents & Cost Records
           </p>
         </div>
-        <button className="px-10 py-5 sm:py-6 bg-amber-500 text-black font-black uppercase text-[10px] sm:text-xs tracking-widest rounded-3xl shadow-2xl shadow-amber-500/20 hover:bg-amber-400 active:scale-95 transition-all flex items-center gap-4 italic border-2 border-amber-300">
-          <FileCheck size={20} strokeWidth={2.5} /> Compile Global Audit
+        <button className="theme-admin-control flex items-center gap-3 rounded-sm bg-[var(--app-accent-strong)] hover:opacity-90 text-[var(--app-primary-fg)] border-none active:scale-95 transition-all">
+          <FileCheck size={18} className="stroke-[3px]" /> Prepare Final Report
         </button>
       </header>
 
-      {reports.length > 0 ? (
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 pb-20">
-          {reports.map((report) => (
+      {loading ? (
+        <div className="py-16 text-center opacity-30">
+          <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-[var(--app-icon)]" />
+          <p className="theme-admin-label text-[var(--app-meta)]">Accessing File Cabinet...</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+          {reports.length > 0 ? reports.map((report) => (
             <DocumentCard 
               key={report.id} 
               report={report} 
-              onView={(r) => setSelectedReport(r)}
-              isProcessing={false}
-              theme={theme} 
+              onDownload={handleDownload}
+              isProcessing={isProcessing === report.id}
             />
-          ))}
-        </div>
-      ) : (
-        <div className={`p-20 sm:p-32 rounded-[4rem] border-2 border-dashed flex flex-col items-center justify-center gap-10 opacity-40 transition-colors
-          ${theme === 'dark' ? 'border-zinc-800 bg-zinc-950/40' : 'border-zinc-300 bg-zinc-50'}`}>
-          <div className={`p-8 rounded-full border-2 ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-200'}`}>
-            <Database size={80} className={theme === 'dark' ? 'text-zinc-600' : 'text-zinc-400'} strokeWidth={1.5} />
-          </div>
-          <div className="text-center space-y-4">
-            <p className={`text-xl font-black uppercase tracking-[0.4em] italic ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>Vault Storage Empty</p>
-            <p className={`text-[10px] font-bold uppercase tracking-widest max-w-xs mx-auto ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-500'}`}>
-              Measurement nodes must be secured before documents can be generated.
-            </p>
-          </div>
+          )) : (
+            <div className={`col-span-full flex flex-col items-center justify-center gap-5 rounded-[2rem] border border-dashed p-12 text-center opacity-40 theme-panel shadow-none`}>
+              <Database size={48} className="text-[var(--app-meta)]" />
+              <div>
+                <p className="theme-admin-subheading text-[var(--app-heading)]">
+                  No Documents Found
+                </p>
+                <p className="theme-admin-meta mt-2 text-[var(--app-meta)]">
+                  Start a project measurement to generate reports.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
-      <footer className={`flex flex-col sm:flex-row justify-between items-center gap-8 border-t-2 pt-10 pb-10
-        ${theme === 'dark' ? 'border-zinc-800/40 opacity-40' : 'border-zinc-200 opacity-60'}`}>
-        <div className="flex items-center gap-5">
-          <ShieldCheck size={28} className="text-emerald-500" strokeWidth={2.5} />
-          <div className="text-left">
-            <p className={`text-[11px] font-black uppercase tracking-widest leading-none ${theme === 'dark' ? 'text-white' : 'text-zinc-800'}`}>Immutable Office Records</p>
-            <p className={`text-[9px] font-mono mt-1.5 uppercase ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-500'}`}>NODE_v4.5 • ISO_19650</p>
-          </div>
+      <footer className="flex flex-col gap-4 border-t border-[var(--app-divider)] pt-5 opacity-60 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <ShieldCheck size={16} className="text-[var(--app-success)]" />
+          <p className="theme-admin-label text-[var(--app-meta)]">
+            Secure Office Records System
+          </p>
         </div>
         <div className="flex gap-10">
           <div className="flex items-center gap-2">
-            <Lock size={14} className={theme === 'dark' ? 'text-zinc-600' : 'text-zinc-400'} />
-            <span className={`text-[9px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-500'}`}>Encrypted Vault</span>
+            <Lock size={12} className="text-[var(--app-icon)]" />
+            <span className="theme-admin-meta text-[0.72rem] uppercase text-[var(--app-meta)]">Encrypted</span>
           </div>
           <div className="flex items-center gap-2">
-            <History size={14} className="text-amber-500" />
-            <span className={`text-[9px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-500'}`}>Auto-Revision Active</span>
+            <History size={12} className="text-[var(--app-accent-strong)]" />
+            <span className="theme-admin-meta text-[0.72rem] uppercase text-[var(--app-meta)]">History Active</span>
           </div>
         </div>
       </footer>

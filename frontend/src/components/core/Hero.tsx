@@ -22,9 +22,9 @@ const Hero = ({ onGetStarted }: { onGetStarted: () => void }) => {
       </div>
 
       <div className="relative z-10 mx-auto max-w-7xl px-6 text-center">
-        <div className="theme-surface-accent theme-public-chip inline-flex items-center gap-3 border mb-8 sm:mb-12 shadow-inner animate-in">
-          <EyebrowIcon size={14} className="text-amber-500" />
-          <span className="text-amber-600 dark:text-amber-400 leading-none">
+            <div className="theme-surface-accent theme-public-chip inline-flex items-center gap-3 mb-8 sm:mb-12 shadow-inner animate-in">
+          <EyebrowIcon size={14} className="theme-accent" />
+          <span className="theme-accent leading-none">
             {heroEyebrow.label}
           </span>
         </div>
@@ -32,9 +32,9 @@ const Hero = ({ onGetStarted }: { onGetStarted: () => void }) => {
         <h1 className="mb-7 sm:mb-10">
           <span className="theme-hero-gradient block min-h-[1.25em] text-[2.1rem] font-black leading-[0.98] tracking-[-0.05em] text-transparent bg-clip-text transition-all duration-1000 sm:text-[3rem] lg:text-[3.8rem]">
             {typewriterText}
-            <span className="animate-pulse text-amber-500">_</span>
+            <span className="animate-pulse theme-accent">_</span>
           </span>
-          <span className="block mt-3 text-[2rem] font-black italic leading-none tracking-[-0.05em] text-amber-500 drop-shadow-2xl sm:text-[2.8rem] lg:text-[3.4rem]">
+          <span className="block mt-3 text-[2rem] font-black italic leading-none tracking-[-0.05em] theme-accent drop-shadow-2xl sm:text-[2.8rem] lg:text-[3.4rem]">
             Site Mastery.
           </span>
         </h1>

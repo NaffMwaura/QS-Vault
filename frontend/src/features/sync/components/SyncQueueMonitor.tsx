@@ -2,54 +2,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  RefreshCw, 
-  Cloud, 
-  CloudOff, 
-  Database, 
-  Zap, 
-  FileUp, 
-  FileText, 
-  FileSpreadsheet, 
-  Loader2, 
-  X, 
-  Plus,
-  ShieldCheck,
-  Activity
+  RefreshCw, Cloud, CloudOff, Database, Zap, FileUp, FileText, 
+  FileSpreadsheet, FileCode, Loader2, X, Plus, ShieldCheck
 } from 'lucide-react';
 
-/* ======================================================
-    OFFICE MODULE RESOLUTION (PRO-DEV GUARD)
-   ====================================================== */
-
-let useAuth: any = () => ({ theme: 'dark', isOnline: true });
-let db: any = null;
-let syncEngine: any = null;
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-
-    const dbMod = await import("../../../lib/database/database");
-    if (dbMod.db) db = dbMod.db; 
-    if (dbMod.syncEngine) syncEngine = dbMod.syncEngine;
-  } catch (e) {
-    console.warn("Sync Hub: Establishing local node connection...");
-  }
-};
-
-// Initial trigger
-resolveModules();
-
-/** --- SUB-COMPONENT: ACTUAL MONITOR UI --- **/
-// We separate this to ensure Hooks are called in a stable order after resolution
-const SyncMonitorContent: React.FC<{ theme: string; isOnline: boolean }> = ({ theme, isOnline }) => {
+const SyncQueueMonitor: React.FC = () => {
+  const { isOnline } = useAuth();
   const [pendingCount, setPendingCount] = useState(0);
   const [isSyncing, setIsSyncing] = useState(false);
   const [localBuffer, setLocalBuffer] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  /** * 1. LIVE OUTBOX MONITORING */
   useEffect(() => {
     const checkOutbox = async () => {
       try {
@@ -67,27 +30,18 @@ const SyncMonitorContent: React.FC<{ theme: string; isOnline: boolean }> = ({ th
     return () => clearInterval(interval);
   }, []);
 
-  /** * 2. AUTONOMOUS SYNC HANDSHAKE 
-   * Triggers automatically when online and data is detected in the outbox.
-   */
-  useEffect(() => {
-    const triggerAutoSync = async () => {
-      if (isOnline && pendingCount > 0 && !isSyncing && syncEngine) {
-        setIsSyncing(true);
-        try {
-          // Autonomous Vault Push logic
-          await syncEngine.processQueue();
-          setLocalBuffer([]); 
-        } catch (err) {
-          console.error("Auto Sync Handshake Failed:", err);
-        } finally {
-          setIsSyncing(false);
-        }
-      }
-    };
-
-    triggerAutoSync();
-  }, [isOnline, pendingCount, isSyncing]);
+  const handleManualSync = async () => {
+    if (!isOnline || isSyncing || !syncEngine) return;
+    setIsSyncing(true);
+    try {
+      await syncEngine.processQueue();
+      setLocalBuffer([]); 
+    } catch (err) {
+      console.error("Manual Handshake Failed:", err);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   const onFileIntake = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -102,22 +56,16 @@ const SyncMonitorContent: React.FC<{ theme: string; isOnline: boolean }> = ({ th
   };
 
   return (
-    <div className={`p-10 rounded-[4rem] border backdrop-blur-3xl transition-all duration-500 shadow-2xl
-      ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800 shadow-black' : 'bg-white border-zinc-200 shadow-zinc-200/50'}`}>
+    <div className="theme-panel p-8 rounded-[3rem] transition-all duration-500 shadow-2xl backdrop-blur-3xl">
       
-      {/* 1. SYNC STATUS HUD */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-10 mb-12 text-left">
-        <div className="flex items-center gap-8 text-left">
-          <div className={`p-6 rounded-4xl transition-all duration-700 shadow-inner relative
-            ${theme === 'dark' ? 'bg-zinc-950 border border-zinc-800' : 'bg-zinc-50 border border-zinc-100'}
-            ${isSyncing ? 'ring-4 ring-amber-500/20' : isOnline && pendingCount === 0 ? 'ring-4 ring-emerald-500/10' : ''}`}>
-            
-            {isSyncing ? (
-              <RefreshCw className="text-amber-500 animate-spin" size={32} />
-            ) : isOnline ? (
-              <Cloud className={pendingCount > 0 ? 'text-amber-500 animate-pulse' : 'text-emerald-500'} size={32} />
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-10 text-left">
+        <div className="flex items-center gap-6">
+          <div className={`theme-card p-5 rounded-[1.8rem] transition-all duration-500 shadow-inner
+            ${pendingCount > 0 && isOnline ? 'theme-border ring-2 ring-amber-500/20' : ''}`}>
+            {isOnline ? (
+              <Cloud className={`${pendingCount > 0 ? 'theme-total-value animate-pulse' : 'text-emerald-500'}`} size={28} />
             ) : (
-              <CloudOff className="text-zinc-600" size={32} />
+              <CloudOff className="theme-icon" size={28} />
             )}
 
             {/* Micro status heartbeat */}
@@ -125,10 +73,9 @@ const SyncMonitorContent: React.FC<{ theme: string; isOnline: boolean }> = ({ th
                ${isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
           </div>
           
-          <div className="space-y-2 text-left">
-            <h4 className={`text-3xl font-black uppercase italic tracking-tighter leading-none
-              ${theme === 'dark' ? 'text-white' : 'text-zinc-950'}`}>
-              Vault Status
+          <div className="space-y-1">
+            <h4 className="theme-heading text-xl font-black uppercase italic tracking-tighter leading-none">
+              Cloud Sync Status
             </h4>
             <div className="flex items-center gap-3">
               <span className={`text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full border transition-colors
@@ -143,10 +90,14 @@ const SyncMonitorContent: React.FC<{ theme: string; isOnline: boolean }> = ({ th
           </div>
         </div>
 
-        <div className="flex items-center gap-12 text-right">
-          <div className="text-right space-y-1">
-            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 leading-none">
-              Waiting Logs
+        <div className="flex items-center gap-10">
+          <div className="text-right">
+            <p className="theme-meta text-[10px] font-black uppercase tracking-[0.3em] mb-2 leading-none">
+              Pending Records
+            </p>
+            <p className={`text-4xl font-black italic tracking-tighter leading-none
+              ${pendingCount > 0 ? 'theme-total-value' : 'theme-meta opacity-50'}`}>
+              {pendingCount.toString().padStart(2, '0')}
             </p>
             <div className="flex items-baseline gap-3 justify-end">
                <p className={`text-6xl font-black italic tracking-tighter leading-none transition-colors
@@ -157,51 +108,59 @@ const SyncMonitorContent: React.FC<{ theme: string; isOnline: boolean }> = ({ th
             </div>
           </div>
 
-          <div className="hidden sm:flex flex-col items-center gap-2 opacity-40">
-             <Activity size={24} className={isSyncing ? "text-amber-500" : "text-zinc-600"} />
-             <p className="text-[8px] font-black uppercase tracking-widest text-zinc-500">Live Stream</p>
-          </div>
+          <button 
+            onClick={handleManualSync}
+            disabled={!isOnline || isSyncing}
+            className={`p-5 rounded-2xl transition-all active:scale-95 shadow-2xl
+              ${!isOnline || isSyncing 
+                ? 'theme-button-secondary cursor-not-allowed opacity-50' 
+                : 'theme-button-primary'}`}
+            title="Force Office Sync"
+          >
+            {isSyncing ? <Loader2 size={24} className="animate-spin stroke-[3px]" /> : <RefreshCw size={24} className="stroke-[3px]" />}
+          </button>
         </div>
       </div>
 
-      {/* 2. SITE EVIDENCE INTAKE */}
-      <div className="space-y-6">
-        <label className={`text-[12px] font-black uppercase ml-4 tracking-[0.3em] italic ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-950'}`}>Site Evidence Handshake</label>
+      <div className="space-y-4">
         <div 
           onClick={() => fileInputRef.current?.click()}
-          className={`p-8 rounded-[3.5rem] border-2 border-dashed transition-all cursor-pointer group flex items-center justify-between
-            ${theme === 'dark' ? 'border-zinc-800 hover:border-amber-500/40 bg-zinc-950/40 shadow-inner' : 'border-zinc-200 hover:border-amber-500/40 bg-zinc-50'}`}
+          className="theme-card border-2 border-dashed p-6 rounded-[2.5rem] transition-all cursor-pointer group flex items-center justify-between hover:theme-border shadow-inner"
         >
-          <div className="flex items-center gap-6 text-left">
-            <div className={`p-4 rounded-2xl transition-all duration-500 ${theme === 'dark' ? 'bg-zinc-900 text-zinc-600 group-hover:bg-amber-500 group-hover:text-black shadow-lg' : 'bg-white text-zinc-400 group-hover:bg-amber-500 group-hover:text-black border border-zinc-100 shadow-sm'}`}>
-              <FileUp size={28} />
+          <div className="flex items-center gap-4 text-left">
+            <div className="theme-panel p-3 rounded-xl transition-colors group-hover:theme-accent">
+              <FileUp size={22} />
             </div>
             <div>
-              <p className={`text-[12px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-950'}`}>Vault Drawing or Report</p>
-              <p className="text-[10px] font-bold text-zinc-500 uppercase mt-1 leading-none italic">Secure multi-file archival protocol</p>
+              <p className="theme-heading text-[11px] font-black uppercase tracking-widest">Upload Site Evidence</p>
+              <p className="theme-meta text-[9px] font-bold uppercase mt-1 leading-none italic">Photos, PDF Reports, or Excel Specs</p>
             </div>
           </div>
-          <input type="file" ref={fileInputRef} onChange={onFileIntake} className="hidden" multiple />
-          <div className="w-12 h-12 rounded-xl border border-zinc-800 flex items-center justify-center group-hover:bg-amber-500/10 group-hover:border-amber-500/30 transition-all mr-2">
-            <Plus size={24} className="text-zinc-700 group-hover:text-amber-500 transition-colors" />
-          </div>
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={onFileIntake} 
+            className="hidden" 
+            multiple 
+          />
+          <Plus size={20} className="theme-icon group-hover:theme-accent transition-colors" />
         </div>
 
         {localBuffer.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-500">
             {localBuffer.map(file => (
-              <div key={file.id} className={`flex items-center justify-between p-6 rounded-3xl border ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800 shadow-black' : 'bg-white border-zinc-100 shadow-sm'}`}>
-                <div className="flex items-center gap-5 overflow-hidden text-left">
-                  <div className="text-amber-500 shrink-0">
-                    {file.type === 'PDF' ? <FileText size={20}/> : <FileSpreadsheet size={20}/>}
+              <div key={file.id} className="theme-card flex items-center justify-between p-4 rounded-2xl shadow-sm">
+                <div className="flex items-center gap-4 overflow-hidden text-left">
+                  <div className="theme-accent shrink-0">
+                    {file.type === 'PDF' ? <FileText size={16}/> : file.type === 'XLSX' || file.type === 'XLS' ? <FileSpreadsheet size={16}/> : <FileCode size={16}/>}
                   </div>
                   <div className="overflow-hidden">
-                    <p className={`text-[11px] font-black truncate uppercase leading-none ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-950'}`}>{file.name}</p>
-                    <p className="text-[9px] font-bold text-zinc-600 mt-2 uppercase tracking-tighter italic">{file.size} • Pending Office Handshake</p>
+                    <p className="theme-heading text-[10px] font-bold truncate uppercase leading-none">{file.name}</p>
+                    <p className="theme-meta text-[8px] font-black mt-1.5 uppercase tracking-tighter">{file.size} • QUEUED FOR OFFICE</p>
                   </div>
                 </div>
-                <button onClick={() => setLocalBuffer(prev => prev.filter(f => f.id !== file.id))} className="p-3 text-zinc-700 hover:text-rose-500 transition-all active:scale-90">
-                  <X size={18}/>
+                <button onClick={() => setLocalBuffer(prev => prev.filter(f => f.id !== file.id))} className="theme-icon p-2 hover:text-rose-500 transition-colors">
+                  <X size={14}/>
                 </button>
               </div>
             ))}
@@ -209,24 +168,22 @@ const SyncMonitorContent: React.FC<{ theme: string; isOnline: boolean }> = ({ th
         )}
       </div>
 
-      {/* 3. SECURITY FOOTER */}
-      <div className={`mt-10 pt-8 border-t flex flex-wrap gap-8 items-center justify-between opacity-30
-        ${theme === 'dark' ? 'border-zinc-800/60' : 'border-zinc-200'}`}>
-        <div className="flex items-center gap-4 text-left">
-          <ShieldCheck size={20} className="text-emerald-500" />
-          <p className={`text-[10px] font-black uppercase tracking-widest leading-none ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-950'}`}>
-            {isOnline ? 'Active Infrastructure Bridge' : 'Offline Vault Protection'}
+      <div className="theme-border/60 mt-8 pt-8 border-t flex flex-wrap gap-6 items-center justify-between opacity-40">
+        <div className="flex items-center gap-3">
+          <ShieldCheck size={14} className="text-emerald-500" />
+          <p className="theme-meta text-[9px] font-black uppercase tracking-widest leading-none">
+            {isOnline ? 'Active Cloud Handshake' : 'Local Vault Protection'}
           </p>
         </div>
         
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-3">
-            <Database size={14} className="text-zinc-600" />
-            <span className="text-[10px] font-mono font-black text-zinc-600 uppercase tracking-widest leading-none mt-1">OFFLINE_LEDGER: OK</span>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Database size={12} className="theme-icon" />
+            <span className="theme-meta text-[8px] font-bold uppercase tracking-widest">Encrypted Database</span>
           </div>
           <div className="flex items-center gap-2">
-            <Zap size={14} className="text-amber-500" />
-            <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest leading-none mt-1 italic">QS_OS_v2.5.4</span>
+            <Zap size={12} className="theme-accent" />
+            <span className="theme-meta text-[8px] font-bold uppercase tracking-widest italic">QS OS V2.0</span>
           </div>
         </div>
       </div>
