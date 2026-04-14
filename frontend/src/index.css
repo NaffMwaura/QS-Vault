@@ -1,435 +1,260 @@
 @import "tailwindcss";
 
+/* 1. Light Theme ("Vellum") */
 :root {
-  --app-bg: #f4f4f5;
-  --app-fg: #18181b;
-  --app-bg-soft: #fafafa;
-  --app-surface-card: #ffffff;
-  --app-surface-card-soft: #f9fafb;
-  --app-surface-inset: #fafafa;
-  --app-surface-overlay: rgba(255, 255, 255, 0.8);
-  --app-border: #e4e4e7;
-  --app-border-soft: rgba(228, 228, 231, 0.7);
-  --app-divider: rgba(228, 228, 231, 0.8);
-  --app-text-muted: #71717a;
-  --app-text-subtle: #52525b;
-  --app-nav-bg: rgba(255, 255, 255, 0.9);
-  --app-nav-border: rgba(228, 228, 231, 0.55);
-  --app-overlay: rgba(255, 255, 255, 0.95);
-  --app-glow-amber: rgba(245, 158, 11, 0.05);
-  --app-glow-neutral: rgba(113, 113, 122, 0.08);
-  --app-accent-surface: rgba(245, 158, 11, 0.05);
-  --app-accent-border: rgba(245, 158, 11, 0.1);
-  --app-hero-gradient: linear-gradient(to bottom, #18181b, #71717a);
-  --app-shadow-card: 0 20px 45px rgba(15, 23, 42, 0.08);
-  --app-shadow-card-soft: 0 8px 24px rgba(15, 23, 42, 0.06);
-  --app-shadow-nav: 0 18px 40px rgba(15, 23, 42, 0.08);
-  --app-avatar-neutral-bg: #27272a;
-  --app-avatar-neutral-border: #3f3f46;
-  --app-avatar-neutral-fg: #f59e0b;
-  --app-button-muted-bg: #e4e4e7;
-  --app-button-muted-fg: #52525b;
-  --app-button-muted-hover: #d4d4d8;
-  --app-grid-opacity: 0.03;
+  --app-bg: #E0E1DD;
+  --app-surface: #FFFFFF;
+  --app-surface-elevated: rgba(255, 255, 255, 0.95);
+  --app-border: #84A59D;
+  --app-heading: #283618;
+  --app-body: rgba(40, 54, 24, 0.9);
+  --app-meta: #778DA9;
+  --app-icon: #778DA9;
+  --app-accent: #84A59D;
+  --app-accent-strong: #F26419;
+  --app-link: #606C38;
+  --app-primary-bg: #F26419;
+  --app-primary-fg: #FFFFFF;
+  --app-secondary-bg: transparent;
+  --app-secondary-fg: #606C38;
+  --app-secondary-border: #606C38;
+
+  /* QS Specifics */
+  --app-chart-grid: #778DA9;
+  --app-total-value: #F26419;
+  
+  /* Status Colors */
+  --app-success: #059669;
+  --app-success-bg: rgba(16, 185, 129, 0.1);
+  --app-error: #e11d48;
+  --app-error-bg: rgba(244, 63, 94, 0.1);
+  --app-warning: #d97706;
+  --app-warning-bg: rgba(245, 158, 11, 0.1);
+  
+  /* Additional layout variables */
+  --app-grid-opacity: 0.05;
+  --app-shadow-card: 0 10px 30px rgba(40, 54, 24, 0.05);
 }
 
+/* 2. Dark Theme ("Groundwork") */
 .dark {
-  --app-bg: #09090b;
-  --app-fg: #ffffff;
-  --app-bg-soft: rgba(24, 24, 27, 0.5);
-  --app-surface-card: rgba(24, 24, 27, 0.4);
-  --app-surface-card-soft: rgba(24, 24, 27, 0.6);
-  --app-surface-inset: #09090b;
-  --app-surface-overlay: rgba(9, 9, 11, 0.8);
-  --app-border: #27272a;
-  --app-border-soft: rgba(39, 39, 42, 0.5);
-  --app-divider: rgba(39, 39, 42, 0.75);
-  --app-text-muted: #a1a1aa;
-  --app-text-subtle: #d4d4d8;
-  --app-nav-bg: rgba(9, 9, 11, 0.9);
-  --app-nav-border: rgba(39, 39, 42, 0.5);
-  --app-overlay: rgba(9, 9, 11, 0.95);
-  --app-glow-amber: rgba(245, 158, 11, 0.1);
-  --app-glow-neutral: rgba(113, 113, 122, 0.1);
-  --app-accent-surface: rgba(245, 158, 11, 0.1);
-  --app-accent-border: rgba(245, 158, 11, 0.2);
-  --app-hero-gradient: linear-gradient(to bottom, #ffffff, #52525b);
-  --app-shadow-card: 0 24px 60px rgba(0, 0, 0, 0.45);
-  --app-shadow-card-soft: 0 10px 32px rgba(0, 0, 0, 0.22);
-  --app-shadow-nav: 0 24px 60px rgba(0, 0, 0, 0.35);
-  --app-button-muted-bg: #18181b;
-  --app-button-muted-fg: #a1a1aa;
-  --app-button-muted-hover: #27272a;
-  --app-grid-opacity: 0.07;
+  --app-bg: #283618;
+  --app-surface: #35442A;
+  --app-surface-elevated: rgba(53, 68, 42, 0.95);
+  --app-border: #606C38;
+  --app-heading: #E0E1DD;
+  --app-body: #84A59D;
+  --app-meta: #778DA9;
+  --app-icon: #E0E1DD;
+  --app-accent: #F26419;
+  --app-accent-strong: #F26419;
+  --app-link: #F26419;
+  --app-primary-bg: #F26419;
+  --app-primary-fg: #283618;
+  --app-secondary-bg: transparent;
+  --app-secondary-fg: #E0E1DD;
+  --app-secondary-border: #E0E1DD;
+
+  /* QS Specifics */
+  --app-chart-grid: #778DA9;
+  --app-total-value: #F26419;
+
+  /* Status Colors */
+  --app-success: #34d399;
+  --app-success-bg: rgba(52, 211, 153, 0.1);
+  --app-error: #fb7185;
+  --app-error-bg: rgba(251, 113, 133, 0.1);
+  --app-warning: #fbbf24;
+  --app-warning-bg: rgba(251, 191, 36, 0.1);
+
+  --app-grid-opacity: 0.1;
+  --app-shadow-card: 0 16px 40px rgba(0, 0, 0, 0.25);
 }
 
-html,
-body,
-#root {
+html, body, #root {
   min-height: 100%;
 }
 
 body {
   background-color: var(--app-bg);
-  color: var(--app-fg);
+  color: var(--app-body);
 }
 
 @layer utilities {
   .theme-page {
     background-color: var(--app-bg);
-    color: var(--app-fg);
+    color: var(--app-body);
   }
 
-  .theme-surface-muted {
-    background-color: var(--app-bg-soft);
-  }
-
-  .theme-surface-card {
-    background-color: var(--app-surface-card);
-    border-color: var(--app-border);
+  .theme-card {
+    background-color: var(--app-surface);
+    border: 2px solid var(--app-border);
     box-shadow: var(--app-shadow-card);
+    border-radius: 0.5rem;
   }
 
-  .theme-surface-card-soft {
-    background-color: var(--app-surface-card-soft);
-    border-color: var(--app-border);
-    box-shadow: var(--app-shadow-card-soft);
-  }
-
-  .theme-surface-overlay {
-    background-color: var(--app-surface-overlay);
-    border-color: var(--app-border-soft);
-  }
-
-  .theme-surface-inset {
-    background-color: var(--app-surface-inset);
-    border-color: var(--app-border);
-  }
-
-  .theme-surface-accent {
-    background-color: var(--app-accent-surface);
-    border-color: var(--app-accent-border);
-  }
-
-  .theme-nav-solid {
-    background-color: var(--app-nav-bg);
-    border-color: var(--app-nav-border);
-    box-shadow: var(--app-shadow-nav);
-  }
-
-  .theme-overlay {
-    background-color: var(--app-overlay);
-  }
-
-  .theme-title {
-    color: var(--app-fg);
-  }
-
-  .theme-muted {
-    color: var(--app-text-muted);
-  }
-
-  .theme-subtle {
-    color: var(--app-text-subtle);
-  }
-
-  .theme-divider {
-    border-color: var(--app-divider);
+  .theme-panel {
+    background-color: var(--app-surface-elevated);
+    border: 2px solid var(--app-border);
+    box-shadow: var(--app-shadow-card);
+    border-radius: 0.5rem;
+    backdrop-filter: blur(16px);
   }
 
   .theme-hero-gradient {
-    background-image: var(--app-hero-gradient);
+    background-image: linear-gradient(to right, var(--app-heading), var(--app-meta));
   }
 
-  .theme-glow-amber {
-    background-color: var(--app-glow-amber);
-  }
-
-  .theme-glow-neutral {
-    background-color: var(--app-glow-neutral);
-  }
-
-  .theme-avatar-neutral {
-    background-color: var(--app-avatar-neutral-bg);
-    border-color: var(--app-avatar-neutral-border);
-    color: var(--app-avatar-neutral-fg);
-  }
-
-  .theme-button-muted {
-    background-color: var(--app-button-muted-bg);
-    color: var(--app-button-muted-fg);
-  }
-
-  .theme-button-muted:hover {
-    background-color: var(--app-button-muted-hover);
-  }
-
-  .theme-input {
-    background-color: var(--app-surface-inset);
+  .theme-border {
     border-color: var(--app-border);
-    color: var(--app-fg);
   }
 
-  .theme-grid-overlay {
-    opacity: var(--app-grid-opacity);
+  .theme-heading {
+    color: var(--app-heading);
+    font-weight: 900;
   }
 
-  .theme-admin-panel {
-    background-color: color-mix(in srgb, var(--app-surface-overlay) 90%, transparent);
-    border-color: color-mix(in srgb, var(--app-border-soft) 85%, transparent);
-    box-shadow: var(--app-shadow-card);
-    border-radius: 2rem;
-    backdrop-filter: blur(24px);
+  .theme-body {
+    color: var(--app-body);
   }
 
+  .theme-meta {
+    color: var(--app-meta);
+  }
+
+  .theme-icon {
+    color: var(--app-icon);
+  }
+
+  .theme-link {
+    color: var(--app-link);
+    text-decoration: underline;
+    transition: opacity 0.2s;
+  }
+  
+  .theme-link:hover {
+    opacity: 0.8;
+  }
+
+  .theme-button-primary {
+    background-color: var(--app-primary-bg);
+    color: var(--app-primary-fg);
+    border: none;
+    font-weight: 800;
+    transition: opacity 0.2s;
+  }
+
+  .theme-button-primary:hover {
+    opacity: 0.9;
+  }
+
+  .theme-button-secondary {
+    background-color: var(--app-secondary-bg);
+    color: var(--app-secondary-fg);
+    border: 2px solid var(--app-secondary-border);
+    font-weight: 800;
+    transition: opacity 0.2s;
+  }
+  
+  .theme-button-secondary:hover {
+    background-color: color-mix(in srgb, var(--app-secondary-fg) 10%, transparent);
+  }
+
+  .theme-chart-grid {
+    border-color: var(--app-chart-grid);
+    stroke: var(--app-chart-grid);
+  }
+
+  .theme-total-value {
+    color: var(--app-total-value);
+    font-weight: 900;
+  }
+
+  .theme-accent {
+    color: var(--app-accent-strong);
+  }
+
+  .theme-accent-surface {
+    background-color: color-mix(in srgb, var(--app-accent-strong) 20%, transparent);
+  }
+
+  .theme-status-online, .theme-status-success {
+    color: var(--app-success);
+    background-color: var(--app-success-bg);
+    border-color: color-mix(in srgb, var(--app-success) 20%, transparent);
+  }
+
+  .theme-status-offline, .theme-status-error {
+    color: var(--app-error);
+    background-color: var(--app-error-bg);
+    border-color: color-mix(in srgb, var(--app-error) 20%, transparent);
+  }
+  
+  .theme-status-warning {
+    color: var(--app-warning);
+    background-color: var(--app-warning-bg);
+    border-color: color-mix(in srgb, var(--app-warning) 20%, transparent);
+  }
+
+  /* Polyfills for existing styles to prevent complete breakage during refactor */
   .theme-admin-card {
-    background-color: color-mix(in srgb, var(--app-surface-card) 96%, transparent);
-    border-color: color-mix(in srgb, var(--app-border) 92%, transparent);
-    box-shadow: var(--app-shadow-card-soft);
-    border-radius: 1.5rem;
-    border-width: 1px;
+    background-color: var(--app-surface);
+    border: 2px solid var(--app-border);
+    box-shadow: var(--app-shadow-card);
+    border-radius: 0.5rem;
     padding: 1.25rem;
   }
 
-  .theme-admin-label {
-    color: var(--app-text-subtle);
-    font-size: 0.72rem;
-    font-weight: 900;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    line-height: 1.1;
-  }
-
-  .theme-admin-eyebrow {
-    color: rgb(217 119 6);
-    font-size: 0.72rem;
-    font-weight: 900;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    line-height: 1.1;
-  }
-
-  .dark .theme-admin-eyebrow {
-    color: rgb(251 191 36);
-  }
-
-  .theme-admin-empty {
-    background-color: color-mix(in srgb, var(--app-surface-card-soft) 88%, transparent);
-    border-color: color-mix(in srgb, var(--app-border) 88%, transparent);
-    border-style: dashed;
-    border-width: 1px;
-    border-radius: 1.5rem;
-    padding: 2rem 1.25rem;
-  }
-
-  .theme-admin-danger {
-    background-color: color-mix(in srgb, rgb(244 63 94 / 0.08) 100%, transparent);
-    border-color: color-mix(in srgb, rgb(244 63 94 / 0.18) 100%, transparent);
-    border-width: 1px;
-  }
-
-  .theme-admin-heading {
-    color: var(--app-fg);
-    font-size: clamp(1.65rem, 1.25rem + 1vw, 2.35rem);
-    font-weight: 900;
-    letter-spacing: -0.04em;
-    line-height: 1;
-  }
-
-  .theme-admin-subheading {
-    color: var(--app-fg);
-    font-size: 1.05rem;
-    font-weight: 800;
-    letter-spacing: -0.025em;
-    line-height: 1.2;
-  }
-
-  .theme-admin-body {
-    color: var(--app-text-subtle);
-    font-size: 0.95rem;
-    line-height: 1.65;
-  }
-
-  .theme-admin-meta {
-    color: var(--app-text-muted);
-    font-size: 0.8rem;
-    font-weight: 600;
-    line-height: 1.45;
-  }
-
-  .theme-admin-row-title {
-    color: var(--app-fg);
-    font-size: 0.92rem;
-    font-weight: 800;
-    line-height: 1.2;
-  }
-
-  .theme-admin-row-meta {
-    color: var(--app-text-subtle);
-    font-size: 0.78rem;
-    font-weight: 600;
-    line-height: 1.4;
-  }
-
-  .theme-admin-control {
-    min-height: 2.9rem;
-    border-radius: 1rem;
-    padding: 0.72rem 1rem;
-    font-size: 0.78rem;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    line-height: 1;
-  }
-
-  .theme-admin-control-compact {
-    min-height: 2.55rem;
-    border-radius: 0.9rem;
-    padding: 0.62rem 0.9rem;
-    font-size: 0.72rem;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    line-height: 1;
-  }
-
-  .theme-admin-icon-button {
-    height: 2.9rem;
-    width: 2.9rem;
-    border-radius: 1rem;
-  }
-
-  .theme-admin-icon-button-compact {
-    height: 2.55rem;
-    width: 2.55rem;
-    border-radius: 0.9rem;
-  }
-
-  .theme-admin-input {
-    min-height: 2.9rem;
-    border-radius: 1rem;
-    padding: 0.8rem 1rem;
-    font-size: 0.92rem;
-    font-weight: 500;
-    line-height: 1.3;
-  }
-
-  .theme-admin-select {
-    min-height: 2.75rem;
-    border-radius: 0.9rem;
-    padding: 0.7rem 0.9rem;
-    font-size: 0.72rem;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    line-height: 1.1;
-  }
-
-  .theme-admin-chip {
-    border-radius: 9999px;
-    padding: 0.4rem 0.75rem;
-    font-size: 0.68rem;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    line-height: 1;
-  }
-
-  .theme-public-section {
-    padding-top: clamp(4rem, 6vw, 6.5rem);
-    padding-bottom: clamp(4rem, 6vw, 6.5rem);
-  }
-
-  .theme-public-heading {
-    color: var(--app-fg);
-    font-size: clamp(2.3rem, 1.7rem + 2.7vw, 4.9rem);
-    font-weight: 900;
-    letter-spacing: -0.05em;
-    line-height: 0.98;
-  }
-
-  .theme-public-subheading {
-    color: var(--app-fg);
-    font-size: clamp(1.15rem, 1rem + 0.55vw, 1.65rem);
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1.15;
-  }
-
-  .theme-public-body {
-    color: var(--app-text-subtle);
-    font-size: clamp(1rem, 0.94rem + 0.2vw, 1.18rem);
-    line-height: 1.7;
-  }
-
-  .theme-public-meta {
-    color: var(--app-text-muted);
-    font-size: 0.83rem;
-    font-weight: 650;
-    line-height: 1.5;
-  }
-
-  .theme-public-label {
-    color: var(--app-text-subtle);
-    font-size: 0.72rem;
-    font-weight: 900;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    line-height: 1.1;
-  }
-
-  .theme-public-chip {
-    border-radius: 9999px;
-    padding: 0.52rem 0.9rem;
-    font-size: 0.72rem;
-    font-weight: 850;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    line-height: 1;
-  }
-
-  .theme-public-button {
-    min-height: 3rem;
-    border-radius: 1rem;
-    padding: 0.8rem 1.15rem;
-    font-size: 0.76rem;
-    font-weight: 850;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    line-height: 1;
-  }
-
-  .theme-public-button-lg {
-    min-height: 3.5rem;
-    border-radius: 1.2rem;
-    padding: 0.95rem 1.4rem;
-    font-size: 0.8rem;
-    font-weight: 850;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    line-height: 1;
-  }
-
-  .theme-public-icon-button {
-    height: 3rem;
-    width: 3rem;
-    border-radius: 1rem;
-  }
-
-  .theme-public-input {
-    min-height: 3.15rem;
-    border-radius: 1rem;
-    padding: 0.9rem 1rem;
-    font-size: 0.95rem;
-    font-weight: 600;
-    line-height: 1.3;
-  }
-
-  .theme-public-panel {
-    background-color: color-mix(in srgb, var(--app-surface-overlay) 92%, transparent);
-    border-color: color-mix(in srgb, var(--app-border-soft) 88%, transparent);
+  .theme-admin-panel, .theme-public-panel {
+    background-color: var(--app-surface-elevated);
+    border: 2px solid var(--app-border);
     box-shadow: var(--app-shadow-card);
-    border-radius: 2rem;
-    backdrop-filter: blur(28px);
+    border-radius: 0.5rem;
+    backdrop-filter: blur(24px);
+  }
+
+  .theme-admin-heading, .theme-public-heading {
+    color: var(--app-heading);
+    font-weight: 900;
+  }
+  
+  .theme-admin-subheading, .theme-public-subheading {
+    color: var(--app-heading);
+    font-weight: 800;
+  }
+
+  .theme-admin-body, .theme-public-body {
+    color: var(--app-body);
+  }
+
+  .theme-admin-meta, .theme-public-meta {
+    color: var(--app-meta);
+  }
+  
+  .theme-admin-label, .theme-public-label {
+    color: var(--app-meta);
+    font-weight: 900;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .theme-input, .theme-admin-input, .theme-public-input {
+    background-color: var(--app-surface);
+    border: 2px solid var(--app-border);
+    color: var(--app-body);
+    font-weight: 500;
+    border-radius: 0.5rem;
+  }
+
+  .theme-public-button, .theme-public-button-lg, .theme-admin-control, .theme-admin-control-compact {
+    background-color: var(--app-secondary-bg);
+    color: var(--app-secondary-fg);
+    border: 2px solid var(--app-secondary-border);
+    font-weight: 800;
+    border-radius: 0.5rem;
+  }
+
+  .theme-divider {
+    border-color: var(--app-border);
   }
 }
