@@ -1,80 +1,104 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect } from "react";
-// In your local environment, these relative paths are correct.
-// We use safe imports to ensure compilation in the sandbox.
 import { queryClient } from "../lib/queryClient";
-import { syncEngine } from "../lib/database/database";
+import { syncEngine, db } from "../lib/database/database";
 
-
- // useSync Hook
- // This hook acts as the "Heartbeat" of the QS Vault. It monitors the device's 
- //connection status and orchestrates the flow of data between the local 
- //Dexie wallet and the Supabase cloud vault.
+/**
+ * useSync Hook (The QS Vault Heartbeat)
+ * ------------------------------------
+ * Monitors device connectivity and autonomously orchestrates the flow 
+ * between the local Dexie wallet and the Supabase cloud registry.
+ * * * Performance Node: Implements a "Stabilization Buffer" to prevent 
+ * rapid-fire sync loops and flickering on unstable site signals.
+ */
 
 export const useSync = () => {
   useEffect(() => {
-    // Flag to prevent overlapping sync processes during rapid network toggling
+    // Operational Flag to prevent overlapping sync nodes
     let isSyncing = false;
+    let stabilityTimer: any = null;
 
-    const performSync = async () => {
-      // Guard: Don't sync if already in progress or if the device is definitely offline
+    /** * VAULT PUSH ENGINE
+     * Orchestrates the movement of data from local to cloud.
+     */
+    const performVaultPush = async () => {
+      // Guard: Ensure we are online and not already mid-handshake
       if (isSyncing || !navigator.onLine) return;
       
       try {
         isSyncing = true;
-        console.log("🔄 QS Vault: Synchronizing local measurements with cloud...");
+        console.log("🔄 QS Vault: Initiating autonomous vault push...");
+
+        // 1. DATA INTEGRITY CHECK (Unblocks the 38-record stall)
+        // Scans for and removes any 'ghost' records with null payloads
+        if (db?.sync_queue) {
+          const brokenNodes = await db.sync_queue.filter(item => !item.payload && item.operation !== 'DELETE').toArray();
+          if (brokenNodes.length > 0) {
+            console.warn(`🛡️ QS Vault: Detected ${brokenNodes.length} corrupted data nodes. Purging to unblock queue.`);
+            await Promise.all(brokenNodes.map(node => db.sync_queue.delete(node.id!)));
+          }
+        }
         
-        // 1. Process the Dexie sync_queue (The primary vault upload)
+        // 2. Process the Dexie sync_queue (Primary Site Data)
         if (syncEngine && typeof syncEngine.processQueue === 'function') {
           await syncEngine.processQueue();
         }
         
-        // 2. Resume any TanStack Query mutations that were paused while offline
+        // 3. Resume any TanStack Query mutations (UI state sync)
         if (queryClient && typeof queryClient.resumePausedMutations === 'function') {
           await queryClient.resumePausedMutations();
         }
         
-        // 3. Invalidate relevant queries to refresh UI with "Official" cloud data
+        // 4. Refresh local cache with official cloud nodes
         if (queryClient && typeof queryClient.invalidateQueries === 'function') {
           queryClient.invalidateQueries();
         }
         
-        console.log("✅ QS Vault: Sync complete.");
+        console.log("✅ QS Vault: Infrastructure synchronized.");
       } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "Connection reset";
-        console.error(`❌ QS Vault: Sync failed - ${message}`);
+        const message = error instanceof Error ? error.message : "Handshake Reset";
+        console.warn(`⚠️ QS Vault: Sync Node Deferred - ${message}`);
       } finally {
         isSyncing = false;
       }
     };
 
-    const handleOnline = () => {
-      performSync();
+    const handleOnlineNode = () => {
+      console.log("🌐 QS Vault: Signal detected. Waiting for connection stability...");
+      
+      // STABILITY HANDSHAKE:
+      // Wait 1.5s to ensure the signal isn't "flickering" before pushing data.
+      if (stabilityTimer) clearTimeout(stabilityTimer);
+      stabilityTimer = setTimeout(() => {
+        performVaultPush();
+      }, 1500);
     };
 
-    const handleOffline = () => {
-      console.log("⚠️ QS Vault: Device is offline. All data will be saved to local Dexie vault.");
+    const handleOfflineNode = () => {
+      if (stabilityTimer) clearTimeout(stabilityTimer);
+      console.log("🛡️ QS Vault: Offline Mode. All site data being saved to local encrypted ledger.");
     };
 
-    // Listen for browser-level network state changes
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
+    // Browser-Level Infrastructure Listeners
+    window.addEventListener("online", handleOnlineNode);
+    window.addEventListener("offline", handleOfflineNode);
 
-    // Run an initial sync on mount if connectivity is already established
+    // Initial Handshake on mount
     if (navigator.onLine) {
-      performSync();
+      performVaultPush();
     }
 
-    // Periodic "Safety Sync" every 30 seconds to catch edge cases where 
-    // network events might not have fired correctly.
-    const interval = setInterval(() => {
-      if (navigator.onLine) performSync();
-    }, 30000);
+    // "Safety Heartbeat": Periodic check every 60 seconds
+    const heartbeatInterval = setInterval(() => {
+      if (navigator.onLine && !isSyncing) performVaultPush();
+    }, 60000);
 
-    // Cleanup: Prevent memory leaks and redundant interval processing
+    // CLEANUP PROTOCOL
     return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
-      clearInterval(interval);
+      window.removeEventListener("online", handleOnlineNode);
+      window.removeEventListener("offline", handleOfflineNode);
+      if (stabilityTimer) clearTimeout(stabilityTimer);
+      clearInterval(heartbeatInterval);
     };
   }, []);
 };

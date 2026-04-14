@@ -3,8 +3,6 @@ import {
   Camera, Save, ArrowLeft, User as UserIcon, ShieldCheck, 
   Loader2, Mail, Fingerprint, CheckCircle2, Lock
 } from 'lucide-react';
-import { useAuth } from "../../auth/AuthContext";
-import { db, syncEngine } from "../../../lib/database/database";
 
 interface IdentityNodeProps {
   onBack: () => void;
@@ -16,22 +14,29 @@ const IdentityNode: React.FC<IdentityNodeProps> = ({ onBack, onUpdateComplete })
   
   const [fullName, setFullName] = useState(user?.user_metadata?.full_name || '');
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [hasChanged, setHasChanged] = useState(false);
   const [showSavedToast, setShowSavedToast] = useState(false);
 
   const getInitials = () => {
-    if (!fullName) return '?';
+    if (!fullName) return user?.email?.[0].toUpperCase() || '?';
     return fullName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 900000) {
+        alert("Image exceeds 900KB. Use a compressed photo for optimal site speed.");
+        return;
+      }
       const reader = new FileReader();
-      reader.onloadend = () => setProfileImage(reader.result as string);
+      reader.onloadend = () => {
+        setProfileImage(reader.result as string);
+        setHasChanged(true);
+      };
       reader.readAsDataURL(file);
-      setHasChanged(true);
     }
   };
 
@@ -42,6 +47,7 @@ const IdentityNode: React.FC<IdentityNodeProps> = ({ onBack, onUpdateComplete })
     const profileData = {
       id: user.id,
       full_name: fullName,
+      avatar_url: profileImage,
       updated_at: new Date().toISOString()
     };
 
@@ -61,10 +67,19 @@ const IdentityNode: React.FC<IdentityNodeProps> = ({ onBack, onUpdateComplete })
         setTimeout(() => setShowSavedToast(false), 3000);
       }, 800);
     } catch (err) {
-      console.error("Profile Save Error:", err);
+      console.error("Profile Transaction Failed.");
       setIsUpdating(false);
     }
   };
+
+  if (isInitialLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center p-40 opacity-20">
+        <Loader2 className="w-12 h-12 animate-spin text-amber-500 mb-4" />
+        <p className="text-[10px] font-black uppercase tracking-[0.5em]">Verifying Node...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700 text-left">
@@ -90,7 +105,7 @@ const IdentityNode: React.FC<IdentityNodeProps> = ({ onBack, onUpdateComplete })
         <div className="relative mx-auto mb-10 h-40 w-40 sm:h-48 sm:w-48 group">
           <div className="theme-card flex h-full w-full items-center justify-center overflow-hidden rounded-[2rem] border-[6px] shadow-2xl transition-all duration-500 group-hover:scale-105 shadow-inner">
             {profileImage ? (
-              <img src={profileImage} className="w-full h-full object-cover" alt="User" />
+              <img src={profileImage} className="w-full h-full object-cover" alt="Identity Portrait" />
             ) : (
               <div className="select-none text-5xl font-black italic theme-heading opacity-70">
                 {getInitials()}
@@ -184,6 +199,25 @@ const IdentityNode: React.FC<IdentityNodeProps> = ({ onBack, onUpdateComplete })
       </footer>
     </div>
   );
+};
+
+/** --- GUARD WRAPPER: PREVENTS HOOK ORDER ERRORS --- **/
+const IdentityNode: React.FC<IdentityNodeProps> = (props) => {
+  const [isResolved, setIsResolved] = useState(false);
+  
+  useEffect(() => {
+    resolveModules().then(() => setIsResolved(true));
+  }, []);
+
+  if (!isResolved) return null;
+
+  return <IdentityNodeGuard {...props} />;
+};
+
+const IdentityNodeGuard: React.FC<IdentityNodeProps> = (props) => {
+  const { user, theme } = useAuth();
+  if (!user) return null;
+  return <IdentityNodeContent {...props} user={user} theme={theme} />;
 };
 
 export default IdentityNode;

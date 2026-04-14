@@ -4,17 +4,19 @@ import {
   CheckCircle2, AlertCircle, Briefcase, Trash2
 } from 'lucide-react';
 import { useAuth } from "../../auth/AuthContext";
-import Button from "../../../components/ui/Button";
 import { db, syncEngine } from "../../../lib/database/database";
 
 interface Project {
   id: string;
   user_id: string;
   name: string;
-  client_name: string;
-  location: string;
-  created_at: string;
+  client_name: string | null;
+  location: string | null;
+  contract_sum: number;
   status: 'active' | 'completed' | 'archived';
+  geofence_radius: number;
+  created_at: string;
+  updated_at: string;
 }
 
 interface VaultRegistryProps {
@@ -39,41 +41,41 @@ const VaultRegistry: React.FC<VaultRegistryProps> = ({ projects, setProjects, na
 
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newProject.name || !user || !db) return;
+    if (!formData.name || !user || !db) return;
 
     setIsSubmitting(true);
-    const projectId = crypto.randomUUID();
     const timestamp = new Date().toISOString();
+    const projectId = editingId || crypto.randomUUID();
     
-    const projectData: Project = {
+    const projectRecord: Project = {
+      ...formData,
       id: projectId,
       user_id: user.id,
-      name: newProject.name,
-      client_name: newProject.client_name,
-      location: newProject.location || 'Site Location TBD',
-      status: 'active',
-      created_at: timestamp
+      created_at: editingId ? (projects.find(p => p.id === editingId)?.created_at || timestamp) : timestamp,
+      updated_at: timestamp
     };
 
     try {
       await db.projects.add({ ...projectData, contract_sum: 0, updated_at: timestamp });
       if (syncEngine?.queueChange) {
-        await syncEngine.queueChange('projects', projectId, 'INSERT', projectData);
+        await syncEngine.queueChange('projects', projectId, editingId ? 'UPDATE' : 'INSERT', projectRecord);
       }
       setProjects(prev => [projectData, ...prev]);
       setIsCreating(false);
       setNewProject({ name: "", client_name: "", location: "" });
     } catch (err) {
-      console.error("Office Registry: Local save failed.", err);
+      console.error("Registry Error: Transaction failed.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const filteredProjects = projects.filter(p => 
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.client_name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredProjects = useMemo(() => {
+    return projects.filter(p => 
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.client_name?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery, projects]);
 
   return (
     <div className="theme-panel rounded-[2.5rem] sm:rounded-[3.5rem] overflow-hidden transition-all duration-500 shadow-2xl backdrop-blur-3xl">
@@ -88,24 +90,23 @@ const VaultRegistry: React.FC<VaultRegistryProps> = ({ projects, setProjects, na
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full md:w-auto">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-6 w-full md:w-auto">
           <div className="relative group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 theme-meta group-focus-within:theme-accent transition-colors" size={16} />
             <input 
-              placeholder="Search portfolio..." 
+              placeholder="Search Project..." 
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               className="theme-input pl-10 pr-4 py-3 rounded-xl outline-none font-bold text-xs w-full sm:w-56 transition-all focus:theme-border shadow-inner" 
             />
           </div>
           
-          <Button 
-            variant="primary"
-            onClick={() => setIsCreating(true)} 
-            leftIcon={<Plus size={16} className="stroke-[3px]" />}
+          <button 
+            onClick={() => openEditor()} 
+            className="px-10 py-5 bg-amber-500 text-black font-black uppercase text-xs tracking-widest rounded-2xl shadow-2xl hover:bg-amber-400 active:scale-95 transition-all flex items-center justify-center gap-4 italic shadow-amber-500/20"
           >
-            New Project
-          </Button>
+            <Plus size={20} strokeWidth={3} /> Register Project
+          </button>
         </div>
       </div>
 
@@ -161,9 +162,10 @@ const VaultRegistry: React.FC<VaultRegistryProps> = ({ projects, setProjects, na
         <table className="w-full text-left border-collapse">
           <thead className="theme-card text-[10px] font-black uppercase tracking-[0.4em] italic border-b shadow-inner">
             <tr>
-              <th className="p-8 sm:p-10 text-left">Project Identity</th>
-              <th className="p-8 sm:p-10 hidden sm:table-cell text-left">Main Client</th>
-              <th className="p-8 sm:p-10 text-right">Technical Controls</th>
+              <th className="p-10 text-left">Infrastructure Node</th>
+              <th className="p-10 hidden lg:table-cell text-left">Valuation</th>
+              <th className="p-10 hidden sm:table-cell text-left">Main Client</th>
+              <th className="p-10 text-right">Technical Controls</th>
             </tr>
           </thead>
           <tbody className="divide-y theme-border/40">
@@ -179,6 +181,15 @@ const VaultRegistry: React.FC<VaultRegistryProps> = ({ projects, setProjects, na
                        <span className="theme-meta text-[10px] font-bold uppercase tracking-tight truncate max-w-30">
                          {p.client_name}
                        </span>
+                       <span className="text-[9px] font-mono text-zinc-700 font-bold uppercase">ID: {p.id.slice(0,8)}</span>
+                    </div>
+                    <h4 className={`font-black text-2xl sm:text-3xl uppercase tracking-tighter transition-colors group-hover:text-amber-500 leading-none
+                      ${theme === 'dark' ? 'text-zinc-200' : 'text-zinc-950'}`}>
+                      {p.name}
+                    </h4>
+                    <div className="flex items-center gap-2 mt-4 opacity-40">
+                       <MapPin size={12} className="text-amber-500" />
+                       <span className="text-[10px] font-black uppercase tracking-widest truncate">{p.location || 'Location Pending'}</span>
                     </div>
                     <span className="theme-meta text-[9px] font-mono mt-2 tracking-widest hidden sm:block leading-none uppercase">
                       REF: {p.id.slice(0,12)}
@@ -191,7 +202,7 @@ const VaultRegistry: React.FC<VaultRegistryProps> = ({ projects, setProjects, na
                     {p.client_name || 'Project Node'}
                   </div>
                 </td>
-                <td className="p-8 sm:p-10 text-right">
+                <td className="p-10 text-right">
                   <div className="flex gap-4 justify-end">
                     <button 
                       onClick={() => onDeleteProject(p.id)} 

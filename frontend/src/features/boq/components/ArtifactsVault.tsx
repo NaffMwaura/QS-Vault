@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
+import { 
   FileText, 
   FileSpreadsheet, 
   Download, 
@@ -9,10 +9,14 @@ import {
   History, 
   ShieldCheck, 
   Lock,
-  Database
+  Database,
+  ArrowLeft
 } from 'lucide-react';
-import { useAuth } from "../../../features/auth/AuthContext";
-import { db, type Project } from "../../../lib/database/database";
+
+// STANDARD IMPORTS: Guaranteed to be stable for your presentation
+import { useAuth } from "../../auth/AuthContext";
+import { db } from "../../../lib/database/database";
+import BoQGenerator from "./BoQGenerator";
 
 /** --- TYPES --- **/
 
@@ -26,9 +30,11 @@ interface ReportItem {
   version: string;
 }
 
+/** --- SUB-COMPONENT: DOCUMENT NODE CARD --- **/
+
 const DocumentCard: React.FC<{ 
   report: ReportItem; 
-  onDownload: (id: string) => void;
+  onView: (report: ReportItem) => void;
   isProcessing: boolean;
 }> = ({ report, onDownload, isProcessing }) => (
   <div className={`p-5 sm:p-6 rounded-sm border transition-all duration-500 group relative flex flex-col justify-between overflow-hidden theme-card hover:border-[var(--app-accent-strong)]`}>
@@ -42,7 +48,7 @@ const DocumentCard: React.FC<{
         )}
       </div>
       <div className="text-right">
-        <span className={`theme-admin-chip inline-flex border
+        <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border-2
           ${report.status === 'Draft' 
             ? 'theme-status-warning' 
             : report.status === 'Certified'
@@ -86,37 +92,42 @@ const DocumentCard: React.FC<{
   </div>
 );
 
-/** --- MAIN COMPONENT: PROJECT REPORTS --- **/
+/** --- MAIN COMPONENT: OFFICE ARTIFACTS HUB --- **/
 
 const ArtifactsVault: React.FC = () => {
   const { user } = useAuth();
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
   const [reports, setReports] = useState<ReportItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reports, setReports] = useState<ReportItem[]>([]);
+  const [selectedReport, setSelectedReport] = useState<ReportItem | null>(null);
 
+  /** * 1. VAULT HANDSHAKE
+   * Scans the project database to build the document registry.
+   */
   useEffect(() => {
     const syncWithOfficeData = async () => {
       if (!user || !db) {
-        setLoading(false);
+        setTimeout(() => setLoading(false), 1200);
         return;
       }
       try {
-        // Fetch real projects to generate a "Document List"
+        setLoading(true);
         const activeProjects = await db.projects.where('user_id').equals(user.id).toArray();
         
-        const documentList: ReportItem[] = activeProjects.map((p: Project) => ({
+        const documentList: ReportItem[] = activeProjects.map((p: any) => ({
           id: p.id,
           title: `Bill of Quantities`,
           projectName: p.name,
           type: 'XLS',
           status: 'Draft',
           lastUpdated: new Date(p.updated_at).toLocaleDateString(),
-          version: '1.0.0'
+          version: '1.2.0'
         }));
 
         setReports(documentList);
       } catch (err) {
-        console.error("Database connection failed:", err);
+        console.error("Archive connection failed.", err);
       } finally {
         setLoading(false);
       }
@@ -125,13 +136,34 @@ const ArtifactsVault: React.FC = () => {
     syncWithOfficeData();
   }, [user]);
 
-  const handleDownload = (id: string) => {
-    setIsProcessing(id);
-    setTimeout(() => setIsProcessing(null), 1500);
-  };
+  if (loading) {
+    return (
+      <div className="py-40 text-center opacity-20">
+        <Loader2 className="w-12 h-12 animate-spin mx-auto mb-6 text-amber-500" />
+        <p className="font-black uppercase text-[10px] tracking-[0.5em] italic">Accessing File Cabinet...</p>
+      </div>
+    );
+  }
+
+  // --- VIEW DETAIL: BOQ GENERATOR HANDSHAKE ---
+  if (selectedReport && BoQGenerator) {
+    return (
+      <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+         <button 
+           onClick={() => setSelectedReport(null)}
+           className={`mb-8 flex items-center gap-3 px-6 py-4 rounded-xl border-2 transition-all active:scale-95 shadow-sm
+             ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white' : 'bg-white border-zinc-200 text-zinc-600 hover:text-zinc-900'}`}
+         >
+            <ArrowLeft size={16} strokeWidth={2.5} />
+            <span className="text-[10px] font-black uppercase tracking-widest">Back to Archives</span>
+         </button>
+         <BoQGenerator projectId={selectedReport.id} projectName={selectedReport.projectName} />
+      </div>
+    );
+  }
 
   return (
-    <div className="flex-1 flex flex-col space-y-8 p-5 sm:p-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="flex-1 flex flex-col space-y-12 animate-in fade-in duration-700">
       
       <header className="flex shrink-0 flex-col items-start justify-between gap-5 text-left lg:flex-row lg:items-end">
         <div className="space-y-2">
@@ -184,7 +216,7 @@ const ArtifactsVault: React.FC = () => {
             Secure Office Records System
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-5">
+        <div className="flex gap-10">
           <div className="flex items-center gap-2">
             <Lock size={12} className="text-[var(--app-icon)]" />
             <span className="theme-admin-meta text-[0.72rem] uppercase text-[var(--app-meta)]">Encrypted</span>

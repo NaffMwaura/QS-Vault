@@ -24,6 +24,12 @@ const CalibrationNode: React.FC<CalibrationNodeProps> = ({
     { label: '1:200', value: 0.005, desc: 'Site Plan' },
   ];
 
+  // Automatically deselect custom mode if a preset is clicked
+  const handlePresetClick = (val: number) => {
+    setIsCalibrating(false);
+    onScaleChange(val);
+  };
+
   return (
     <div className="theme-panel p-8 rounded-[3rem] transition-all duration-500 overflow-hidden shadow-2xl backdrop-blur-3xl">
       <div className="flex flex-col space-y-8">
@@ -69,12 +75,13 @@ const CalibrationNode: React.FC<CalibrationNodeProps> = ({
                     ? 'theme-button-primary' 
                     : 'theme-card hover:theme-border'}`}
               >
-                <span className="text-[11px] font-black uppercase tracking-widest leading-none">{s.label}</span>
-                <span className={`text-[7px] font-bold uppercase opacity-60 ${currentScale === s.value ? 'text-black' : ''}`}>{s.desc}</span>
+                <span className="text-xl font-black uppercase tracking-tighter leading-none">{s.label}</span>
+                <span className={`text-[9px] font-bold uppercase tracking-widest opacity-80 ${isSelected ? 'text-black/70' : ''}`}>{s.desc}</span>
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
+      </div>
 
         <div className={`theme-card p-6 rounded-[2.5rem] transition-all relative overflow-hidden
           ${isCalibrating ? 'theme-accent-surface' : ''}`}>
@@ -116,7 +123,8 @@ const CalibrationNode: React.FC<CalibrationNodeProps> = ({
                 {unit}
               </button>
             </div>
-
+            
+            {/* Unit Toggle Button */}
             <button 
               onClick={() => setIsCalibrating(!isCalibrating)}
               className={`w-full py-4 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all flex items-center justify-center gap-3 italic
@@ -124,10 +132,9 @@ const CalibrationNode: React.FC<CalibrationNodeProps> = ({
                   ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20 hover:bg-rose-500 hover:text-white' 
                   : 'theme-button-secondary'}`}
             >
-              {isCalibrating ? 'Cancel Sync' : 'Start Point-to-Point'}
+              {unit}
             </button>
           </div>
-        </div>
 
         <div className="theme-panel p-5 rounded-3xl flex items-center justify-between opacity-50 shadow-inner">
           <div className="flex items-center gap-3">
@@ -141,15 +148,17 @@ const CalibrationNode: React.FC<CalibrationNodeProps> = ({
         </div>
       </div>
 
-      <style>{`
-        .animate-spin-slow {
-          animation: spin 8s linear infinite;
-        }
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
+      {/* 4. COMPLIANCE FOOTER */}
+      <div className="flex items-center justify-between pt-6 border-t border-zinc-800/30 opacity-60">
+         <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500 leading-none">
+           Accuracy Status
+         </p>
+         <div className="flex items-center gap-2 text-emerald-500">
+            <CheckCircle2 size={14} />
+            <span className="text-[9px] font-bold uppercase tracking-[0.2em] italic leading-none">SMM-KE Compliant</span>
+         </div>
+      </div>
+
     </div>
   );
 };

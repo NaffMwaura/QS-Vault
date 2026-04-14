@@ -10,6 +10,7 @@ import {
   Target,
   PaintBucket,
   Info,
+  CheckCircle2,
   Zap
 } from 'lucide-react';
 /** --- TYPES --- **/
@@ -31,8 +32,6 @@ interface SMMWorkSectionsProps {
   setActiveTool: (tool: MeasurementTool) => void;
 }
 
-/** --- SMM-KE REGISTRY: REGIONAL STANDARDS --- **/
-
 const SMM_REGISTRY: SMMSection[] = [
   { id: 'excavation', code: 'SEC-D', label: 'Excavation & Earthwork', icon: Pickaxe, defaultTool: 'area' },
   { id: 'concrete', code: 'SEC-F', label: 'Concrete Work', icon: Box, defaultTool: 'area' },
@@ -41,8 +40,6 @@ const SMM_REGISTRY: SMMSection[] = [
   { id: 'openings', code: 'SEC-L', label: 'Doors & Windows', icon: DoorOpen, defaultTool: 'count' },
 ];
 
-/** --- MAIN COMPONENT: WORK CATEGORY NAVIGATOR --- **/
-
 const SMMWorkSections: React.FC<SMMWorkSectionsProps> = ({ 
   activeSection, 
   setActiveSection, 
@@ -50,10 +47,6 @@ const SMMWorkSections: React.FC<SMMWorkSectionsProps> = ({
   setActiveTool 
 }) => {
 
-  /** * SECTION HANDSHAKE
-   * Automatically switches the tool to the most logical default for the chosen category
-   * (e.g., Selecting "Doors" automatically arms the "Count" tool).
-   */
   const handleSectionSelect = (section: SMMSection) => {
     setActiveSection(section.label);
     setActiveTool(section.defaultTool);
@@ -62,7 +55,25 @@ const SMMWorkSections: React.FC<SMMWorkSectionsProps> = ({
   return (
     <aside className={`w-full flex flex-col space-y-10 p-6 sm:p-10 transition-colors duration-500 h-auto overflow-visible bg-[var(--app-bg)]`}>
       
-      {/* 1. TOOL SELECTION HUB */}
+      {/* 1. GUIDANCE HEADER */}
+      <div className={`p-6 rounded-4xl border-2 transition-colors duration-500
+        ${theme === 'dark' ? 'bg-zinc-950/80 border-zinc-800' : 'bg-white border-zinc-200 shadow-sm'}`}>
+        <div className="flex items-start gap-4">
+          <div className="p-3 bg-amber-500/10 rounded-xl text-amber-500 shrink-0">
+             <Info size={20} strokeWidth={2.5} />
+          </div>
+          <div className="text-left">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 mb-1.5 italic">
+              Context Setup
+            </p>
+            <p className={`text-sm font-bold leading-snug ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-700'}`}>
+              Select a work section below. The system will automatically arm the correct measurement tool for that category.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. TOOL SELECTION HUB */}
       <div className="space-y-5">
         <label className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--app-meta)] ml-1 italic block text-left">
           Measurement Tools
@@ -81,8 +92,8 @@ const SMMWorkSections: React.FC<SMMWorkSectionsProps> = ({
                   ? 'bg-[var(--app-accent-strong)] text-[var(--app-primary-fg)] border-[var(--app-accent-strong)] shadow-lg' 
                   : 'bg-[var(--app-surface)] text-[var(--app-meta)] border-[var(--app-border)] hover:border-[var(--app-accent-strong)] hover:text-[var(--app-accent-strong)]'}`}
             >
-              <tool.icon size={22} className={activeTool === tool.id ? 'stroke-[3px]' : ''} />
-              <span className="text-[9px] font-black uppercase tracking-widest leading-none">
+              <tool.icon size={28} strokeWidth={activeTool === tool.id ? 2.5 : 2} />
+              <span className={`text-[10px] font-black uppercase tracking-widest leading-none ${activeTool === tool.id ? 'opacity-80' : ''}`}>
                 {tool.label}
               </span>
             </button>
@@ -96,7 +107,7 @@ const SMMWorkSections: React.FC<SMMWorkSectionsProps> = ({
           Standard Work Sections (SMM-KE)
         </label>
         
-        <div className="space-y-4 pr-0 sm:pr-3">
+        <div className="space-y-3">
           {SMM_REGISTRY.map((section) => {
             const isActive = activeSection === section.label;
             return (
