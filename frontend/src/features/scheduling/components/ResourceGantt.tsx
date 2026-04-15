@@ -11,7 +11,6 @@ import {
   Navigation,
   ShieldCheck,
   X,
-  RefreshCw,
   TrendingUp,
   HardHat,
   ChevronRight,
@@ -57,7 +56,7 @@ interface ResourceGanttProps {
 }
 
 const ResourceGantt: React.FC<ResourceGanttProps> = ({ projectId }) => {
-  const { theme, user } = useAuth();
+  const { theme } = useAuth();
 
   // LIVE DATA STATES
   const [tasks, setTasks] = useState<GanttTask[]>([]);
@@ -177,6 +176,10 @@ const ResourceGantt: React.FC<ResourceGanttProps> = ({ projectId }) => {
     syncWorkspaceData();
   }, [syncWorkspaceData]);
 
+  useEffect(() => {
+    verifyLocation();
+  }, [verifyLocation]);
+
   const handleAddStage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!db || !projectId || !newStage.title) return;
@@ -268,6 +271,15 @@ const ResourceGantt: React.FC<ResourceGanttProps> = ({ projectId }) => {
     return (sum / tasks.length).toFixed(0);
   }, [tasks]);
 
+  const gpsStatusLabel =
+    isOnSite === true
+      ? "On Site"
+      : isOnSite === false
+        ? "Off Site"
+        : isOnSite === "no-geo"
+          ? "Geo Pending"
+          : "Checking";
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center p-40 opacity-20 text-center">
@@ -319,6 +331,9 @@ const ResourceGantt: React.FC<ResourceGanttProps> = ({ projectId }) => {
             >
               {laborCount.toString().padStart(2, "0")}
             </h3>
+            <p className="mt-2 text-[10px] font-black uppercase tracking-[0.3em] text-[var(--app-meta)]">
+              {gpsStatusLabel}
+            </p>
           </div>
           <div className="p-5 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500">
             <HardHat size={28} />
@@ -422,6 +437,7 @@ const ResourceGantt: React.FC<ResourceGanttProps> = ({ projectId }) => {
             </div>
             <button
               type="submit"
+              disabled={isSaving}
               className="w-full h-24 bg-amber-500 text-black font-black uppercase text-sm tracking-[0.5em] rounded-4xl shadow-amber-500/20 flex items-center justify-center gap-6 italic transition-all"
             >
               <CheckCircle2 size={32} strokeWidth={2.5} /> Secure Stage Entry
@@ -565,6 +581,7 @@ const ResourceGantt: React.FC<ResourceGanttProps> = ({ projectId }) => {
               <Button
                 type="submit"
                 variant="primary"
+                isLoading={isSaving}
                 className="w-full py-5 rounded-2xl"
               >
                 Record Delivery
