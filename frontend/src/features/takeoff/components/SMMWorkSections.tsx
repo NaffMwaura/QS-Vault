@@ -10,7 +10,6 @@ import {
   Target,
   PaintBucket,
   Info,
-  CheckCircle2,
   Zap
 } from 'lucide-react';
 /** --- TYPES --- **/
@@ -53,20 +52,19 @@ const SMMWorkSections: React.FC<SMMWorkSectionsProps> = ({
   };
 
   return (
-    <aside className={`w-full flex flex-col space-y-10 p-6 sm:p-10 transition-colors duration-500 h-auto overflow-visible bg-[var(--app-bg)]`}>
+    <aside className="theme-page w-full h-auto overflow-visible flex flex-col space-y-10 p-6 transition-colors duration-500 sm:p-10">
       
       {/* 1. GUIDANCE HEADER */}
-      <div className={`p-6 rounded-4xl border-2 transition-colors duration-500
-        ${theme === 'dark' ? 'bg-zinc-950/80 border-zinc-800' : 'bg-white border-zinc-200 shadow-sm'}`}>
+      <div className="theme-panel rounded-4xl border-2 p-6 transition-colors duration-500">
         <div className="flex items-start gap-4">
           <div className="p-3 bg-amber-500/10 rounded-xl text-amber-500 shrink-0">
              <Info size={20} strokeWidth={2.5} />
           </div>
           <div className="text-left">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 mb-1.5 italic">
+            <p className="theme-meta mb-1.5 text-[10px] font-black uppercase tracking-[0.3em] italic">
               Context Setup
             </p>
-            <p className={`text-sm font-bold leading-snug ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-700'}`}>
+            <p className="theme-body text-sm font-bold leading-snug">
               Select a work section below. The system will automatically arm the correct measurement tool for that category.
             </p>
           </div>
