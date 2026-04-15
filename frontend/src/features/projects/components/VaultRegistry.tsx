@@ -1,8 +1,16 @@
-import React, { useState } from 'react';
-import { 
-  Search, Plus, MapPin, ExternalLink, X,
-  CheckCircle2, AlertCircle, Briefcase, Trash2
-} from 'lucide-react';
+import React, { useMemo, useState } from "react";
+import {
+  Search,
+  Plus,
+  MapPin,
+  ExternalLink,
+  X,
+  CheckCircle2,
+  AlertCircle,
+  Briefcase,
+  Trash2,
+} from "lucide-react";
+import Button from "../../../components/ui/Button";
 import { useAuth } from "../../auth/AuthContext";
 import { db, syncEngine } from "../../../lib/database/database";
 
@@ -13,7 +21,7 @@ interface Project {
   client_name: string | null;
   location: string | null;
   contract_sum: number;
-  status: 'active' | 'completed' | 'archived';
+  status: "active" | "completed" | "archived";
   geofence_radius: number;
   created_at: string;
   updated_at: string;
@@ -23,66 +31,74 @@ interface VaultRegistryProps {
   projects: Project[];
   setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
   navigate: (path: string) => void;
-  onDeleteProject: (id: string) => void; 
+  onDeleteProject: (id: string) => void;
 }
 
-const VaultRegistry: React.FC<VaultRegistryProps> = ({ projects, setProjects, navigate, onDeleteProject }) => {
+const VaultRegistry: React.FC<VaultRegistryProps> = ({
+  projects,
+  setProjects,
+  navigate,
+  onDeleteProject,
+}) => {
   const { user } = useAuth();
-  
   const [isCreating, setIsCreating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  
-  const [newProject, setNewProject] = useState({ 
-    name: "", 
-    client_name: "", 
-    location: "" 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [newProject, setNewProject] = useState({
+    name: "",
+    client_name: "",
+    location: "",
   });
 
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !user || !db) return;
+    if (!newProject.name.trim() || !user) return;
 
     setIsSubmitting(true);
     const timestamp = new Date().toISOString();
-    const projectId = editingId || crypto.randomUUID();
-    
     const projectRecord: Project = {
-      ...formData,
-      id: projectId,
+      id: crypto.randomUUID(),
       user_id: user.id,
-      created_at: editingId ? (projects.find(p => p.id === editingId)?.created_at || timestamp) : timestamp,
-      updated_at: timestamp
+      name: newProject.name.trim(),
+      client_name: newProject.client_name.trim() || null,
+      location: newProject.location.trim() || null,
+      contract_sum: 0,
+      status: "active",
+      geofence_radius: 100,
+      created_at: timestamp,
+      updated_at: timestamp,
     };
 
     try {
-      await db.projects.add({ ...projectData, contract_sum: 0, updated_at: timestamp });
-      if (syncEngine?.queueChange) {
-        await syncEngine.queueChange('projects', projectId, editingId ? 'UPDATE' : 'INSERT', projectRecord);
-      }
-      setProjects(prev => [projectData, ...prev]);
+      await db.projects.add(projectRecord);
+      await syncEngine.queueChange("projects", projectRecord.id, "INSERT", projectRecord);
+      setProjects((prev) => [projectRecord, ...prev]);
       setIsCreating(false);
       setNewProject({ name: "", client_name: "", location: "" });
     } catch (err) {
-      console.error("Registry Error: Transaction failed.");
+      console.error("Registry Error: Transaction failed.", err);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const filteredProjects = useMemo(() => {
-    return projects.filter(p => 
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.client_name?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [searchQuery, projects]);
+  const filteredProjects = useMemo(
+    () =>
+      projects.filter((project) => {
+        const query = searchQuery.toLowerCase();
+        return (
+          project.name.toLowerCase().includes(query) ||
+          project.client_name?.toLowerCase().includes(query)
+        );
+      }),
+    [projects, searchQuery],
+  );
 
   return (
-    <div className="theme-panel rounded-[2.5rem] sm:rounded-[3.5rem] overflow-hidden transition-all duration-500 shadow-2xl backdrop-blur-3xl">
-      
-      <div className="p-6 sm:p-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-8 border-b theme-border bg-white/1">
+    <div className="theme-panel overflow-hidden rounded-[2.5rem] shadow-2xl backdrop-blur-3xl transition-all duration-500 sm:rounded-[3.5rem]">
+      <div className="flex flex-col items-start justify-between gap-8 border-b bg-white/1 p-6 theme-border sm:p-12 md:flex-row md:items-center">
         <div className="space-y-1 text-left">
-          <h3 className="theme-heading text-2xl sm:text-3xl font-black uppercase italic tracking-tighter leading-none">
+          <h3 className="theme-heading text-2xl font-black uppercase italic leading-none tracking-tighter sm:text-3xl">
             Project Portfolio<span className="theme-accent">.</span>
           </h3>
           <p className="theme-meta text-[10px] font-black uppercase tracking-[0.4em]">
@@ -90,20 +106,23 @@ const VaultRegistry: React.FC<VaultRegistryProps> = ({ projects, setProjects, na
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-6 w-full md:w-auto">
-          <div className="relative group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 theme-meta group-focus-within:theme-accent transition-colors" size={16} />
-            <input 
-              placeholder="Search Project..." 
+        <div className="flex w-full flex-col items-stretch gap-6 sm:flex-row sm:items-center md:w-auto">
+          <div className="group relative">
+            <Search
+              className="theme-meta absolute left-4 top-1/2 -translate-y-1/2 transition-colors group-focus-within:theme-accent"
+              size={16}
+            />
+            <input
+              placeholder="Search Project..."
               value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="theme-input pl-10 pr-4 py-3 rounded-xl outline-none font-bold text-xs w-full sm:w-56 transition-all focus:theme-border shadow-inner" 
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="theme-input w-full rounded-xl py-3 pl-10 pr-4 text-xs font-bold shadow-inner outline-none transition-all focus:theme-border sm:w-56"
             />
           </div>
-          
-          <button 
-            onClick={() => openEditor()} 
-            className="px-10 py-5 bg-amber-500 text-black font-black uppercase text-xs tracking-widest rounded-2xl shadow-2xl hover:bg-amber-400 active:scale-95 transition-all flex items-center justify-center gap-4 italic shadow-amber-500/20"
+
+          <button
+            onClick={() => setIsCreating(true)}
+            className="flex items-center justify-center gap-4 rounded-2xl bg-amber-500 px-10 py-5 text-xs font-black uppercase italic tracking-widest text-black shadow-2xl shadow-amber-500/20 transition-all hover:bg-amber-400 active:scale-95"
           >
             <Plus size={20} strokeWidth={3} /> Register Project
           </button>
@@ -111,123 +130,148 @@ const VaultRegistry: React.FC<VaultRegistryProps> = ({ projects, setProjects, na
       </div>
 
       {isCreating && (
-        <form 
-          onSubmit={handleCreateProject} 
-          className="p-8 sm:p-12 theme-accent-surface theme-border border-b animate-in slide-in-from-top-4 space-y-8"
+        <form
+          onSubmit={handleCreateProject}
+          className="theme-accent-surface theme-border animate-in slide-in-from-top-4 space-y-8 border-b p-8 sm:p-12"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-2 text-left">
-               <label className="theme-meta text-[10px] font-black uppercase italic ml-1">Project Name</label>
-               <input 
-                 required 
-                 placeholder="e.g. Nairobi Office Complex"
-                 value={newProject.name} 
-                 onChange={e => setNewProject({...newProject, name: e.target.value})} 
-                 className="theme-input w-full p-5 rounded-2xl font-bold text-sm outline-none transition-all shadow-inner focus:theme-border" 
-               />
+              <label className="theme-meta ml-1 text-[10px] font-black uppercase italic">
+                Project Name
+              </label>
+              <input
+                required
+                placeholder="e.g. Nairobi Office Complex"
+                value={newProject.name}
+                onChange={(e) =>
+                  setNewProject({ ...newProject, name: e.target.value })
+                }
+                className="theme-input w-full rounded-2xl p-5 text-sm font-bold shadow-inner outline-none transition-all focus:theme-border"
+              />
             </div>
             <div className="space-y-2 text-left">
-               <label className="theme-meta text-[10px] font-black uppercase italic ml-1">Client Name</label>
-               <input 
-                 required 
-                 placeholder="Client / Stakeholder..."
-                 value={newProject.client_name} 
-                 onChange={e => setNewProject({...newProject, client_name: e.target.value})} 
-                 className="theme-input w-full p-5 rounded-2xl font-bold text-sm outline-none transition-all shadow-inner focus:theme-border" 
-               />
+              <label className="theme-meta ml-1 text-[10px] font-black uppercase italic">
+                Client Name
+              </label>
+              <input
+                required
+                placeholder="Client / Stakeholder..."
+                value={newProject.client_name}
+                onChange={(e) =>
+                  setNewProject({ ...newProject, client_name: e.target.value })
+                }
+                className="theme-input w-full rounded-2xl p-5 text-sm font-bold shadow-inner outline-none transition-all focus:theme-border"
+              />
             </div>
           </div>
-          
+
+          <div className="space-y-2 text-left">
+            <label className="theme-meta ml-1 text-[10px] font-black uppercase italic">
+              Location
+            </label>
+            <input
+              placeholder="Project location..."
+              value={newProject.location}
+              onChange={(e) =>
+                setNewProject({ ...newProject, location: e.target.value })
+              }
+              className="theme-input w-full rounded-2xl p-5 text-sm font-bold shadow-inner outline-none transition-all focus:theme-border"
+            />
+          </div>
+
           <div className="flex gap-4">
-             <Button 
-               type="submit" 
-               isLoading={isSubmitting} 
-               className="flex-1 py-6 italic"
-               leftIcon={<CheckCircle2 size={18} />}
-             >
-               Save Project
-             </Button>
-             <button 
-               type="button" 
-               onClick={() => setIsCreating(false)} 
-               className="theme-button-secondary px-10 rounded-2xl transition-all"
-             >
-               <X size={20} />
-             </button>
+            <Button
+              type="submit"
+              isLoading={isSubmitting}
+              className="flex-1 py-6 italic"
+              leftIcon={<CheckCircle2 size={18} />}
+            >
+              Save Project
+            </Button>
+            <button
+              type="button"
+              onClick={() => setIsCreating(false)}
+              className="theme-button-secondary rounded-2xl px-10 transition-all"
+            >
+              <X size={20} />
+            </button>
           </div>
         </form>
       )}
 
-      <div className="overflow-x-auto custom-scrollbar">
-        <table className="w-full text-left border-collapse">
-          <thead className="theme-card text-[10px] font-black uppercase tracking-[0.4em] italic border-b shadow-inner">
+      <div className="custom-scrollbar overflow-x-auto">
+        <table className="w-full border-collapse text-left">
+          <thead className="theme-card border-b text-[10px] font-black uppercase italic tracking-[0.4em] shadow-inner">
             <tr>
               <th className="p-10 text-left">Infrastructure Node</th>
-              <th className="p-10 hidden lg:table-cell text-left">Valuation</th>
-              <th className="p-10 hidden sm:table-cell text-left">Main Client</th>
+              <th className="hidden p-10 text-left sm:table-cell">Main Client</th>
+              <th className="hidden p-10 text-left lg:table-cell">Location</th>
               <th className="p-10 text-right">Technical Controls</th>
             </tr>
           </thead>
           <tbody className="divide-y theme-border/40">
-            {filteredProjects.length > 0 ? filteredProjects.map(p => (
-              <tr key={p.id} className="group hover:bg-[color-mix(in_srgb,var(--app-body)_5%,transparent)] transition-colors">
-                <td className="p-8 sm:p-10 text-left">
-                  <div className="flex flex-col text-left">
-                    <span className="theme-heading font-black text-xl sm:text-2xl uppercase tracking-tighter transition-colors group-hover:theme-accent leading-none">
-                      {p.name}
-                    </span>
-                    <div className="flex items-center gap-2 mt-2 sm:hidden">
-                       <MapPin size={10} className="theme-accent opacity-60" />
-                       <span className="theme-meta text-[10px] font-bold uppercase tracking-tight truncate max-w-30">
-                         {p.client_name}
-                       </span>
-                       <span className="text-[9px] font-mono text-zinc-700 font-bold uppercase">ID: {p.id.slice(0,8)}</span>
+            {filteredProjects.length > 0 ? (
+              filteredProjects.map((project) => (
+                <tr
+                  key={project.id}
+                  className="group transition-colors hover:bg-[color-mix(in_srgb,var(--app-body)_5%,transparent)]"
+                >
+                  <td className="p-8 text-left sm:p-10">
+                    <div className="flex flex-col text-left">
+                      <span className="theme-heading text-xl font-black uppercase leading-none tracking-tighter transition-colors group-hover:theme-accent sm:text-2xl">
+                        {project.name}
+                      </span>
+                      <div className="mt-4 flex items-center gap-2 opacity-40">
+                        <MapPin size={12} className="text-amber-500" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">
+                          {project.location || "Location Pending"}
+                        </span>
+                      </div>
+                      <span className="theme-meta mt-2 hidden text-[9px] font-mono uppercase leading-none tracking-widest sm:block">
+                        REF: {project.id.slice(0, 12)}
+                      </span>
                     </div>
-                    <h4 className={`font-black text-2xl sm:text-3xl uppercase tracking-tighter transition-colors group-hover:text-amber-500 leading-none
-                      ${theme === 'dark' ? 'text-zinc-200' : 'text-zinc-950'}`}>
-                      {p.name}
-                    </h4>
-                    <div className="flex items-center gap-2 mt-4 opacity-40">
-                       <MapPin size={12} className="text-amber-500" />
-                       <span className="text-[10px] font-black uppercase tracking-widest truncate">{p.location || 'Location Pending'}</span>
+                  </td>
+                  <td className="hidden p-8 text-left sm:table-cell sm:p-10">
+                    <div className="theme-meta flex items-center gap-3 text-sm font-bold uppercase tracking-tight">
+                      <MapPin size={14} className="theme-accent opacity-60" />
+                      {project.client_name || "Project Node"}
                     </div>
-                    <span className="theme-meta text-[9px] font-mono mt-2 tracking-widest hidden sm:block leading-none uppercase">
-                      REF: {p.id.slice(0,12)}
+                  </td>
+                  <td className="hidden p-8 text-left lg:table-cell lg:p-10">
+                    <span className="theme-body text-sm font-semibold">
+                      {project.location || "Unassigned"}
                     </span>
-                  </div>
-                </td>
-                <td className="p-8 sm:p-10 hidden sm:table-cell text-left">
-                  <div className="flex items-center gap-3 text-sm font-bold theme-meta uppercase tracking-tight">
-                    <MapPin size={14} className="theme-accent opacity-60" /> 
-                    {p.client_name || 'Project Node'}
-                  </div>
-                </td>
-                <td className="p-10 text-right">
-                  <div className="flex gap-4 justify-end">
-                    <button 
-                      onClick={() => onDeleteProject(p.id)} 
-                      title="Purge Project Node"
-                      className="theme-card p-4 hover:text-[var(--app-error)] hover:border-[var(--app-error)] transition-all active:scale-90 shadow-xl"
-                    >
-                      <Trash2 size={20}/>
-                    </button>
-                    <button 
-                      onClick={() => navigate(`/projects/${p.id}`)} 
-                      title="Open Workspace"
-                      className="theme-button-secondary p-4 rounded-2xl hover:theme-accent transition-all active:scale-90 shadow-xl"
-                    >
-                      <ExternalLink size={20}/>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            )) : (
+                  </td>
+                  <td className="p-10 text-right">
+                    <div className="flex justify-end gap-4">
+                      <button
+                        onClick={() => onDeleteProject(project.id)}
+                        title="Purge Project Node"
+                        className="theme-card p-4 shadow-xl transition-all hover:border-[var(--app-error)] hover:text-[var(--app-error)] active:scale-90"
+                      >
+                        <Trash2 size={20} />
+                      </button>
+                      <button
+                        onClick={() => navigate(`/projects/${project.id}`)}
+                        title="Open Workspace"
+                        className="theme-button-secondary rounded-2xl p-4 shadow-xl transition-all hover:theme-accent active:scale-90"
+                      >
+                        <ExternalLink size={20} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
               <tr>
-                <td colSpan={3} className="p-32 text-center opacity-20">
-                  <Briefcase size={64} className="mx-auto mb-6 theme-icon animate-pulse" />
+                <td colSpan={4} className="p-32 text-center opacity-20">
+                  <Briefcase size={64} className="theme-icon mx-auto mb-6 animate-pulse" />
                   <div className="space-y-2">
-                    <p className="theme-heading font-black uppercase text-sm tracking-[0.5em] italic">Registry is Empty</p>
-                    <p className="theme-meta text-[10px] font-bold uppercase tracking-widest leading-none">
+                    <p className="theme-heading text-sm font-black uppercase italic tracking-[0.5em]">
+                      Registry is Empty
+                    </p>
+                    <p className="theme-meta text-[10px] font-bold uppercase leading-none tracking-widest">
                       Launch a new project to start site measurements.
                     </p>
                   </div>
@@ -238,7 +282,7 @@ const VaultRegistry: React.FC<VaultRegistryProps> = ({ projects, setProjects, na
         </table>
       </div>
 
-      <div className="theme-panel p-6 border-t flex items-center justify-between opacity-40 shadow-inner">
+      <div className="theme-panel flex items-center justify-between border-t p-6 opacity-40 shadow-inner">
         <div className="flex items-center gap-3">
           <AlertCircle size={12} className="theme-accent" />
           <p className="theme-meta text-[8px] font-black uppercase tracking-widest">
