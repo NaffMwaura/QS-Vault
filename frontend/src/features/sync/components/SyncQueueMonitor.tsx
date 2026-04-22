@@ -73,12 +73,18 @@ const SyncQueueMonitor: React.FC = () => {
         <div className="flex items-center gap-6">
           <div
             className={`theme-card relative rounded-[1.8rem] p-5 shadow-inner transition-all duration-500 ${
-              pendingCount > 0 && isOnline ? "theme-border ring-2 ring-amber-500/20" : ""
+              pendingCount > 0 && isOnline
+                ? "theme-border ring-2 ring-amber-500/20"
+                : ""
             }`}
           >
             {isOnline ? (
               <Cloud
-                className={pendingCount > 0 ? "theme-total-value animate-pulse" : "text-emerald-500"}
+                className={
+                  pendingCount > 0
+                    ? "theme-total-value animate-pulse"
+                    : "text-emerald-500"
+                }
                 size={28}
               />
             ) : (
@@ -97,7 +103,7 @@ const SyncQueueMonitor: React.FC = () => {
             </h4>
             <div className="flex items-center gap-3">
               <span
-                className={`rounded-full border px-4 py-1.5 text-[10px] font-black uppercase tracking-widest transition-colors
+                className={`rounded-sm border px-4 py-1.5 text-[10px] font-black uppercase tracking-widest transition-colors
                   ${
                     isSyncing
                       ? "border-amber-500/20 bg-amber-500/10 text-amber-500"
@@ -106,7 +112,11 @@ const SyncQueueMonitor: React.FC = () => {
                         : "animate-pulse border-rose-500/20 bg-rose-500/10 text-rose-500"
                   }`}
               >
-                {isSyncing ? "Pushing Site Data..." : isOnline ? "System Connected" : "Local Standby"}
+                {isSyncing
+                  ? "Pushing Site Data..."
+                  : isOnline
+                    ? "System Connected"
+                    : "Local Standby"}
               </span>
             </div>
           </div>
@@ -129,7 +139,9 @@ const SyncQueueMonitor: React.FC = () => {
               >
                 {pendingCount.toString().padStart(2, "0")}
               </p>
-              {isSyncing && <Loader2 size={20} className="animate-spin text-amber-500/40" />}
+              {isSyncing && (
+                <Loader2 size={20} className="animate-spin text-amber-500/40" />
+              )}
             </div>
           </div>
 
@@ -177,7 +189,10 @@ const SyncQueueMonitor: React.FC = () => {
             className="hidden"
             multiple
           />
-          <Plus size={20} className="theme-icon transition-colors group-hover:theme-accent" />
+          <Plus
+            size={20}
+            className="theme-icon transition-colors group-hover:theme-accent"
+          />
         </div>
 
         {localBuffer.length > 0 && (
@@ -208,7 +223,9 @@ const SyncQueueMonitor: React.FC = () => {
                 </div>
                 <button
                   onClick={() =>
-                    setLocalBuffer((prev) => prev.filter((current) => current.id !== file.id))
+                    setLocalBuffer((prev) =>
+                      prev.filter((current) => current.id !== file.id),
+                    )
                   }
                   className="theme-icon p-2 transition-colors hover:text-rose-500"
                 >

@@ -2,27 +2,27 @@
 
 /* 1. Light Theme ("Vellum") */
 :root {
-  --app-bg: #E0E1DD;
-  --app-surface: #FFFFFF;
+  --app-bg: #e0e1dd;
+  --app-surface: #ffffff;
   --app-surface-elevated: rgba(255, 255, 255, 0.95);
-  --app-border: #84A59D;
+  --app-border: #84a59d;
   --app-heading: #283618;
   --app-body: rgba(40, 54, 24, 0.9);
-  --app-meta: #778DA9;
-  --app-icon: #778DA9;
-  --app-accent: #84A59D;
-  --app-accent-strong: #F26419;
-  --app-link: #606C38;
-  --app-primary-bg: #F26419;
-  --app-primary-fg: #FFFFFF;
+  --app-meta: #778da9;
+  --app-icon: #778da9;
+  --app-accent: #84a59d;
+  --app-accent-strong: #f26419;
+  --app-link: #606c38;
+  --app-primary-bg: #f26419;
+  --app-primary-fg: #ffffff;
   --app-secondary-bg: transparent;
-  --app-secondary-fg: #606C38;
-  --app-secondary-border: #606C38;
+  --app-secondary-fg: #606c38;
+  --app-secondary-border: #606c38;
 
   /* QS Specifics */
-  --app-chart-grid: #778DA9;
-  --app-total-value: #F26419;
-  
+  --app-chart-grid: #778da9;
+  --app-total-value: #f26419;
+
   /* Status Colors */
   --app-success: #059669;
   --app-success-bg: rgba(16, 185, 129, 0.1);
@@ -30,7 +30,7 @@
   --app-error-bg: rgba(244, 63, 94, 0.1);
   --app-warning: #d97706;
   --app-warning-bg: rgba(245, 158, 11, 0.1);
-  
+
   /* Additional layout variables */
   --app-grid-opacity: 0.05;
   --app-shadow-card: 0 10px 30px rgba(40, 54, 24, 0.05);
@@ -39,25 +39,25 @@
 /* 2. Dark Theme ("Groundwork") */
 .dark {
   --app-bg: #283618;
-  --app-surface: #35442A;
+  --app-surface: #35442a;
   --app-surface-elevated: rgba(53, 68, 42, 0.95);
-  --app-border: #606C38;
-  --app-heading: #E0E1DD;
-  --app-body: #84A59D;
-  --app-meta: #778DA9;
-  --app-icon: #E0E1DD;
-  --app-accent: #F26419;
-  --app-accent-strong: #F26419;
-  --app-link: #F26419;
-  --app-primary-bg: #F26419;
+  --app-border: #606c38;
+  --app-heading: #e0e1dd;
+  --app-body: #84a59d;
+  --app-meta: #778da9;
+  --app-icon: #e0e1dd;
+  --app-accent: #f26419;
+  --app-accent-strong: #f26419;
+  --app-link: #f26419;
+  --app-primary-bg: #f26419;
   --app-primary-fg: #283618;
   --app-secondary-bg: transparent;
-  --app-secondary-fg: #E0E1DD;
-  --app-secondary-border: #E0E1DD;
+  --app-secondary-fg: #e0e1dd;
+  --app-secondary-border: #e0e1dd;
 
   /* QS Specifics */
-  --app-chart-grid: #778DA9;
-  --app-total-value: #F26419;
+  --app-chart-grid: #778da9;
+  --app-total-value: #f26419;
 
   /* Status Colors */
   --app-success: #34d399;
@@ -71,7 +71,9 @@
   --app-shadow-card: 0 16px 40px rgba(0, 0, 0, 0.25);
 }
 
-html, body, #root {
+html,
+body,
+#root {
   min-height: 100%;
 }
 
@@ -102,7 +104,11 @@ body {
   }
 
   .theme-hero-gradient {
-    background-image: linear-gradient(to right, var(--app-heading), var(--app-meta));
+    background-image: linear-gradient(
+      to right,
+      var(--app-heading),
+      var(--app-meta)
+    );
   }
 
   .theme-border {
@@ -131,7 +137,7 @@ body {
     text-decoration: underline;
     transition: opacity 0.2s;
   }
-  
+
   .theme-link:hover {
     opacity: 0.8;
   }
@@ -155,9 +161,13 @@ body {
     font-weight: 800;
     transition: opacity 0.2s;
   }
-  
+
   .theme-button-secondary:hover {
-    background-color: color-mix(in srgb, var(--app-secondary-fg) 10%, transparent);
+    background-color: color-mix(
+      in srgb,
+      var(--app-secondary-fg) 10%,
+      transparent
+    );
   }
 
   .theme-chart-grid {
@@ -175,21 +185,23 @@ body {
   }
 
   .theme-accent-surface {
-    background-color: color-mix(in srgb, var(--app-accent-strong) 20%, transparent);
+    background-color: color-mix(
+      in srgb,
+      var(--app-accent-strong) 20%,
+      transparent
+    );
   }
 
-  .theme-status-online, .theme-status-success {
+  .theme-status-online,
+  .theme-status-success {
     color: var(--app-success);
-    background-color: var(--app-success-bg);
-    border-color: color-mix(in srgb, var(--app-success) 20%, transparent);
   }
 
-  .theme-status-offline, .theme-status-error {
+  .theme-status-offline,
+  .theme-status-error {
     color: var(--app-error);
-    background-color: var(--app-error-bg);
-    border-color: color-mix(in srgb, var(--app-error) 20%, transparent);
   }
-  
+
   .theme-status-warning {
     color: var(--app-warning);
     background-color: var(--app-warning-bg);
@@ -205,7 +217,8 @@ body {
     padding: 1.25rem;
   }
 
-  .theme-admin-panel, .theme-public-panel {
+  .theme-admin-panel,
+  .theme-public-panel {
     background-color: var(--app-surface-elevated);
     border: 2px solid var(--app-border);
     box-shadow: var(--app-shadow-card);
@@ -213,32 +226,39 @@ body {
     backdrop-filter: blur(24px);
   }
 
-  .theme-admin-heading, .theme-public-heading {
+  .theme-admin-heading,
+  .theme-public-heading {
     color: var(--app-heading);
     font-weight: 900;
   }
-  
-  .theme-admin-subheading, .theme-public-subheading {
+
+  .theme-admin-subheading,
+  .theme-public-subheading {
     color: var(--app-heading);
     font-weight: 800;
   }
 
-  .theme-admin-body, .theme-public-body {
+  .theme-admin-body,
+  .theme-public-body {
     color: var(--app-body);
   }
 
-  .theme-admin-meta, .theme-public-meta {
+  .theme-admin-meta,
+  .theme-public-meta {
     color: var(--app-meta);
   }
-  
-  .theme-admin-label, .theme-public-label {
+
+  .theme-admin-label,
+  .theme-public-label {
     color: var(--app-meta);
     font-weight: 900;
     letter-spacing: 0.16em;
     text-transform: uppercase;
   }
 
-  .theme-input, .theme-admin-input, .theme-public-input {
+  .theme-input,
+  .theme-admin-input,
+  .theme-public-input {
     background-color: var(--app-surface);
     border: 2px solid var(--app-border);
     color: var(--app-body);
@@ -246,12 +266,15 @@ body {
     border-radius: 0.5rem;
   }
 
-  .theme-public-button, .theme-public-button-lg, .theme-admin-control, .theme-admin-control-compact {
+  .theme-public-button,
+  .theme-public-button-lg,
+  .theme-admin-control,
+  .theme-admin-control-compact {
     background-color: var(--app-secondary-bg);
     color: var(--app-secondary-fg);
-    border: 2px solid var(--app-secondary-border);
+    border: 1px solid var(--app-secondary-border);
     font-weight: 800;
-    border-radius: 0.5rem;
+    border-radius: 1;
   }
 
   .theme-divider {
