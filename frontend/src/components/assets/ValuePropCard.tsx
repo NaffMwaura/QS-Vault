@@ -5,9 +5,7 @@ export const ValuePropCard = ({
   title,
   description,
 }: CardProps) => (
-  <div
-    className="theme-surface-card-soft p-6 sm:p-8 border rounded-2xl sm:rounded-3xl transition-all duration-500 hover:border-amber-500/30 space-y-4 flex flex-col items-start text-left group"
-  >
+  <div className="theme-surface-card-soft p-6 sm:p-8 border rounded-sm transition-all duration-500 hover:border-amber-500/30 space-y-4 flex flex-col items-start text-left group">
     <div className="p-3 bg-amber-500/10 rounded-xl sm:rounded-2xl group-hover:scale-110 transition-transform">
       <Icon size={20} className="text-amber-500" />
     </div>
