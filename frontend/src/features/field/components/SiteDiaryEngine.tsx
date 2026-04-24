@@ -5,7 +5,7 @@ import {
   Sun, 
   CloudRain, 
   Cloud, 
-  Users,  
+  Users,   
   Camera, 
   Save, 
   CheckCircle2,
@@ -21,11 +21,15 @@ import {
   ChevronDown,
   Briefcase,
   RefreshCw,
-  FileUp
+  FileUp,
+  ChevronRight,
+  Eye,
+  Layout,
+  ShieldCheck
 } from 'lucide-react';
 
 /* ======================================================
-    OFFICE MODULE RESOLUTION (PRO-DEV)
+    OFFICE MODULE RESOLUTION (STABILIZED)
    ====================================================== */
 
 let useAuth: any = () => ({ theme: 'light', user: null });
@@ -41,7 +45,7 @@ const resolveModules = async () => {
     if (dbMod.db) db = dbMod.db;
     if (dbMod.syncEngine) syncEngine = dbMod.syncEngine;
   } catch (e) {
-    console.warn("Diary Engine: Infrastructure nodes in standby.");
+    console.warn("Diary Engine: Waiting for database nodes...");
   }
 };
 
@@ -53,7 +57,7 @@ interface SiteDiaryEngineProps {
   projectId: string | null;
 }
 
-/** --- MAIN COMPONENT: PROFESSIONAL SITE LEDGER --- **/
+/** --- MAIN COMPONENT: SITE DIARY & PROGRESS LOG --- **/
 
 const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId }) => {
   const { theme, user } = useAuth();
@@ -67,6 +71,7 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
   const [isSaving, setIsSaving] = useState(false);
   const [showSavedNotification, setShowSavedNotification] = useState(false);
   const [viewingHistory, setViewingHistory] = useState(false);
+  const [expandedRecordId, setExpandedRecordId] = useState<string | null>(null);
   
   const [pastRecords, setPastRecords] = useState<any[]>([]);
   const [deliveryCount, setDeliveryCount] = useState(0);
@@ -80,10 +85,7 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
     date: new Date().toISOString().split('T')[0]
   });
 
-  /** * 1. DATA HANDSHAKE: LOAD PROJECTS & RECORDS 
-   * This logic is now specialized to fetch history without 
-   * "re-filling" the form unless explicitly requested.
-   */
+  /** * 1. DATA RECOVERY: LOAD PROJECTS & PAST UPDATES */
   const syncWorkspaceData = useCallback(async (forceReloadForm = false) => {
     if (!db || !user) {
         setTimeout(() => setIsLoading(false), 800);
@@ -91,7 +93,8 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
     }
 
     try {
-      setIsLoading(true);
+      // Don't trigger global loading if we are just updating the list in the background
+      if (forceReloadForm) setIsLoading(true);
 
       const projects = await db.projects.where('user_id').equals(user.id).toArray();
       setAvailableProjects(projects);
@@ -99,8 +102,6 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
       if (selectedId) {
         const allProjectDiaries = await db.site_diary.where('project_id').equals(selectedId).toArray();
         
-        // Form Fill Logic: Only auto-fill if the user is loading the page 
-        // or explicitly clicked "Restore" from history.
         if (forceReloadForm) {
             const entry = allProjectDiaries.find((d: any) => d.date === diaryData.date);
             if (entry) {
@@ -108,17 +109,14 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
             }
         }
 
-        // Always sync the "ID" to ensure we have a valid reference
         if (!diaryData.id) {
             setDiaryData(prev => ({ ...prev, id: crypto.randomUUID() }));
         }
 
-        // PHOTO SYNC: Filter photos strictly for the current viewed project/date
         const photos = await db.site_photos.where('project_id').equals(selectedId).toArray();
         const filteredPhotos = photos.filter((p: any) => p.timestamp?.startsWith(diaryData.date));
         setDayPhotos(filteredPhotos);
 
-        // LOGISTICS SYNC
         const deliveries = await db.material_logistics.where('project_id').equals(selectedId).toArray();
         setDeliveryCount(deliveries.filter((item: any) => item.timestamp?.startsWith(diaryData.date)).length);
 
@@ -134,12 +132,10 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
   }, [selectedId, user, diaryData.date, diaryData.id]);
 
   useEffect(() => {
-    // Initial Load: Force sync data to form
     syncWorkspaceData(true);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedId]); // Only trigger when project switches
+  }, [selectedId, syncWorkspaceData]);
 
-  /** * 2. EVIDENCE HANDSHAKE: PHOTO CAPTURE & REMOVAL */
+  /** * 2. PHOTO MANAGEMENT */
   const handleCapturePhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && selectedId) {
@@ -159,14 +155,14 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
           setDayPhotos(prev => [...prev, photoRecord]);
           setShowSavedNotification(true);
           setTimeout(() => setShowSavedNotification(false), 2000);
-        } catch (err) { console.error("Photo vaulting failed."); }
+        } catch (err) { console.error("Photo saving failed."); }
       };
       reader.readAsDataURL(file);
     }
   };
 
   const handleDeletePhoto = async (id: string) => {
-    if (!db || !window.confirm("Permanently erase this site evidence node?")) return;
+    if (!db || !window.confirm("Are you sure you want to delete this photo?")) return;
     try {
       await db.site_photos.delete(id);
       if (syncEngine) await syncEngine.queueChange('site_photos', id, 'DELETE', null);
@@ -176,7 +172,7 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
     }
   };
 
-  /** * 3. COMMIT TO LEDGER (THE RESET HANDSHAKE) */
+  /** * 3. SAVE CURRENT UPDATE */
   const handleSaveDiary = async () => {
     if (!selectedId || !db) return;
     setIsSaving(true);
@@ -184,7 +180,7 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
     const record = {
       ...diaryData,
       project_id: selectedId,
-      created_at: new Date().toISOString()
+      updated_at: new Date().toISOString()
     };
 
     try {
@@ -195,18 +191,16 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
       
       setShowSavedNotification(true);
       
-      /** * DISAPPEAR LOGIC: 
-       * Form fields wipe once the data is safely in the local vault.
-       */
       setTimeout(() => {
         setIsSaving(false);
+        // Clear fields for a new entry after saving
         setDiaryData(prev => ({ 
           ...prev, 
-          id: crypto.randomUUID(), // Prep for potential new entry
+          id: crypto.randomUUID(),
           progress_summary: '', 
           headcount: 0 
         })); 
-        syncWorkspaceData(false); // Refresh history list ONLY, do not re-fill form
+        syncWorkspaceData(false);
         setTimeout(() => setShowSavedNotification(false), 3000);
       }, 600);
     } catch (err) {
@@ -214,7 +208,6 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
     }
   };
 
-  /** * MANUAL RESET NODE (The Spin Button) */
   const handleManualReset = () => {
      setDiaryData(prev => ({
         ...prev,
@@ -225,11 +218,10 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
   };
 
   const handleDeleteRecord = async (id: string) => {
-    if (!window.confirm("Permanently erase this site record?")) return;
+    if (!window.confirm("Permanently delete this project record?")) return;
     try {
       await db.site_diary.delete(id);
       if (syncEngine) await syncEngine.queueChange('site_diary', id, 'DELETE', null);
-      setViewingHistory(false);
       syncWorkspaceData(false);
     } catch (err) { console.error("Deletion failed."); }
   };
@@ -238,7 +230,7 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
     return (
       <div className="flex flex-col items-center justify-center p-40 opacity-30">
         <Loader2 className="w-12 h-12 animate-spin mb-4 text-amber-500" />
-        <p className={`font-black text-[10px] uppercase tracking-[0.5em] ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-950'}`}>Syncing Ledger...</p>
+        <p className={`font-black text-[10px] uppercase tracking-[0.5em] ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-950'}`}>Syncing Records...</p>
       </div>
     );
   }
@@ -246,10 +238,10 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
   return (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 text-left pb-10">
       
-      {/* 1. MASTER WORKSPACE CONTROL */}
+      {/* 1. PROJECT SELECTION */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-4">
         <div className="space-y-3 text-left">
-          <h3 className={`text-4xl font-black uppercase italic tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-zinc-950'}`}>Site Diary Hub</h3>
+          <h3 className={`text-4xl font-black uppercase italic tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-zinc-950'}`}>Daily Site Diary</h3>
           <div className="flex items-center gap-4">
              <div className="relative group">
                 <Briefcase size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-500" />
@@ -263,28 +255,28 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
                 </select>
                 <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-600 pointer-events-none" />
              </div>
-             <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 italic">Project Active</p>
+             <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 italic">Active Project</p>
           </div>
         </div>
 
         {showSavedNotification && (
             <div className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 animate-in zoom-in duration-300 shadow-lg shadow-emerald-500/5">
                 <CheckCircle2 size={18} />
-                <span className="text-[10px] font-black uppercase tracking-widest leading-none">Vault Updated</span>
+                <span className="text-[10px] font-black uppercase tracking-widest leading-none">Record Saved</span>
             </div>
         )}
       </div>
 
       <div className="grid lg:grid-cols-3 gap-10">
         
-        {/* LEFT COLUMN: PRIMARY INPUTS */}
+        {/* LEFT COLUMN: TODAY'S ENTRY */}
         <div className="lg:col-span-2 space-y-10">
           <div className={`p-10 sm:p-14 rounded-[4rem] border shadow-2xl transition-all duration-500
             ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800 shadow-black' : 'bg-white border-zinc-200 shadow-zinc-200/50'}`}>
             
             <header className="flex justify-between items-start mb-14 text-left">
-              <div className="space-y-3">
-                <h3 className={`text-3xl font-black uppercase italic tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-zinc-950'}`}>Log Site Progress</h3>
+              <div className="space-y-3 text-left">
+                <h3 className={`text-3xl font-black uppercase italic tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-zinc-950'}`}>Write Today's Update</h3>
                 <div className="flex items-center gap-3">
                   <Calendar size={14} className="text-amber-500" />
                   <p className={`text-[11px] font-black uppercase tracking-[0.3em] ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-900'}`}>
@@ -293,11 +285,10 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
                 </div>
               </div>
               
-              {/* SYNC/CLEAR BUTTON: Reset form logic */}
               <button 
                 onClick={handleManualReset} 
                 className={`p-4 rounded-2xl border transition-all active:scale-90 ${theme === 'dark' ? 'border-zinc-800 text-zinc-500 hover:text-white bg-zinc-950/40' : 'border-zinc-200 text-zinc-400 hover:text-zinc-900 bg-zinc-50 shadow-inner'}`}
-                title="Clear and Sync Form"
+                title="Reset Form"
               >
                 <RefreshCw size={18} className={isLoading ? 'animate-spin' : ''} />
               </button>
@@ -306,20 +297,20 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
             <div className="space-y-16">
               {/* Weather Selection */}
               <div className="space-y-6 text-left">
-                <label className={`text-[12px] font-black uppercase ml-4 tracking-[0.3em] italic ${theme === 'dark' ? 'text-zinc-600' : 'text-zinc-950'}`}>Site Weather Node</label>
+                <label className={`text-[12px] font-black uppercase ml-4 tracking-[0.3em] italic ${theme === 'dark' ? 'text-zinc-600' : 'text-zinc-950'}`}>Weather Today</label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   {[
-                    { id: 'sunny', icon: Sun, label: 'Clear' },
-                    { id: 'rainy', icon: CloudRain, label: 'Rain' },
+                    { id: 'sunny', icon: Sun, label: 'Sunny' },
+                    { id: 'rainy', icon: CloudRain, label: 'Rainy' },
                     { id: 'overcast', icon: Cloud, label: 'Cloudy' },
-                    { id: 'stormy', icon: AlertTriangle, label: 'Storm' },
+                    { id: 'stormy', icon: AlertTriangle, label: 'Stormy' },
                   ].map((opt) => (
                     <button
                       key={opt.id}
                       onClick={() => setDiaryData({...diaryData, weather: opt.id as any})}
                       className={`flex flex-col items-center gap-4 p-8 rounded-3xl border transition-all duration-300 active:scale-95
                         ${diaryData.weather === opt.id 
-                          ? 'bg-amber-500 border-amber-500 text-black shadow-xl shadow-amber-500/20' 
+                          ? 'bg-amber-500 border-amber-600 text-black shadow-xl shadow-amber-500/20' 
                           : 'bg-zinc-950/20 border-zinc-800 text-zinc-500 hover:border-zinc-500'}`}
                     >
                       <opt.icon size={32} strokeWidth={2.5} />
@@ -331,7 +322,7 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
 
               {/* Workforce Input */}
               <div className="space-y-6 text-left">
-                <label className={`text-[12px] font-black uppercase ml-4 tracking-[0.3em] italic ${theme === 'dark' ? 'text-zinc-600' : 'text-zinc-950'}`}>Personnel on Site</label>
+                <label className={`text-[12px] font-black uppercase ml-4 tracking-[0.3em] italic ${theme === 'dark' ? 'text-zinc-600' : 'text-zinc-950'}`}>How many people are working?</label>
                 <div className="relative group">
                   <Users className="absolute left-10 top-1/2 -translate-y-1/2 text-zinc-700 group-focus-within:text-amber-500 transition-colors" size={32} />
                   <input 
@@ -347,10 +338,10 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
 
               {/* Work Done Textarea */}
               <div className="space-y-6 text-left">
-                <label className={`text-[12px] font-black uppercase ml-4 tracking-[0.3em] italic ${theme === 'dark' ? 'text-zinc-600' : 'text-zinc-950'}`}>Daily Progress Summary</label>
+                <label className={`text-[12px] font-black uppercase ml-4 tracking-[0.3em] italic ${theme === 'dark' ? 'text-zinc-600' : 'text-zinc-950'}`}>What was done today?</label>
                 <textarea 
                   rows={6}
-                  placeholder="Record work completed, major deliveries, or critical delays..."
+                  placeholder="Record work completed, major deliveries, or delays..."
                   value={diaryData.progress_summary}
                   onChange={(e) => setDiaryData({...diaryData, progress_summary: e.target.value})}
                   className={`w-full p-10 rounded-[3.5rem] border outline-none transition-all text-lg font-medium shadow-inner
@@ -366,13 +357,13 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
                 className="w-full py-9 bg-amber-500 text-black rounded-[2.5rem] font-black uppercase text-sm tracking-[0.6em] shadow-2xl hover:bg-amber-400 active:scale-[0.98] transition-all flex items-center justify-center gap-6 italic shadow-amber-500/20"
               >
                 {isSaving ? <Loader2 size={24} className="animate-spin" /> : <Save size={24} strokeWidth={3.5} />}
-                Secure Ledger Node
+                Save to Project History
               </button>
             </div>
           </div>
         </div>
 
-        {/* RIGHT COLUMN: EVIDENCE & HISTORY */}
+        {/* RIGHT COLUMN: PHOTOS & HISTORY */}
         <div className="space-y-8 flex flex-col">
           
           {/* Photo Evidence Node */}
@@ -382,18 +373,16 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
             <div className="flex justify-between items-center mb-10 text-left">
               <div className="flex items-center gap-4 text-left">
                 <Camera size={24} className="text-blue-500" />
-                <h3 className={`text-[12px] font-black uppercase tracking-[0.3em] ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-900'}`}>Evidence Capture</h3>
+                <h3 className={`text-[12px] font-black uppercase tracking-[0.3em] ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-900'}`}>Site Photos</h3>
               </div>
-              <span className="text-[10px] font-black uppercase text-zinc-500 tracking-widest">{dayPhotos.length} Node{dayPhotos.length !== 1 ? 's' : ''}</span>
+              <span className="text-[10px] font-black uppercase text-zinc-500 tracking-widest">{dayPhotos.length} Added</span>
             </div>
 
-            {/* Photo Grid */}
             <div className="grid grid-cols-2 gap-4 mb-8">
                {dayPhotos.map((p) => (
                  <div key={p.id} className="aspect-square rounded-3xl overflow-hidden border border-zinc-800 shadow-lg relative group animate-in zoom-in duration-300">
-                    <img src={p.url} className="w-full h-full object-cover transition-transform group-hover:scale-110" alt="Site Node" />
+                    <img src={p.url} className="w-full h-full object-cover transition-transform group-hover:scale-110" alt="Site Update" />
                     
-                    {/* REMOVAL NODE */}
                     <button 
                       onClick={(e) => { e.stopPropagation(); handleDeletePhoto(p.id); }}
                       className="absolute top-3 right-3 p-2.5 bg-rose-500 text-white rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-all hover:bg-rose-600 active:scale-90 z-20"
@@ -401,7 +390,7 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
                        <X size={14} strokeWidth={4} />
                     </button>
 
-                    <div className="absolute inset-0 bg-linear-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4 pointer-events-none">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4 pointer-events-none">
                        <p className="text-[8px] font-black uppercase text-white tracking-widest leading-none">
                          {new Date(p.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                        </p>
@@ -409,11 +398,11 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
                  </div>
                ))}
 
-               {/* CAPTURE TRIGGER */}
+               {/* Add Photo Trigger */}
                <label className={`aspect-square border-2 border-dashed rounded-[2.5rem] flex flex-col items-center justify-center opacity-40 group hover:opacity-100 hover:border-amber-500/40 transition-all cursor-pointer bg-zinc-950/20 shadow-inner
                   ${theme === 'dark' ? 'border-zinc-800' : 'border-zinc-200'}`}>
                   <FileUp size={32} className="text-zinc-700 group-hover:text-amber-500 transition-colors" />
-                  <p className="text-[8px] font-black uppercase tracking-widest mt-3">Vault Image</p>
+                  <p className="text-[8px] font-black uppercase tracking-widest mt-3 text-center px-4">Take Photo</p>
                   <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handleCapturePhoto} />
                </label>
             </div>
@@ -421,22 +410,21 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
             <div className="mt-6 p-6 bg-zinc-950/60 rounded-[2.5rem] border border-zinc-800 text-left shadow-inner">
                <div className="flex items-center gap-4 mb-4 opacity-50">
                   <History size={16} className="text-zinc-500" />
-                  <span className={`text-[10px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-900'}`}>Site Archives</span>
+                  <span className={`text-[10px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-900'}`}>Project History</span>
                </div>
                <button 
                 onClick={() => setViewingHistory(true)}
                 className="w-full py-5 rounded-2xl border border-zinc-800 text-[10px] font-black uppercase tracking-widest hover:bg-amber-500 hover:text-black hover:border-amber-500 transition-all active:scale-95 shadow-xl bg-zinc-900/40"
                >
-                  Retrieve Past Days
+                  See Past Records
                </button>
             </div>
           </div>
 
-          {/* Logistics Summary */}
           <div className={`p-10 rounded-[3.5rem] border transition-all duration-500 flex justify-between items-center group shadow-xl
              ${theme === 'dark' ? 'bg-zinc-950/40 border-zinc-800 shadow-black' : 'bg-white border-zinc-200 shadow-zinc-200/50'}`}>
              <div className="text-left">
-                <p className={`text-[10px] font-black uppercase tracking-[0.3em] mb-3 leading-none ${theme === 'dark' ? 'text-zinc-600' : 'text-zinc-900'}`}>Site Arrivals</p>
+                <p className={`text-[10px] font-black uppercase tracking-[0.3em] mb-3 leading-none ${theme === 'dark' ? 'text-zinc-600' : 'text-zinc-900'}`}>Deliveries Today</p>
                 <p className={`text-5xl font-black italic tracking-tighter leading-none transition-colors group-hover:text-amber-500
                    ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-950'}`}>
                   {deliveryCount.toString().padStart(2, '0')}
@@ -449,60 +437,111 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
         </div>
       </div>
 
-      {/* 3. ARCHIVE MODAL OVERLAY */}
+      {/* 3. ARCHIVE OVERLAY (UPDATED WITH EXPANDABLE ROWS) */}
       {viewingHistory && (
-        <div className="fixed inset-0 z-100] flex items-center justify-center p-6 sm:p-20 bg-black/90 backdrop-blur-xl animate-in fade-in duration-300">
-          <div className={`w-full max-w-4xl rounded-[4.5rem] border p-12 sm:p-16 shadow-2xl relative animate-in zoom-in-95 duration-300 overflow-hidden flex flex-col
-            ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800 shadow-black' : 'bg-white border-zinc-200 shadow-xl'}`}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-20 bg-black/95 backdrop-blur-xl animate-in fade-in duration-300">
+          <div className={`w-full max-w-5xl rounded-[4.5rem] border p-8 sm:p-14 shadow-2xl relative animate-in zoom-in-95 duration-300 overflow-hidden flex flex-col h-[85vh]
+            ${theme === 'dark' ? 'bg-[#09090b] border-zinc-800' : 'bg-white border-zinc-200'}`}>
             
-            <button onClick={() => setViewingHistory(false)} className="absolute top-10 right-10 p-5 bg-zinc-900 rounded-2xl text-zinc-500 hover:text-white shadow-lg transition-all active:scale-90 border border-zinc-800"><X size={28}/></button>
+            <button onClick={() => { setViewingHistory(false); setExpandedRecordId(null); }} className="absolute top-10 right-10 p-5 bg-zinc-900 rounded-2xl text-zinc-500 hover:text-white shadow-lg transition-all active:scale-90 border border-zinc-800 z-20"><X size={28}/></button>
             
-            <div className="mb-12 text-left space-y-2">
-              <h4 className={`text-4xl font-black uppercase italic tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-zinc-950'}`}>Archive Ledger</h4>
-              <p className="text-[10px] font-black uppercase text-zinc-500 tracking-widest">Restore past nodes and review evidence</p>
+            <div className="mb-12 text-left space-y-3">
+              <h4 className={`text-4xl sm:text-5xl font-black uppercase italic tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-zinc-950'}`}>Project History</h4>
+              <p className="text-[11px] font-black uppercase text-zinc-500 tracking-[0.5em] italic text-left">Search and review past site updates</p>
             </div>
 
-            <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar space-y-4 pb-10">
-               {pastRecords.length > 0 ? pastRecords.map(rec => (
-                 <div key={rec.id} className={`p-10 rounded-[3rem] border transition-all flex items-center justify-between gap-8 group
-                   ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800 hover:bg-zinc-900' : 'bg-zinc-50 border-zinc-100 hover:bg-zinc-100'}`}>
-                    
-                    <div className="text-left flex-1">
-                       <p className="text-[11px] font-black uppercase text-amber-500 mb-3 leading-none italic">{new Date(rec.date).toDateString()}</p>
-                       <p className={`text-xl font-black uppercase italic tracking-tight transition-colors 
-                         ${theme === 'dark' ? 'text-zinc-300 group-hover:text-white' : 'text-zinc-900'}`}>
-                         {rec.progress_summary ? (rec.progress_summary.slice(0, 90) + "...") : "No site summary found."}
-                       </p>
-                       <div className="mt-6 flex items-center gap-6 opacity-40">
-                          <div className="flex items-center gap-2">
-                             <Users size={14} /> <span className="text-[10px] font-black uppercase tracking-widest">{rec.headcount} workforce</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                             <Sun size={14} /> <span className="text-[10px] font-black uppercase tracking-widest">{rec.weather}</span>
-                          </div>
-                       </div>
-                    </div>
+            <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar space-y-6 pb-10">
+               {pastRecords.length > 0 ? pastRecords.map(rec => {
+                 const isExpanded = expandedRecordId === rec.id;
+                 return (
+                   <div key={rec.id} className={`rounded-[3.5rem] border transition-all duration-500 overflow-hidden flex flex-col group
+                     ${theme === 'dark' 
+                        ? (isExpanded ? 'bg-zinc-900 border-amber-500/40 shadow-amber-500/5 shadow-2xl' : 'bg-zinc-950/40 border-zinc-800 hover:border-zinc-700') 
+                        : (isExpanded ? 'bg-white border-amber-500/40 shadow-xl' : 'bg-zinc-50 border-zinc-200 hover:border-zinc-300')}`}>
+                      
+                      {/* Record Row Header */}
+                      <div className="p-8 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-8">
+                         <div className="text-left flex-1 space-y-4">
+                            <div className="flex items-center gap-4">
+                               <span className="px-4 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-[10px] font-mono font-black text-amber-500 uppercase italic leading-none">{new Date(rec.date).toDateString()}</span>
+                               <span className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-zinc-400' : 'bg-white border-zinc-200 text-zinc-600'}`}>
+                                  {rec.weather}
+                               </span>
+                            </div>
+                            <h5 className={`text-2xl font-black uppercase italic tracking-tight transition-colors 
+                              ${theme === 'dark' ? 'text-zinc-100 group-hover:text-white' : 'text-zinc-950'}`}>
+                              {rec.progress_summary ? (rec.progress_summary.slice(0, 60) + "...") : "No description."}
+                            </h5>
+                         </div>
 
-                    <div className="flex items-center gap-4">
-                       <button 
-                         onClick={() => { setDiaryData(rec); setViewingHistory(false); }}
-                         className="p-6 bg-amber-500 text-black rounded-2xl shadow-xl hover:bg-amber-400 transition-all flex items-center gap-3 active:scale-95"
-                       >
-                          <ArrowLeft size={20} />
-                          <span className="text-[11px] font-black uppercase tracking-widest">Restore</span>
-                       </button>
-                       <button 
-                         onClick={() => handleDeleteRecord(rec.id)}
-                         className="p-6 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-2xl hover:bg-rose-500 hover:text-white transition-all shadow-lg active:scale-95"
-                       >
-                          <Trash2 size={20} />
-                       </button>
-                    </div>
-                 </div>
-               )) : (
+                         <div className="flex items-center gap-4">
+                            {/* Expansion Button */}
+                            <button 
+                              onClick={() => setExpandedRecordId(isExpanded ? null : rec.id)}
+                              className={`flex items-center gap-3 px-6 py-4 rounded-2xl border font-black uppercase text-[10px] tracking-widest transition-all
+                                ${theme === 'dark' 
+                                  ? (isExpanded ? 'bg-amber-500 text-black border-amber-400' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white') 
+                                  : (isExpanded ? 'bg-amber-500 text-black border-amber-400 shadow-lg' : 'bg-white border-zinc-200 text-zinc-600 hover:text-zinc-900')}`}
+                            >
+                               {isExpanded ? <Eye size={18} strokeWidth={3} /> : <Eye size={18} />}
+                               {isExpanded ? 'Collapse' : 'View Full Details'}
+                            </button>
+                            
+                            {/* Restore Button (The fix for the blank screen) */}
+                            <button 
+                              onClick={() => { setDiaryData(rec); setViewingHistory(false); setExpandedRecordId(null); }}
+                              className="p-4 bg-zinc-950 text-emerald-500 border border-zinc-800 rounded-2xl shadow-xl hover:bg-emerald-500 hover:text-black transition-all active:scale-95"
+                              title="Copy back to editor"
+                            >
+                               <RefreshCw size={22} strokeWidth={2.5} />
+                            </button>
+                            
+                            <button 
+                              onClick={() => handleDeleteRecord(rec.id)}
+                              className="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-2xl hover:bg-rose-500 hover:text-white transition-all shadow-lg active:scale-95"
+                            >
+                               <Trash2 size={22} />
+                            </button>
+                         </div>
+                      </div>
+
+                      {/* Expandable Body */}
+                      {isExpanded && (
+                        <div className="p-10 border-t border-zinc-800/40 bg-zinc-950/20 animate-in slide-in-from-top-4 duration-500 space-y-10">
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                              <div className="space-y-4 text-left">
+                                 <div className="flex items-center gap-3 opacity-60">
+                                    <Layout size={16} className="text-amber-500" />
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-left">Complete Summary</p>
+                                 </div>
+                                 <p className={`text-lg font-medium leading-relaxed italic text-left ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'}`}>
+                                    "{rec.progress_summary || "Nothing recorded."}"
+                                 </p>
+                              </div>
+                              <div className="grid grid-cols-2 gap-6 h-fit">
+                                 <div className={`p-6 rounded-[2rem] border ${theme === 'dark' ? 'bg-zinc-900/60 border-zinc-800' : 'bg-white border-zinc-200 shadow-sm'}`}>
+                                    <p className="text-[9px] font-black uppercase text-zinc-500 mb-2 leading-none text-left">Workers</p>
+                                    <p className="text-3xl font-black text-white text-left italic tracking-tighter leading-none">{rec.headcount}</p>
+                                 </div>
+                                 <div className={`p-6 rounded-[2rem] border ${theme === 'dark' ? 'bg-zinc-900/60 border-zinc-800' : 'bg-white border-zinc-200 shadow-sm'}`}>
+                                    <p className="text-[9px] font-black uppercase text-zinc-500 mb-2 leading-none text-left">Status</p>
+                                    <p className="text-[11px] font-black text-emerald-500 text-left uppercase tracking-widest leading-none">Secured</p>
+                                 </div>
+                              </div>
+                           </div>
+
+                           <div className="pt-8 border-t border-zinc-800/40 flex justify-between items-center opacity-40 italic">
+                              <p className="text-[9px] font-black uppercase tracking-widest">ID Reference: {rec.id}</p>
+                              <ShieldCheck size={16} className="text-emerald-500" />
+                           </div>
+                        </div>
+                      )}
+                   </div>
+                 );
+               }) : (
                  <div className="py-24 text-center opacity-20">
                     <Package size={80} className="mx-auto mb-8" />
-                    <p className="font-black uppercase text-base tracking-widest italic leading-none">Vault Registry Empty</p>
+                    <p className="font-black uppercase text-base tracking-widest italic leading-none">No history found.</p>
                  </div>
                )}
             </div>
@@ -512,7 +551,7 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
 
       <footer className="col-span-full pt-16 text-center opacity-20 select-none pb-10">
          <p className="text-[9px] font-black uppercase tracking-[1.8em] text-zinc-600 italic leading-none text-center">
-           ISO 19650 QUALITY COMPLIANCE • SITE DIARY ENGINE
+           SECURE SITE RECORDING ENGINE • QS VAULT
          </p>
       </footer>
 
