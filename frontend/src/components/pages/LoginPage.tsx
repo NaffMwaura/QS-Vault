@@ -23,31 +23,12 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../features/auth/AuthContext";
+import { supabase } from "../../lib/database/database";
 
 /* ======================================================
-    MODULE RESOLUTION
+    MODULE RESOLUTION (Non-Hook Modules Only)
    ====================================================== */
-
-let supabase: any = null;
-let useAuth: any = () => ({
-  theme: "dark",
-  toggleTheme: () => {},
-  isOnline: true,
-});
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../features/auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-
-    const dbMod = await import("../../lib/database/database");
-    if (dbMod.supabase) supabase = dbMod.supabase;
-  } catch (e) {
-    console.warn("Login Node: Local module resolution in standby.");
-  }
-};
-
-resolveModules();
 
 /** --- UI HELPERS --- **/
 
@@ -118,6 +99,7 @@ const LoginPage: React.FC = () => {
 
   /** * PROFILE SYNC HANDSHAKE
    * Fix: Corrected destructuring of metadata to prevent 'undefined' errors.
+   * Enhancement: Auto-elevate first user to super-admin.
    */
   const syncProfile = async (user: any) => {
     if (!supabase || !user) return;
@@ -128,16 +110,28 @@ const LoginPage: React.FC = () => {
     const fallbackName = user.email ? user.email.split("@")[0] : "Surveyor";
 
     try {
+      // Check if this is the first user by counting existing profiles
+      const { count } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true });
+      
+      const isFirstUser = count === 0;
+      const userRole = isFirstUser ? "super-admin" : "user";
+
       await supabase.from("profiles").upsert(
         {
           id: user.id,
           full_name: metaFullName || username || fallbackName,
           username: username || fallbackName,
-          role: "user",
+          role: userRole,
           updated_at: new Date().toISOString(),
         },
         { onConflict: "id" },
       );
+
+      if (isFirstUser) {
+        console.log("🎯 First user detected: Elevated to super-admin role");
+      }
     } catch (err) {
       console.warn("Profile Sync Deferred:", err);
     }
