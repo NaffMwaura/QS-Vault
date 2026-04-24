@@ -98,8 +98,7 @@ const ProjectTakeoffPage: React.FC<ProjectTakeoffPageProps> = ({
             rightOpen={workspace.rightOpen}
             setRightOpen={workspace.setRightOpen}
             onCanvasClick={handleCanvasClick}
-            onDeleteMeasurement={deleteMeasurement}
-          />
+            onDeleteMeasurement={deleteMeasurement} projectId={""} projectName={""}          />
         ) : (
           <ReportsWorkspace
             projectId={projectId}

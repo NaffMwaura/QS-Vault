@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import { 
   Hash, 
@@ -10,8 +12,10 @@ import {
   Target,
   PaintBucket,
   Info,
-  Zap
+  Zap,
+  MousePointer2
 } from 'lucide-react';
+
 /** --- TYPES --- **/
 
 export type MeasurementTool = 'length' | 'area' | 'count';
@@ -22,6 +26,7 @@ interface SMMSection {
   label: string;
   icon: React.ElementType;
   defaultTool: MeasurementTool;
+  description: string; // Added for newbie clarity
 }
 
 interface SMMWorkSectionsProps {
@@ -29,21 +34,25 @@ interface SMMWorkSectionsProps {
   setActiveSection: (id: string) => void;
   activeTool: MeasurementTool;
   setActiveTool: (tool: MeasurementTool) => void;
+  theme?: string;
 }
 
 const SMM_REGISTRY: SMMSection[] = [
-  { id: 'excavation', code: 'SEC-D', label: 'Excavation & Earthwork', icon: Pickaxe, defaultTool: 'area' },
-  { id: 'concrete', code: 'SEC-F', label: 'Concrete Work', icon: Box, defaultTool: 'area' },
-  { id: 'walling', code: 'SEC-G', label: 'Walling & Partitions', icon: Layers, defaultTool: 'length' },
-  { id: 'finishes', code: 'SEC-U', label: 'Floor & Wall Finishes', icon: PaintBucket, defaultTool: 'area' },
-  { id: 'openings', code: 'SEC-L', label: 'Doors & Windows', icon: DoorOpen, defaultTool: 'count' },
+  { id: 'excavation', code: 'SEC-D', label: 'Excavation', icon: Pickaxe, defaultTool: 'area', description: 'Digging and earthworks' },
+  { id: 'concrete', code: 'SEC-F', label: 'Concrete Work', icon: Box, defaultTool: 'area', description: 'Slabs, beams, and columns' },
+  { id: 'walling', code: 'SEC-G', label: 'Walling', icon: Layers, defaultTool: 'length', description: 'Stone or brick partitions' },
+  { id: 'finishes', code: 'SEC-U', label: 'Finishes', icon: PaintBucket, defaultTool: 'area', description: 'Tiling, plaster, and paint' },
+  { id: 'openings', code: 'SEC-L', label: 'Doors & Windows', icon: DoorOpen, defaultTool: 'count', description: 'Counting frames and units' },
 ];
+
+/** --- MAIN COMPONENT: WORK CATEGORY & TOOL SELECTOR --- **/
 
 const SMMWorkSections: React.FC<SMMWorkSectionsProps> = ({ 
   activeSection, 
   setActiveSection, 
   activeTool, 
-  setActiveTool 
+  setActiveTool,
+  theme = 'dark'
 }) => {
 
   const handleSectionSelect = (section: SMMSection) => {
@@ -52,46 +61,49 @@ const SMMWorkSections: React.FC<SMMWorkSectionsProps> = ({
   };
 
   return (
-    <aside className="theme-page w-full h-auto overflow-visible flex flex-col space-y-10 p-6 transition-colors duration-500 sm:p-10">
+    <aside className="w-full h-auto overflow-visible flex flex-col space-y-10 p-4 sm:p-0 transition-colors duration-500">
       
-      {/* 1. GUIDANCE HEADER */}
-      <div className="theme-panel rounded-4xl border-2 p-6 transition-colors duration-500">
-        <div className="flex items-start gap-4">
+      {/* 1. SIMPLE GUIDANCE HEADER */}
+      <div className={`p-6 rounded-[2rem] border-2 transition-all shadow-xl
+        ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800' : 'bg-zinc-50 border-zinc-100'}`}>
+        <div className="flex items-start gap-5">
           <div className="p-3 bg-amber-500/10 rounded-xl text-amber-500 shrink-0">
              <Info size={20} strokeWidth={2.5} />
           </div>
-          <div className="text-left">
-            <p className="theme-meta mb-1.5 text-[10px] font-black uppercase tracking-[0.3em] italic">
-              Context Setup
-            </p>
-            <p className="theme-body text-sm font-bold leading-snug">
-              Select a work section below. The system will automatically arm the correct measurement tool for that category.
+          <div className="text-left space-y-1">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 italic">Step 1: Pick Category</p>
+            <p className={`text-sm font-bold leading-snug ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-700'}`}>
+              Select the type of work you are measuring. We will automatically pick the best tool for you.
             </p>
           </div>
         </div>
       </div>
 
-      {/* 2. TOOL SELECTION HUB */}
+      {/* 2. TOOL SELECTION HUB (Visual Overrides) */}
       <div className="space-y-5">
-        <label className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--app-meta)] ml-1 italic block text-left">
-          Measurement Tools
-        </label>
+        <div className="flex items-center gap-3 ml-2 opacity-60">
+           <MousePointer2 size={14} className="text-amber-500" />
+           <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Measurement Tools</label>
+        </div>
+        
         <div className="grid grid-cols-3 gap-4">
           {[
-            { id: 'area', icon: Target, label: 'Area' },
-            { id: 'length', icon: Ruler, label: 'Length' },
-            { id: 'count', icon: Hash, label: 'Count' },
+            { id: 'area', icon: Target, label: 'Area ($m^2$)' },
+            { id: 'length', icon: Ruler, label: 'Length ($m$)' },
+            { id: 'count', icon: Hash, label: 'Count ($Nr$)' },
           ].map((tool) => (
             <button
               key={tool.id}
               onClick={() => setActiveTool(tool.id as MeasurementTool)}
               className={`flex flex-col items-center justify-center gap-3 py-6 rounded-2xl border-2 transition-all active:scale-95 shadow-xl
                 ${activeTool === tool.id 
-                  ? 'bg-[var(--app-accent-strong)] text-[var(--app-primary-fg)] border-[var(--app-accent-strong)] shadow-lg' 
-                  : 'bg-[var(--app-surface)] text-[var(--app-meta)] border-[var(--app-border)] hover:border-[var(--app-accent-strong)] hover:text-[var(--app-accent-strong)]'}`}
+                  ? 'bg-amber-500 text-black border-amber-600 shadow-amber-500/20' 
+                  : theme === 'dark' 
+                    ? 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:border-zinc-600' 
+                    : 'bg-white border-zinc-200 text-zinc-400 hover:border-zinc-300'}`}
             >
-              <tool.icon size={28} strokeWidth={activeTool === tool.id ? 2.5 : 2} />
-              <span className={`text-[10px] font-black uppercase tracking-widest leading-none ${activeTool === tool.id ? 'opacity-80' : ''}`}>
+              <tool.icon size={28} strokeWidth={activeTool === tool.id ? 3 : 2} />
+              <span className="text-[9px] font-black uppercase tracking-widest leading-none">
                 {tool.label}
               </span>
             </button>
@@ -99,83 +111,86 @@ const SMMWorkSections: React.FC<SMMWorkSectionsProps> = ({
         </div>
       </div>
 
-      {/* 2. SMM COMPLIANCE CATEGORIES */}
+      {/* 3. WORK CATEGORIES (Simplified SMM-KE) */}
       <div className="space-y-5 flex flex-col">
-        <label className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--app-meta)] ml-1 italic block text-left">
-          Standard Work Sections (SMM-KE)
-        </label>
+        <div className="flex items-center gap-3 ml-2 opacity-60">
+           <Layers size={14} className="text-amber-500" />
+           <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Work Categories</label>
+        </div>
         
-        <div className="space-y-3">
+        <div className="space-y-4">
           {SMM_REGISTRY.map((section) => {
             const isActive = activeSection === section.label;
             return (
               <button
                 key={section.id}
                 onClick={() => handleSectionSelect(section)}
-                className={`w-full flex items-center justify-between p-5 rounded-2xl border-2 transition-all duration-500 group relative overflow-hidden
+                className={`w-full flex items-center justify-between p-6 rounded-3xl border-2 transition-all duration-500 group relative overflow-hidden
                   ${isActive 
-                    ? 'theme-status-warning shadow-2xl' 
-                    : 'bg-[var(--app-surface)] text-[var(--app-meta)] border-[var(--app-border)] hover:border-[var(--app-accent-strong)] hover:text-[var(--app-heading)] shadow-sm'}`}
+                    ? 'bg-amber-500/10 border-amber-500 shadow-2xl' 
+                    : theme === 'dark' 
+                      ? 'bg-zinc-900/40 border-zinc-800 hover:border-zinc-700' 
+                      : 'bg-white border-zinc-100 shadow-sm hover:border-amber-500/30'}`}
               >
-                {/* Decorative Background Pulse for Active Node */}
-                {isActive && (
-                  <div className="absolute inset-0 bg-[var(--app-accent-strong)] opacity-5 animate-pulse" />
-                )}
+                {isActive && <div className="absolute inset-0 bg-amber-500/5 animate-pulse" />}
 
-                <div className="flex items-center gap-5 relative z-10">
-                  <div className={`p-4 rounded-xl border-2 transition-all duration-500 shadow-inner
-                    ${isActive ? 'bg-[var(--app-accent-strong)] text-[var(--app-primary-fg)] border-[var(--app-accent-strong)] scale-110 shadow-xl' : 'bg-[var(--app-surface)] border-[var(--app-border)] shadow-black'}`}>
-                    <section.icon size={18} />
+                <div className="flex items-center gap-6 relative z-10 text-left">
+                  <div className={`p-4 rounded-2xl border-2 transition-all duration-500 shadow-inner
+                    ${isActive ? 'bg-amber-500 text-black border-amber-400 scale-110' : 'bg-zinc-950 border-zinc-800'}`}>
+                    <section.icon size={20} />
                   </div>
-                  <div className="text-left">
-                    <p className={`text-[9px] font-black uppercase tracking-[0.2em] leading-none mb-2
-                      ${isActive ? 'text-[var(--app-accent-strong)]' : 'text-[var(--app-meta)]'}`}>
+                  <div className="text-left space-y-1">
+                    <p className={`text-[9px] font-black uppercase tracking-widest leading-none
+                      ${isActive ? 'text-amber-500' : 'text-zinc-600'}`}>
                       {section.code}
                     </p>
-                    <h5 className={`text-[12px] font-black uppercase tracking-tight leading-none
-                      ${isActive ? 'text-[var(--app-heading)]' : 'text-[var(--app-meta)] group-hover:text-[var(--app-heading)]'}`}>
+                    <h5 className={`text-sm font-black uppercase tracking-tight leading-none
+                      ${isActive ? (theme === 'dark' ? 'text-white' : 'text-black') : 'text-zinc-500'}`}>
                       {section.label}
                     </h5>
+                    <p className="text-[9px] font-bold text-zinc-700 uppercase leading-none italic">{section.description}</p>
                   </div>
                 </div>
-                {isActive && <ChevronRight size={18} className="text-[var(--app-accent-strong)] animate-in slide-in-from-left-4 duration-500" />}
+                {isActive && <ChevronRight size={20} className="text-amber-500 animate-in slide-in-from-left-4 duration-500" />}
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* 3. OPERATIONAL TRACE SUMMARY */}
-      <div className={`p-8 rounded-2xl border-2 border-[var(--app-border)] bg-[var(--app-surface-elevated)] text-left transition-all duration-500 relative overflow-hidden shadow-inner`}>
+      {/* 4. ACTIVE STATUS SUMMARY */}
+      <div className={`p-8 rounded-[2rem] border-2 flex flex-col gap-4 transition-all duration-500 shadow-inner
+        ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800' : 'bg-zinc-50 border-zinc-100'}`}>
         
-        <div className="flex items-center gap-3 mb-4">
-           <Zap size={14} className="text-[var(--app-accent-strong)] animate-pulse" />
-           <p className="text-[10px] font-black uppercase text-[var(--app-meta)] tracking-[0.3em] italic leading-none">
-             Engine Armed
-           </p>
+        <div className="flex items-center gap-3">
+           <Zap size={16} className="text-amber-500 animate-pulse" />
+           <p className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.3em] italic">Current Setup</p>
         </div>
         
-        <p className={`text-[11px] font-bold leading-relaxed text-[var(--app-meta)]`}>
-          Active Tool: <span className="text-[var(--app-accent-strong)] italic uppercase">{activeTool}</span>
-          <br/>
-          Current Node: <span className="text-[var(--app-accent-strong)] italic uppercase">{activeSection}</span>
-        </p>
+        <div className="flex flex-col gap-2 text-left">
+          <p className="text-xs font-bold text-zinc-400">
+            Armed Tool: <span className="text-amber-500 uppercase italic">{activeTool} Mode</span>
+          </p>
+          <p className="text-xs font-bold text-zinc-400">
+            Targeting: <span className="text-amber-500 uppercase italic">{activeSection}</span>
+          </p>
+        </div>
 
-        <div className="mt-6 pt-6 border-t border-[var(--app-border)] flex items-center gap-3 opacity-40">
-           <Info size={14} className="text-[var(--app-meta)]" />
-           <p className="text-[8px] font-black uppercase tracking-widest text-[var(--app-meta)]">
-             Logic following SMM-KE 2026 Protocol
+        <div className="pt-4 border-t border-zinc-800 flex items-center gap-3 opacity-40">
+           <p className="text-[8px] font-black uppercase tracking-widest text-zinc-600">
+             Logic following Professional SMM Standard
            </p>
         </div>
       </div>
 
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--app-border); border-radius: 20px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--app-accent-strong); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 20px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
       `}</style>
     </aside>
   );
 };
 
 export default SMMWorkSections;
+

@@ -119,10 +119,6 @@ const DashboardPage: React.FC = () => {
                       projects={projects} 
                       setProjects={setProjects} 
                       navigate={(path: To) => navigate(path)} 
-                      onDeleteProject={async (id: any) => {
-                        if (db) await db.projects.delete(id);
-                        setProjects(prev => prev.filter(p => p.id !== id));
-                      }}
                     />
                   </div>
                 </div>

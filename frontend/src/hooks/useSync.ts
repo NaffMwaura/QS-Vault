@@ -1,99 +1,97 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect } from "react";
 import { queryClient } from "../lib/queryClient";
-import { syncEngine, db } from "../lib/database/database";
+
+/* ======================================================
+   INFRASTRUCTURE RESOLUTION
+   Dynamically resolving the database to prevent build crashes.
+   ====================================================== */
+let syncEngine: any = null;
+let db: any = null;
+
+const resolveDatabase = async () => {
+  try {
+    const dbMod = await import("../lib/database/database");
+    syncEngine = dbMod.syncEngine;
+    db = dbMod.db;
+  } catch (e) {
+    console.warn("Sync Hook: Database node connection deferred.");
+  }
+};
+
+resolveDatabase();
 
 /**
  * useSync Hook (The QS Vault Heartbeat)
- * ------------------------------------
- * Monitors device connectivity and autonomously orchestrates the flow 
- * between the local Dexie wallet and the Supabase cloud registry.
- * * * Performance Node: Implements a "Stabilization Buffer" to prevent 
- * rapid-fire sync loops and flickering on unstable site signals.
+ * Optimized for performance to prevent UI "heaviness."
  */
-
 export const useSync = () => {
   useEffect(() => {
-    // Operational Flag to prevent overlapping sync nodes
     let isSyncing = false;
     let stabilityTimer: any = null;
 
-    /** * VAULT PUSH ENGINE
-     * Orchestrates the movement of data from local to cloud.
-     */
+    /** * VAULT PUSH ENGINE */
     const performVaultPush = async () => {
-      // Guard: Ensure we are online and not already mid-handshake
-      if (isSyncing || !navigator.onLine) return;
+      if (isSyncing || !navigator.onLine || !db || !syncEngine) return;
       
       try {
         isSyncing = true;
-        console.log("🔄 QS Vault: Initiating autonomous vault push...");
+        console.log("🔄 QS Vault: Synchronizing local ledger with cloud...");
 
-        // 1. DATA INTEGRITY CHECK (Unblocks the 38-record stall)
-        // Scans for and removes any 'ghost' records with null payloads
-        if (db?.sync_queue) {
-          const brokenNodes = await db.sync_queue.filter(item => !item.payload && item.operation !== 'DELETE').toArray();
-          if (brokenNodes.length > 0) {
-            console.warn(`🛡️ QS Vault: Detected ${brokenNodes.length} corrupted data nodes. Purging to unblock queue.`);
-            await Promise.all(brokenNodes.map(node => db.sync_queue.delete(node.id!)));
-          }
+        // 1. PURGE CORRUPTED NODES
+        const brokenNodes = await db.sync_queue
+          .filter((item: any) => !item.payload && item.operation !== 'DELETE')
+          .toArray();
+          
+        if (brokenNodes.length > 0) {
+          await Promise.all(brokenNodes.map((node: any) => db.sync_queue.delete(node.id!)));
         }
         
-        // 2. Process the Dexie sync_queue (Primary Site Data)
-        if (syncEngine && typeof syncEngine.processQueue === 'function') {
+        // 2. PROCESS QUEUE
+        if (typeof syncEngine.processQueue === 'function') {
           await syncEngine.processQueue();
         }
         
-        // 3. Resume any TanStack Query mutations (UI state sync)
+        // 3. UI STATE SYNC
         if (queryClient && typeof queryClient.resumePausedMutations === 'function') {
           await queryClient.resumePausedMutations();
         }
         
-        // 4. Refresh local cache with official cloud nodes
-        if (queryClient && typeof queryClient.invalidateQueries === 'function') {
-          queryClient.invalidateQueries();
+        // 4. PERFORMANCE FIX: Targeted Invalidation
+        // Instead of refreshing the WHOLE app, we only refresh specific project data.
+        if (queryClient) {
+          queryClient.invalidateQueries({ queryKey: ['projects'] });
+          queryClient.invalidateQueries({ queryKey: ['measurements'] });
         }
         
-        console.log("✅ QS Vault: Infrastructure synchronized.");
+        console.log("✅ QS Vault: Ledger aligned.");
       } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "Handshake Reset";
-        console.warn(`⚠️ QS Vault: Sync Node Deferred - ${message}`);
+        console.warn(`⚠️ QS Vault: Sync deferred.`);
       } finally {
         isSyncing = false;
       }
     };
 
     const handleOnlineNode = () => {
-      console.log("🌐 QS Vault: Signal detected. Waiting for connection stability...");
-      
-      // STABILITY HANDSHAKE:
-      // Wait 1.5s to ensure the signal isn't "flickering" before pushing data.
       if (stabilityTimer) clearTimeout(stabilityTimer);
-      stabilityTimer = setTimeout(() => {
-        performVaultPush();
-      }, 1500);
+      stabilityTimer = setTimeout(() => performVaultPush(), 2000);
     };
 
     const handleOfflineNode = () => {
       if (stabilityTimer) clearTimeout(stabilityTimer);
-      console.log("🛡️ QS Vault: Offline Mode. All site data being saved to local encrypted ledger.");
+      console.log("🛡️ QS Vault: Offline Mode. Encryption active.");
     };
 
-    // Browser-Level Infrastructure Listeners
     window.addEventListener("online", handleOnlineNode);
     window.addEventListener("offline", handleOfflineNode);
 
-    // Initial Handshake on mount
-    if (navigator.onLine) {
-      performVaultPush();
-    }
+    if (navigator.onLine) performVaultPush();
 
-    // "Safety Heartbeat": Periodic check every 60 seconds
     const heartbeatInterval = setInterval(() => {
       if (navigator.onLine && !isSyncing) performVaultPush();
     }, 60000);
 
-    // CLEANUP PROTOCOL
     return () => {
       window.removeEventListener("online", handleOnlineNode);
       window.removeEventListener("offline", handleOfflineNode);

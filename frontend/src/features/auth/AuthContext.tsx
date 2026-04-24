@@ -1,6 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
 /* eslint-disable @typescript-eslint/no-unused-vars */
- 
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
 import { type Session, type User, type AuthChangeEvent } from "@supabase/supabase-js";
 import { db, supabase } from "../../lib/database/database";
@@ -33,7 +32,6 @@ const getSystemTheme = (): Theme => {
   if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
     return "dark";
   }
-
   return window.matchMedia(SYSTEM_THEME_QUERY).matches ? "dark" : "light";
 };
 
@@ -81,20 +79,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return (localStorage.getItem("qs_active_view") as DashboardView) || 'projects';
   });
 
-  const [theme, setTheme] = useState<Theme>(getSystemTheme);
+  const [theme, setTheme] = useState<Theme>(() => {
+    const saved = localStorage.getItem("qs_theme") as Theme;
+    return saved || getSystemTheme();
+  });
 
   /* --------------------------------------------------
       CORE ACTIONS: IMMEDIATE RESPONSE SIGN-OUT
      -------------------------------------------------- */
 
   const signOut = useCallback(async () => {
-    // 1. OPTIMISTIC CLEAR: We kill the UI state immediately so user sees "Login" right away
     setSession(null);
     setUser(null);
     setRole(null);
     localStorage.removeItem("qs_login_timestamp");
 
-    // 2. BACKGROUND CLEANUP: Let Supabase handle the cloud token in the background
     if (supabase) {
       try {
         await supabase.auth.signOut();
@@ -174,17 +173,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(currentSession.user);
         const userRole = await resolveUserRole(currentSession.user.id);
         if (mounted) setRole(userRole);
-      } else if (!currentSession) {
-        // If no cloud session exists, we ensure local state is clean
-        setSession(null);
-        setUser(null);
       }
 
       // Sync logins/logouts via Supabase Listener
       const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, newSession: Session | null) => {
         if (!mounted) return;
 
-        if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+        /** * THE OFFLINE KILL-SWITCH FIX
+         * If the cloud reports a signed-out state, we only honor it if we are online.
+         * This prevents network flickers from terminating local sessions.
+         */
+        if (event === 'SIGNED_OUT') {
+            if (navigator.onLine) {
+                signOut();
+            } else {
+                console.log("🛡️ Offline: Preservation mode active. Maintaining local node session.");
+            }
+            return;
+        }
+
+        if (event === 'SIGNED_IN' || event === 'USER_UPDATED' || event === 'TOKEN_REFRESHED') {
           if (!localStorage.getItem("qs_login_timestamp")) {
             localStorage.setItem("qs_login_timestamp", Date.now().toString());
           }
@@ -194,9 +202,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const r = await resolveUserRole(newSession.user.id);
             if (mounted) setRole(r);
           }
-        } else if (event === 'SIGNED_OUT') {
-          // Trigger the immediate state clear if not already cleared
-          signOut();
         }
 
         setIsLoading(false);
@@ -216,34 +221,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // 5. Persistence Handlers
   useEffect(() => {
     localStorage.setItem("qs_active_view", activeView);
-  }, [activeView]);
-
-  useEffect(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
-      return;
-    }
-
-    const mediaQuery = window.matchMedia(SYSTEM_THEME_QUERY);
-    const syncTheme = (event?: MediaQueryListEvent) => {
-      setTheme(event?.matches ?? mediaQuery.matches ? "dark" : "light");
-    };
-
-    syncTheme();
-
-    if (typeof mediaQuery.addEventListener === "function") {
-      mediaQuery.addEventListener("change", syncTheme);
-
-      return () => {
-        mediaQuery.removeEventListener("change", syncTheme);
-      };
-    }
-
-    mediaQuery.addListener(syncTheme);
-
-    return () => {
-      mediaQuery.removeListener(syncTheme);
-    };
-  }, []);
+    localStorage.setItem("qs_theme", theme);
+    document.documentElement.classList.remove("light", "dark");
+    document.documentElement.classList.add(theme);
+  }, [activeView, theme]);
 
   const value = useMemo(() => ({ 
     session, user, role, isLoading, signOut, 

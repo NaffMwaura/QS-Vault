@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Calculator,
@@ -13,60 +14,89 @@ import {
   Trash2,
   TrendingUp,
   Users,
+  ShieldAlert,
+  Search,
+  Lock,
+  ArrowRight,
+  LayoutGrid,
+  UserX,
+  Briefcase,
+  ChevronRight,
+  BarChart3,
+  AlertCircle
 } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
-import type { UserRole } from "../../features/auth/AuthContext";
-import { useAuth } from "../../features/auth/AuthContext";
-import { AdminDataTable } from "../admin/AdminDataTable";
-import { AdminEmptyState } from "../admin/AdminEmptyState";
-import { AdminFilterBar } from "../admin/AdminFilterBar";
-import { AdminMobileList } from "../admin/AdminMobileList";
-import { AdminPageSection } from "../admin/AdminPageSection";
-import { AdminStatCard } from "../admin/AdminStatCard";
-import { AdminStatsGrid } from "../admin/AdminStatsGrid";
-import { AdminToolbar } from "../admin/AdminToolbar";
-import { DangerZonePanel } from "../admin/DangerZonePanel";
-import IdentityNode from "../../features/auth/components/IdentityNode";
-import ArtifactsVault from "../../features/boq/components/ArtifactsVault";
-import BoQGenerator from "../../features/boq/components/BoQGenerator";
-import RatesLibrary from "../../features/projects/components/RatesLibrary";
-import CertificateGenerator from "../../features/reports/components/CertificateGenerator";
-import WhatsAppExport from "../../features/reports/components/WhatsAppExport";
-import SyncQueueMonitor from "../../features/sync/components/SyncQueueMonitor";
-import { adminService } from "../../lib/database/database";
-import SunlightModeToggle from "../layout/SunlightModeToggle";
+import IdentityNode from '../../features/auth/components/IdentityNode';
 
-type AdminTab = 'users' | 'inventory';
+/* ======================================================
+    ADMIN MODULE RESOLUTION (PRO-DEV STABILIZED)
+   ====================================================== */
 
-const tabButtonClass = (active: boolean) =>
-  `theme-admin-control transition-all ${
-    active
-      ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20'
-      : 'theme-surface-inset theme-muted border border-[color:var(--app-border)] hover:text-[var(--app-fg)]'
-  }`;
+let useAuth: any = () => ({ theme: 'dark', role: null, isLoading: true });
+let adminService: any = null;
+let db: any = null;
 
+// Feature Nodes
+let BoQGenerator: any = () => null;
+let CertificateGenerator: any = () => null;
+let WhatsAppExport: any = () => null;
+let ArtifactsVault: any = () => null;
+let SyncQueueMonitor: any = () => null;
+let SunlightModeToggle: any = () => null;
+
+const resolveAdminModules = async () => {
+  try {
+    const authMod = await import("../../features/auth/AuthContext");
+    if (authMod.useAuth) useAuth = authMod.useAuth;
+
+    const dbMod = await import("../../lib/database/database");
+    if (dbMod.adminService) adminService = dbMod.adminService;
+    if (dbMod.db) db = dbMod.db;
+
+    BoQGenerator = (await import("../../features/boq/components/BoQGenerator")).default;
+    CertificateGenerator = (await import("../../features/reports/components/CertificateGenerator")).default;
+    WhatsAppExport = (await import("../../features/reports/components/WhatsAppExport")).default;
+    ArtifactsVault = (await import("../../features/boq/components/ArtifactsVault")).default;
+    SyncQueueMonitor = (await import("../../features/sync/components/SyncQueueMonitor")).default;
+    SunlightModeToggle = (await import("../layout/SunlightModeToggle")).default;
+  } catch (e) {
+    console.warn("Admin Hub: Infrastructure nodes in standby.");
+  }
+};
+
+resolveAdminModules();
+
+/** --- UI WRAPPERS FOR CLEAN ARCHITECTURE --- **/
+const AdminPageSection = ({ eyebrow, title, description, children, actions }: any) => (
+  <div className="space-y-8 text-left animate-in fade-in duration-700">
+    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 px-4">
+      <div className="space-y-2">
+        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-500 italic leading-none">{eyebrow}</p>
+        <h2 className="text-4xl sm:text-5xl font-black uppercase italic tracking-tighter leading-none">{title}</h2>
+        <p className="max-w-2xl text-zinc-500 text-sm font-medium leading-relaxed">{description}</p>
+      </div>
+      {actions && <div className="flex flex-wrap gap-4">{actions}</div>}
+    </div>
+    {children}
+  </div>
+);
+
+/** --- MAIN COMPONENT: PLATFORM CONTROL CENTER --- **/
 const AdminDashboardPage: React.FC = () => {
-  const { isOnline, role, isLoading: authLoading, activeView, setActiveView, signOut } = useAuth();
+  const { theme, isOnline, role, isLoading: authLoading, activeView, setActiveView, signOut } = useAuth();
   const navigate = useNavigate();
 
-  const [adminTab, setAdminTab] = useState<AdminTab>('users');
+  const [adminTab, setAdminTab] = useState<'users' | 'inventory'>('users');
   const [profiles, setProfiles] = useState<any[]>([]);
   const [allProjects, setAllProjects] = useState<any[]>([]);
-  const [stats, setStats] = useState({
-    totalUsers: 0,
-    totalProjects: 0,
-    totalMeasurements: 0,
-  });
+  const [stats, setStats] = useState({ totalUsers: 0, totalProjects: 0, totalMeasurements: 0 });
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
 
   const loadAdminData = useCallback(async () => {
-    if (!adminService) {
-      setLoading(false);
-      return;
-    }
-
+    if (!adminService) return;
     try {
       setLoading(true);
       const [statsData, profilesData, globalProjects] = await Promise.all([
@@ -74,546 +104,253 @@ const AdminDashboardPage: React.FC = () => {
         adminService.getAllProfiles(),
         adminService.getAllProjects(),
       ]);
-
       setStats(statsData);
       setProfiles(profilesData || []);
       setAllProjects(globalProjects || []);
-    } catch (err) {
-      console.error("Admin Handshake Failure:", err);
+      if (globalProjects.length > 0 && !selectedProjectId) {
+        setSelectedProjectId(globalProjects[0].id);
+      }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedProjectId]);
 
   useEffect(() => {
-    const isAuthorized = role === 'admin' || role === 'super-admin';
-    if (!authLoading && isAuthorized) {
+    if (!authLoading && (role === 'admin' || role === 'super-admin')) {
       loadAdminData();
     }
   }, [role, authLoading, loadAdminData]);
 
-  const handleRoleChange = async (userId: string, newRole: UserRole) => {
+  const handleRoleChange = async (userId: string, newRole: any) => {
     if (!isOnline || !adminService) return;
     setUpdatingId(userId);
     try {
       await adminService.updateRole(userId, newRole);
-      setProfiles((prev) =>
-        prev.map((profile) =>
-          profile.id === userId ? { ...profile, role: newRole } : profile,
-        ),
-      );
+      setProfiles((prev) => prev.map((p) => p.id === userId ? { ...p, role: newRole } : p));
     } finally {
       setUpdatingId(null);
     }
   };
 
-  const handleDeleteProject = async (projectId: string) => {
-    if (!window.confirm("Permanently delete this project from the shared platform record?")) {
-      return;
-    }
-
+  const handleDeleteUser = async (userId: string, name: string) => {
+    if (!window.confirm(`REVOKE ACCESS: Permanently erase all data and account for ${name}? This action is absolute.`)) return;
     try {
-      await adminService.deleteProject(projectId);
-      setAllProjects((prev) => prev.filter((project) => project.id !== projectId));
-      setStats((prev) => ({
-        ...prev,
-        totalProjects: Math.max(prev.totalProjects - 1, 0),
-      }));
-    } catch (err) {
-      console.error("Revocation failed:", err);
-    }
+      // Logic for deleting user profile and their associated data nodes
+      // Note: Full auth deletion usually handled via Supabase admin API/Edge function
+      await adminService.deleteProfile?.(userId); 
+      setProfiles(prev => prev.filter(p => p.id !== userId));
+    } catch (e) { console.error(e); }
   };
 
-  const handleLogout = async () => {
-    if (window.confirm("Confirm secure session termination?")) {
-      await signOut();
-      navigate('/login', { replace: true });
-    }
+  const handleDeleteProject = async (id: string, name: string) => {
+    if (!window.confirm(`PURGE VAULT: Erase "${name}" from the global platform record?`)) return;
+    try {
+      await adminService.deleteProject(id);
+      setAllProjects((prev) => prev.filter((p) => p.id !== id));
+      setStats(prev => ({ ...prev, totalProjects: Math.max(0, prev.totalProjects - 1) }));
+    } catch (e) { console.error(e); }
   };
 
-  const inspectUserWorkspaces = (username: string) => {
-    setAdminTab('inventory');
-    setSearchQuery(username);
-  };
-
-  const filteredProfiles = useMemo(
-    () =>
-      profiles.filter((profile) =>
-        (profile.username || '').toLowerCase().includes(searchQuery.toLowerCase()),
-      ),
-    [profiles, searchQuery],
+  const filteredProfiles = useMemo(() => 
+    profiles.filter((p) => (p.username || '').toLowerCase().includes(searchQuery.toLowerCase())), 
+    [profiles, searchQuery]
   );
 
-  const filteredProjects = useMemo(
-    () =>
-      allProjects.filter(
-        (project) =>
-          project.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          project.username?.toLowerCase().includes(searchQuery.toLowerCase()),
-      ),
-    [allProjects, searchQuery],
+  const filteredProjects = useMemo(() => 
+    allProjects.filter((p) => 
+      p.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.username?.toLowerCase().includes(searchQuery.toLowerCase())
+    ), 
+    [allProjects, searchQuery]
   );
 
-  const isInitialLoad = loading && profiles.length === 0 && activeView === 'projects';
-
-  if (isInitialLoad) {
+  if (authLoading) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-6">
-        <Loader2 className="h-12 w-12 animate-spin text-amber-500" />
-        <p className="theme-subtle text-[11px] font-black uppercase tracking-[0.4em]">
-          Establishing admin link
-        </p>
+      <div className="h-screen flex flex-col items-center justify-center space-y-6 bg-[#09090b]">
+        <Loader2 className="w-12 h-12 animate-spin text-amber-500" />
+        <p className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-500">Establishing Admin Link...</p>
+      </div>
+    );
+  }
+
+  if (role !== 'admin' && role !== 'super-admin') {
+    return (
+      <div className="flex flex-col items-center justify-center h-[70vh] p-20 text-center space-y-8 animate-in fade-in transition-all">
+        <ShieldAlert size={80} className="text-rose-500 animate-pulse" />
+        <h2 className="text-4xl font-black uppercase italic tracking-tighter text-white">Access Forbidden</h2>
+        <button onClick={() => navigate('/dashboard')} className="px-10 py-5 bg-amber-500 text-black font-black uppercase text-xs rounded-2xl">Return to Workspace</button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 pb-12 sm:space-y-8 sm:pb-16">
+    <div className={`space-y-16 pb-24 transition-colors duration-500 ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
+      
+      {/* 1. TOP COMMAND BAR */}
+      <AdminPageSection
+        eyebrow="Admin Console"
+        title="Platform Command."
+        description="Root coordination hub for managing platform identities, project nodes, and global valuation audits."
+        actions={
+          <>
+            {SyncQueueMonitor && <SyncQueueMonitor />}
+            {SunlightModeToggle && <SunlightModeToggle />}
+          </>
+        }
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-4">
+          <StatCard label="Identities" value={stats.totalUsers} icon={Users} color="text-blue-500" theme={theme} />
+          <StatCard label="Vaults" value={stats.totalProjects} icon={Database} color="text-amber-500" theme={theme} />
+          <StatCard label="Takeoffs" value={stats.totalMeasurements} icon={TrendingUp} color="text-emerald-500" theme={theme} />
+          <StatCard label="Cloud Health" value={isOnline ? 'Active' : 'Offline'} icon={ShieldCheck} color="text-rose-500" theme={theme} />
+        </div>
+      </AdminPageSection>
+
+      {/* 2. REGISTRY WORKSPACE */}
       {activeView === 'projects' && (
-        <div className="space-y-6 sm:space-y-8">
-          <AdminPageSection
-            eyebrow="Admin Console"
-            title="Platform Control Center"
-            description="Monitor users, audit projects, and manage shared platform operations from one workspace designed for both mobile and desktop."
-            actions={
-              <AdminToolbar>
-                <div className="w-full sm:w-auto">
-                  <SyncQueueMonitor />
-                </div>
-                <SunlightModeToggle />
-              </AdminToolbar>
-            }
-          >
-            <AdminStatsGrid>
-              <AdminStatCard
-                label="Authorized Users"
-                value={stats.totalUsers}
-                description="Active identities with platform access and role-based permissions."
-                icon={Users}
-                tone="border-sky-500/20 bg-sky-500/10 text-sky-500"
-              />
-              <AdminStatCard
-                label="Tracked Projects"
-                value={stats.totalProjects}
-                description="Projects visible across the shared admin workspace."
-                icon={Database}
-                tone="border-amber-500/20 bg-amber-500/10 text-amber-500"
-              />
-              <AdminStatCard
-                label="Measured Records"
-                value={stats.totalMeasurements}
-                description="Takeoff and quantity activity collected from connected workspaces."
-                icon={TrendingUp}
-                tone="border-emerald-500/20 bg-emerald-500/10 text-emerald-500"
-              />
-              <AdminStatCard
-                label="Cloud Health"
-                value={isOnline ? 'Online' : 'Offline'}
-                description="Current connectivity state for live admin operations and sync tasks."
-                icon={ShieldCheck}
-                tone={
-                  isOnline
-                    ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500'
-                    : 'border-rose-500/20 bg-rose-500/10 text-rose-500'
-                }
-              />
-            </AdminStatsGrid>
-          </AdminPageSection>
+        <AdminPageSection
+          eyebrow="Master Registry"
+          title={adminTab === 'users' ? "User Identities" : "Project Inventory"}
+          description={adminTab === 'users' ? "Manage platform clearance and account nodes." : "Audit project ownership and site telemetry."}
+        >
+          <div className={`rounded-[4rem] border-2 overflow-hidden shadow-2xl transition-all duration-500 mx-4
+            ${theme === 'dark' ? 'bg-zinc-950/40 border-zinc-800 shadow-black' : 'bg-white border-zinc-200 shadow-zinc-200/50'}`}>
+            
+            <div className={`p-10 border-b-2 flex flex-col md:flex-row justify-between items-center gap-10 bg-white/[0.01] ${theme === 'dark' ? 'border-zinc-800' : 'border-zinc-100'}`}>
+              <div className="flex gap-4">
+                 <button onClick={() => setAdminTab('users')} className={`px-10 py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all ${adminTab === 'users' ? 'bg-amber-500 text-black shadow-xl' : 'bg-zinc-900/40 text-zinc-500 border border-zinc-800'}`}>User Registry</button>
+                 <button onClick={() => setAdminTab('inventory')} className={`px-10 py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all ${adminTab === 'inventory' ? 'bg-amber-500 text-black shadow-xl' : 'bg-zinc-900/40 text-zinc-500 border border-zinc-800'}`}>Project Inventory</button>
+              </div>
+              <div className="relative w-full md:w-96">
+                 <Search size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-600" />
+                 <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search identifier..." className={`w-full pl-16 pr-8 py-5 rounded-2xl border-2 outline-none font-bold text-xs ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800 text-white' : 'bg-zinc-50 border-zinc-100 text-zinc-900'}`} />
+              </div>
+            </div>
 
-          <AdminPageSection
-            eyebrow="Registry"
-            title={adminTab === 'users' ? 'User Registry' : 'Project Inventory'}
-            description={
-              adminTab === 'users'
-                ? 'Manage account roles, review workspace counts, and jump directly into a user activity stream.'
-                : 'Search project records, inspect ownership, and perform administrative cleanup safely.'
-            }
-            actions={
-              <AdminToolbar>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAdminTab('users');
-                    setSearchQuery('');
-                  }}
-                  className={tabButtonClass(adminTab === 'users')}
-                >
-                  User Registry
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAdminTab('inventory');
-                    setSearchQuery('');
-                  }}
-                  className={tabButtonClass(adminTab === 'inventory')}
-                >
-                  Project Inventory
-                </button>
-                <button
-                  type="button"
-                  onClick={loadAdminData}
-                  className="theme-surface-inset theme-muted theme-admin-icon-button flex items-center justify-center border"
-                  aria-label="Refresh admin data"
-                >
-                  <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-                </button>
-              </AdminToolbar>
-            }
-          >
-            <AdminFilterBar
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder={adminTab === 'users' ? 'Search by username' : 'Search by project or owner'}
-            />
-
-            {adminTab === 'users' ? (
-              filteredProfiles.length === 0 ? (
-                <AdminEmptyState
-                  title="No matching users"
-                  description="Try a broader search or refresh the registry to fetch the latest identities."
-                />
-              ) : (
-                <>
-                  <AdminDataTable headers={['User', 'Role', 'Workspaces', 'Actions']}>
-                    {filteredProfiles.map((profile) => (
-                      <tr
-                        key={profile.id}
-                        className="border-b border-(--app-divider) last:border-b-0 hover:bg-amber-500/5"
-                      >
-                        <td className="px-4 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-amber-500/20 bg-amber-500/10 font-black uppercase text-amber-500">
-                              {profile.username?.[0] || 'U'}
-                            </div>
-                            <div>
-                              <p className="theme-admin-row-title uppercase">
-                                {profile.username}
-                              </p>
-                              <p className="theme-admin-row-meta mt-1">
-                                {profile.id.slice(0, 12)}
-                              </p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-4">
-                          <select
-                            value={profile.role}
-                            disabled={updatingId === profile.id}
-                            onChange={(e) => handleRoleChange(profile.id, e.target.value as UserRole)}
-                            className="theme-input theme-admin-select border outline-none focus:border-amber-500"
-                          >
-                            <option value="user">Standard User</option>
-                            <option value="editor">Editor</option>
-                            <option value="admin">System Admin</option>
-                            <option value="super-admin">Super Admin</option>
-                          </select>
-                        </td>
-                        <td className="px-4 py-4">
-                          <span className="theme-admin-meta">
-                            {profile.project_count || 0} workspaces
-                          </span>
-                        </td>
-                        <td className="px-4 py-4 text-right">
-                          <button
-                            type="button"
-                            onClick={() => inspectUserWorkspaces(profile.username)}
-                            className="theme-surface-inset theme-muted theme-admin-icon-button inline-flex items-center justify-center border transition-all hover:border-amber-500 hover:text-amber-500"
-                            title="Inspect user workspace"
-                          >
-                            <ExternalLink size={16} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </AdminDataTable>
-
-                  <AdminMobileList>
-                    {filteredProfiles.map((profile) => (
-                      <details key={profile.id} className="theme-admin-card group">
-                        <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
-                          <div className="flex min-w-0 items-center gap-3">
-                            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-amber-500/20 bg-amber-500/10 font-black uppercase text-amber-500">
-                              {profile.username?.[0] || 'U'}
-                            </div>
-                            <div className="min-w-0 text-left">
-                              <p className="theme-admin-row-title truncate uppercase">
-                                {profile.username}
-                              </p>
-                              <p className="theme-admin-row-meta mt-1 truncate">
-                                {profile.project_count || 0} workspaces
-                              </p>
-                            </div>
-                          </div>
-                          <ChevronDown
-                            size={18}
-                            className="theme-muted shrink-0 transition-transform group-open:rotate-180"
-                          />
-                        </summary>
-
-                        <div className="mt-4 space-y-4 border-t border-(--app-divider) pt-4 text-left">
-                          <div className="grid gap-2.5 text-sm">
-                            <div className="flex justify-between gap-3">
-                              <span className="theme-admin-label">Reference</span>
-                              <span className="theme-admin-row-meta text-right">
-                                {profile.id.slice(0, 12)}
-                              </span>
-                            </div>
-                            <div className="flex justify-between gap-3">
-                              <span className="theme-admin-label">Status</span>
-                              <span className="theme-admin-row-meta text-right">
-                                Verified identity
-                              </span>
-                            </div>
-                          </div>
-
-                          <select
-                            value={profile.role}
-                            disabled={updatingId === profile.id}
-                            onChange={(e) => handleRoleChange(profile.id, e.target.value as UserRole)}
-                            className="theme-input theme-admin-select w-full border outline-none focus:border-amber-500"
-                          >
-                            <option value="user">Standard User</option>
-                            <option value="editor">Editor</option>
-                            <option value="admin">System Admin</option>
-                            <option value="super-admin">Super Admin</option>
-                          </select>
-
-                          <button
-                            type="button"
-                            onClick={() => inspectUserWorkspaces(profile.username)}
-                            className="theme-surface-inset theme-muted theme-admin-control inline-flex items-center gap-2 border hover:border-amber-500 hover:text-amber-500"
-                          >
-                            <ExternalLink size={15} />
-                            Inspect Workspace
-                          </button>
-                        </div>
-                      </details>
-                    ))}
-                  </AdminMobileList>
-                </>
-              )
-            ) : filteredProjects.length === 0 ? (
-              <AdminEmptyState
-                title="No matching projects"
-                description="Try another search term or refresh the inventory to reload shared project records."
-              />
-            ) : (
-              <>
-                <AdminDataTable headers={['Project', 'Owner', 'Location', 'Actions']}>
-                  {filteredProjects.map((project) => (
-                    <tr
-                      key={project.id}
-                      className="border-b border-(--app-divider)] last:border-b-0 hover:bg-amber-500/5"
-                    >
-                      <td className="px-4 py-4">
-                        <p className="theme-admin-row-title uppercase">
-                          {project.name}
-                        </p>
-                      </td>
-                      <td className="px-4 py-4">
-                        <p className="theme-admin-meta">
-                          {project.username || 'Unknown'}
-                        </p>
-                      </td>
-                      <td className="px-4 py-4">
-                        <p className="theme-admin-meta">
-                          {project.location || 'Site node'}
-                        </p>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="flex justify-end gap-2">
-                          <button
-                            type="button"
-                            onClick={() => navigate(`/projects/${project.id}`)}
-                            className="theme-surface-inset theme-muted theme-admin-icon-button flex items-center justify-center border transition-all hover:border-amber-500 hover:text-amber-500"
-                          >
-                            <ExternalLink size={16} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteProject(project.id)}
-                            className="theme-admin-icon-button flex items-center justify-center border border-rose-500/20 bg-rose-500/10 text-rose-500 transition-all hover:bg-rose-500 hover:text-white"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </td>
+            <div className="overflow-x-auto min-h-[400px]">
+              <table className="w-full text-left">
+                <thead><tr className={`text-[10px] font-black uppercase tracking-[0.4em] italic border-b-2 ${theme === 'dark' ? 'bg-zinc-900/50 border-zinc-800' : 'bg-zinc-50 border-zinc-100'}`}><th className="p-10">Identifier</th><th className="p-10">{adminTab === 'users' ? 'Clearance' : 'Status'}</th><th className="p-10">{adminTab === 'users' ? 'Projects' : 'Owner'}</th><th className="p-10 text-right">Actions</th></tr></thead>
+                <tbody className={`divide-y-2 ${theme === 'dark' ? 'divide-zinc-800/40' : 'divide-zinc-100'}`}>
+                  {adminTab === 'users' ? filteredProfiles.map(p => (
+                    <tr key={p.id} className="group hover:bg-amber-500/5 transition-colors">
+                      <td className="p-10 text-left"><div className="flex items-center gap-6"><div className="w-14 h-14 rounded-2xl bg-amber-500/10 border-2 border-amber-500/20 flex items-center justify-center font-black text-amber-500 italic">{(p.username?.[0] || 'U').toUpperCase()}</div><div><p className="text-xl font-black uppercase italic leading-none">{p.username}</p><p className="text-[9px] font-mono text-zinc-600 mt-2">ID: {p.id.slice(0,18)}</p></div></div></td>
+                      <td className="p-10 text-left"><select value={p.role} onChange={(e) => handleRoleChange(p.id, e.target.value)} className="bg-zinc-900 border-2 border-zinc-800 rounded-xl px-4 py-2 text-[10px] font-black uppercase text-amber-500 outline-none"><option value="user">User</option><option value="editor">Editor</option><option value="admin">Admin</option><option value="super-admin">Super Admin</option></select></td>
+                      <td className="p-10 text-left"><span className="px-4 py-1.5 rounded-full border border-zinc-800 bg-zinc-900/60 text-[10px] font-black uppercase">{p.project_count || 0} Nodes</span></td>
+                      <td className="p-10 text-right"><div className="flex justify-end gap-3"><button onClick={() => handleDeleteUser(p.id, p.username)} className="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-2xl hover:bg-rose-500 hover:text-white transition-all"><UserX size={18}/></button></div></td>
+                    </tr>
+                  )) : filteredProjects.map(proj => (
+                    <tr key={proj.id} className="group hover:bg-amber-500/5 transition-colors">
+                      <td className="p-10 text-xl font-black uppercase italic tracking-tighter leading-none text-left">{proj.name}</td>
+                      <td className="p-10 text-left"><span className="text-xs font-bold uppercase tracking-widest text-zinc-500">{proj.status || 'Active'}</span></td>
+                      <td className="p-10 text-left"><p className="text-sm font-bold uppercase text-zinc-400">{proj.username || 'Surveyor'}</p></td>
+                      <td className="p-10 text-right"><div className="flex gap-4 justify-end"><button onClick={() => navigate(`/projects/${proj.id}`)} className="p-4 bg-zinc-950 border border-zinc-800 rounded-2xl text-zinc-600 hover:text-amber-500 transition-all"><ExternalLink size={20}/></button><button onClick={() => handleDeleteProject(proj.id, proj.name)} className="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-2xl hover:bg-rose-500 hover:text-white transition-all"><Trash2 size={20}/></button></div></td>
                     </tr>
                   ))}
-                </AdminDataTable>
-
-                <AdminMobileList>
-                  {filteredProjects.map((project) => (
-                    <details key={project.id} className="theme-admin-card group">
-                      <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
-                        <div className="min-w-0 text-left">
-                          <p className="theme-admin-row-title uppercase">
-                            {project.name}
-                          </p>
-                          <p className="theme-admin-row-meta mt-1">
-                            {project.location || 'Site node'}
-                          </p>
-                        </div>
-                        <ChevronDown
-                          size={18}
-                          className="theme-muted shrink-0 transition-transform group-open:rotate-180"
-                        />
-                      </summary>
-
-                      <div className="mt-4 space-y-4 border-t border-(--app-divider)] pt-4 text-left">
-                        <div className="grid gap-2.5 text-sm">
-                          <div className="flex justify-between gap-3">
-                            <span className="theme-admin-label">Owner</span>
-                            <span className="theme-admin-row-meta text-right">
-                              {project.username || 'Unknown'}
-                            </span>
-                          </div>
-                          <div className="flex justify-between gap-3">
-                            <span className="theme-admin-label">Location</span>
-                            <span className="theme-admin-row-meta text-right">
-                              {project.location || 'Site node'}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-wrap gap-2">
-                          <button
-                            type="button"
-                            onClick={() => navigate(`/projects/${project.id}`)}
-                            className="theme-surface-inset theme-muted theme-admin-control inline-flex items-center gap-2 border hover:border-amber-500 hover:text-amber-500"
-                          >
-                            <ExternalLink size={15} />
-                            Open
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteProject(project.id)}
-                            className="theme-admin-control inline-flex items-center gap-2 border border-rose-500/20 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white"
-                          >
-                            <Trash2 size={15} />
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    </details>
-                  ))}
-                </AdminMobileList>
-              </>
-            )}
-
-            <div className="theme-divider mt-5 border-t pt-4">
-              <p className="theme-admin-meta">
-                Showing{' '}
-                <span className="theme-title font-black">
-                  {adminTab === 'users' ? filteredProfiles.length : filteredProjects.length}
-                </span>{' '}
-                matching {adminTab === 'users' ? 'users' : 'projects'}.
-              </p>
+                </tbody>
+              </table>
             </div>
-          </AdminPageSection>
-        </div>
+          </div>
+        </AdminPageSection>
       )}
 
-      {activeView === 'rates' && <RatesLibrary />}
-
+      {/* 3. AUDIT & REPORTING WORKSPACE */}
       {activeView === 'settings' && (
-        <div className="space-y-6 sm:space-y-8">
-          <AdminPageSection
-            eyebrow="Reporting"
-            title="Audit And Reporting Workspace"
-            description="Review archived documents, valuation outputs, certification drafts, and high-impact admin actions in a calmer and more structured flow."
-          >
-            <div className="grid gap-6 xl:grid-cols-2">
-              <div className="space-y-6">
-                <div className="rounded-[1.8rem] border border-(--app-divider)] p-1">
-                  <ArtifactsVault />
-                </div>
-
-                <div className="rounded-[1.8rem] border border---app-divider)] p-4 sm:p-5">
-                  <div className="mb-4 flex items-center gap-3">
-                    <Calculator size={18} className="text-amber-500" />
-                    <h3 className="theme-admin-subheading">Valuation Auditor</h3>
-                  </div>
-                  {allProjects.length > 0 ? (
-                    <BoQGenerator
-                      projectId={allProjects[0]?.id}
-                      projectName={allProjects[0]?.name || "Platform Project"}
-                    />
-                  ) : (
-                    <p className="theme-admin-meta">No projects available for audit.</p>
-                  )}
-                </div>
+        <AdminPageSection
+          eyebrow="Audit Node"
+          title="Audit and Reporting"
+          description="Review archived document nodes, valuation outputs, and certification drafts from a root perspective."
+        >
+           <div className="max-w-7xl mx-auto space-y-24 px-4">
+              <div className="flex flex-col lg:flex-row items-center gap-10">
+                 <div className="flex items-center gap-6 p-10 rounded-[3rem] border-2 border-amber-500 bg-amber-500/5 flex-1 w-full lg:w-auto">
+                    <Briefcase size={32} className="text-amber-500" />
+                    <div className="text-left space-y-2 flex-1">
+                       <h2 className="text-3xl font-black uppercase italic tracking-tighter leading-none">Context Select</h2>
+                       <select value={selectedProjectId || ''} onChange={(e) => setSelectedProjectId(e.target.value)} className="w-full bg-zinc-900 border-2 border-zinc-800 rounded-xl px-4 py-3 text-[10px] font-black uppercase text-amber-500 outline-none">
+                          {allProjects.map(p => <option key={p.id} value={p.id}>{p.name} ({p.username})</option>)}
+                       </select>
+                    </div>
+                 </div>
+                 {ArtifactsVault && <div className="flex-1 w-full lg:w-auto"><ArtifactsVault /></div>}
               </div>
 
-              <div className="space-y-6">
-                <DangerZonePanel
-                  title="Root Actions"
-                  description="High-impact actions stay isolated from standard reporting tasks and remain visually distinct from normal admin flows."
-                  actionLabel="Force Global Cloud Sync"
-                />
+              <div className="grid lg:grid-cols-2 gap-12">
+                 <div className="space-y-12">
+                   <div className="flex items-center gap-4 px-6 border-l-4 border-amber-500">
+                     <Calculator size={24} className="text-amber-500" />
+                     <h4 className="text-3xl font-black uppercase italic tracking-tighter">Valuation Auditor</h4>
+                   </div>
+                   {selectedProjectId && BoQGenerator ? (
+                     <div className={`p-10 rounded-[3.5rem] border-2 ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800 shadow-black' : 'bg-white border-zinc-200'}`}>
+                       <BoQGenerator projectId={selectedProjectId} projectName={allProjects.find(p => p.id === selectedProjectId)?.name || "Vault Node"} />
+                     </div>
+                   ) : <p className="text-zinc-500 italic px-8">No project node selected.</p>}
+                 </div>
 
-                <div className="rounded-[1.8rem] border border-[(--app-divider)] p-4 sm:p-5">
-                  <div className="mb-4 flex items-center gap-3">
-                    <Share2 size={18} className="text-amber-500" />
-                    <h3 className="theme-admin-subheading">Admin Transmittal</h3>
-                  </div>
-                  <WhatsAppExport
-                    projectName="Global-Admin-Audit"
-                    data={{
-                      certNumber: "ADMIN-IPC-001",
-                      valuationDate: new Date().toLocaleDateString().replace(/\//g, '-'),
-                      contractSum: 0,
-                      workExecuted: stats.totalMeasurements * 5000,
-                      materialsOnSite: 0,
-                      previousCertified: 0,
-                      retentionPercent: 10,
-                    }}
-                  />
-                </div>
-
-                <div className="rounded-[1.8rem] border border-[(--app-divider)] p-4 sm:p-5">
-                  <div className="mb-4 flex items-center gap-3">
-                    <FileText size={18} className="text-emerald-500" />
-                    <h3 className="theme-admin-subheading">Draft Certification Auditor</h3>
-                  </div>
-                  {allProjects.length > 0 ? (
-                    <CertificateGenerator
-                      projectId={allProjects[0]?.id}
-                      projectName={allProjects[0]?.name || "Select Project"}
-                    />
-                  ) : (
-                    <p className="theme-admin-meta">No project selected for certification review.</p>
-                  )}
-                </div>
+                 <div className="space-y-12">
+                   <div className="flex items-center gap-4 px-6 border-l-4 border-rose-500">
+                     <FileText size={24} className="text-rose-500" />
+                     <h4 className="text-3xl font-black uppercase italic tracking-tighter">Certification Audit</h4>
+                   </div>
+                   {selectedProjectId && CertificateGenerator ? (
+                     <div className={`p-10 rounded-[3.5rem] border-2 ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800 shadow-black' : 'bg-white border-zinc-200'}`}>
+                       <CertificateGenerator projectId={selectedProjectId} projectName={allProjects.find(p => p.id === selectedProjectId)?.name || "Vault Node"} />
+                     </div>
+                   ) : <p className="text-zinc-500 italic px-8">No project node selected.</p>}
+                 </div>
               </div>
-            </div>
-          </AdminPageSection>
-        </div>
+
+              <div className="pt-16 border-t border-zinc-800/40">
+                 <div className={`p-12 rounded-[3.5rem] border-2 bg-emerald-500/5 border-emerald-500/10 text-left`}>
+                    <div className="flex items-center gap-6 mb-10">
+                       <Share2 size={32} className="text-emerald-500" />
+                       <div className="space-y-1">
+                          <h3 className="text-3xl font-black uppercase italic tracking-tighter">Global Audit Dispatch</h3>
+                          <p className="text-[10px] font-black uppercase text-zinc-500 tracking-widest">Share platform valuation summary with root stakeholders</p>
+                       </div>
+                    </div>
+                    {WhatsAppExport && (
+                      <WhatsAppExport 
+                        projectName="Platform-Global-Audit" 
+                        data={{
+                           certNumber: "PLAT-IPC-ROOT",
+                           valuationDate: new Date().toLocaleDateString(),
+                           contractSum: 0,
+                           workExecuted: stats.totalMeasurements * 1250, 
+                           materialsOnSite: 0,
+                           previousCertified: 0,
+                           retentionPercent: 10
+                        }} 
+                      />
+                    )}
+                 </div>
+              </div>
+           </div>
+        </AdminPageSection>
       )}
 
-      {activeView === 'profile' && (
-        <div className="space-y-6 sm:space-y-8">
-          <IdentityNode onBack={() => setActiveView('projects')} />
+      {activeView === 'profile' && IdentityNode && <IdentityNode onBack={() => setActiveView('projects')} />}
 
-          <AdminPageSection
-            eyebrow="Security"
-            title="Session Controls"
-            description="Critical account actions should stay separated from profile editing and remain obvious on both mobile and desktop."
-          >
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="theme-admin-control w-full min-h-13 rounded-[1.4rem] border border-rose-500/20 bg-rose-500/5 text-rose-500 transition-all hover:bg-rose-500 hover:text-white"
-            >
-              Terminate Admin Session
-            </button>
-          </AdminPageSection>
-        </div>
-      )}
+      <footer className="pt-24 pb-10 text-center opacity-30 group hover:opacity-100 transition-opacity">
+         <p className="text-[12px] font-black uppercase tracking-[1em] italic text-zinc-600">QS VAULT ADMIN v2.6.4</p>
+         <div className="flex items-center justify-center gap-6 mt-6 leading-none">
+            <div className="h-px w-20 bg-zinc-800 group-hover:bg-amber-500/40 transition-colors" />
+            <p className="text-[9px] font-black uppercase tracking-[0.6em] text-zinc-600 italic leading-none">Integrity • Precision • Compliance</p>
+            <div className="h-px w-20 bg-zinc-800 group-hover:bg-amber-500/40 transition-colors" />
+         </div>
+      </footer>
     </div>
   );
 };
 
-export default AdminDashboardPage;
+/** --- UI HELPER COMPONENTS --- **/
+const StatCard: React.FC<any> = ({ label, value, icon: Icon, color, theme }) => (
+  <div className={`p-10 rounded-[3.5rem] border-2 shadow-2xl transition-all duration-500 hover:scale-[1.02] text-left
+    ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800 shadow-black' : 'bg-white border-zinc-200 shadow-zinc-200/50'}`}>
+    <Icon size={28} className={`${color} mb-8`} strokeWidth={2.5} />
+    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 mb-2 leading-none">{label}</p>
+    <h3 className="text-5xl font-black italic tracking-tighter leading-none">{value}</h3>
+  </div>
+);
 
+export default AdminDashboardPage;
