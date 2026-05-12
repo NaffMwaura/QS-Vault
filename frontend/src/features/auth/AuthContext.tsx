@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
 import { type Session, type User, type AuthChangeEvent } from "@supabase/supabase-js";
+import { WifiOff,  X } from "lucide-react";
 import { db, supabase } from "../../lib/database/database";
 
 /** --- TYPES & INTERFACES --- **/
@@ -73,6 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [role, setRole] = useState<UserRole | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [showOfflineAlert, setShowOfflineAlert] = useState(false);
   
   const [activeView, setActiveView] = useState<DashboardView>(() => {
     if (typeof window === 'undefined') return 'projects';
@@ -103,12 +105,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  // 1. Connectivity Check
+  /** * 1. CONNECTIVITY HEARTBEAT
+   * Triggers the offline alert when connection is lost.
+   */
   useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
+    const handleOnline = () => {
+      setIsOnline(true);
+      setShowOfflineAlert(false);
+    };
+    
+    const handleOffline = () => {
+      setIsOnline(false);
+      setShowOfflineAlert(true);
+      // Auto-hide the alert after 6 seconds to keep the workspace clean
+      setTimeout(() => setShowOfflineAlert(false), 6000);
+    };
+
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
+
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
@@ -234,7 +249,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <AuthContext.Provider value={value}>
-      {isLoading ? <LoadingWorkspace /> : children}
+      {isLoading ? <LoadingWorkspace /> : (
+        <>
+          {/* SYSTEM ALERT: OFFLINE MODE */}
+          {showOfflineAlert && (
+            <div className="fixed top-24 left-1/2 -translate-x-1/2 z-200] animate-in fade-in slide-in-from-top-4 duration-500 w-full max-w-sm px-6">
+              <div className="bg-rose-600 text-white p-5 rounded-4xl shadow-2xl flex items-center justify-between border-2 border-rose-500/50 backdrop-blur-xl">
+                 <div className="flex items-center gap-4">
+                    <div className="p-2 bg-white/20 rounded-xl">
+                       <WifiOff size={18} strokeWidth={3} />
+                    </div>
+                    <div className="text-left">
+                       <p className="text-[11px] font-black uppercase tracking-widest leading-none">System Offline</p>
+                       <p className="text-[9px] font-bold opacity-80 mt-1 uppercase">Working in local vault mode</p>
+                    </div>
+                 </div>
+                 <button onClick={() => setShowOfflineAlert(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                    <X size={16} />
+                 </button>
+              </div>
+            </div>
+          )}
+          
+          {children}
+        </>
+      )}
     </AuthContext.Provider>
   );
 };
