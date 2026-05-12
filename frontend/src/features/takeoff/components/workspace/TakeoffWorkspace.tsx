@@ -255,7 +255,7 @@ const TakeoffWorkspace = (props: TakeoffWorkspaceProps) => {
           </div>
         )}
         
-        <div className={`relative overflow-hidden transition-all duration-500
+        <div className={`relative overflow-auto transition-all duration-500
           ${isExpanded ? 'flex-1 rounded-4xl border-2' : 'h-[75vh] rounded-[3.5rem] border-2'}
           ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800' : 'bg-white border-zinc-200 shadow-xl'}`}>
           

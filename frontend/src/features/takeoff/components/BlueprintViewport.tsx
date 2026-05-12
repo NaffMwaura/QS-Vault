@@ -171,7 +171,7 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
   };
 
   return (
-    <section className="flex-1 relative overflow-hidden flex flex-col items-center justify-center transition-colors duration-500 bg-zinc-950/20">
+    <section className="flex-1 relative overflow-hidden flex flex-col items-center justify-center w-full h-full transition-colors duration-500 bg-zinc-950/20">
       
       {/* TOOLBAR HUD */}
       <div className="absolute top-4 left-4 sm:top-6 sm:left-6 flex flex-col gap-2 z-40 p-2 rounded-2xl border-2 border-zinc-800 bg-zinc-900/80 shadow-2xl backdrop-blur-xl">
@@ -251,7 +251,7 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        className={`w-full h-full relative overflow-auto custom-scrollbar
+        className={`w-full h-full relative overflow-x-auto overflow-y-auto custom-scrollbar
           ${isMeasuring ? 'cursor-crosshair' : isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
       >
         {!pdfDoc ? (
@@ -278,7 +278,7 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
             </div>
           </div>
         ) : (
-          <div className="w-max h-max min-w-full min-h-full flex items-center justify-center p-20">
+          <div className="inline-flex items-start justify-start p-20">
             <div className="relative shadow-[0_0_100px_rgba(0,0,0,0.8)] border-4 border-zinc-800">
               <canvas 
                 ref={canvasRef} 
