@@ -17,12 +17,10 @@ import {
   Calendar,
   Package,
   Trash2,
-  ArrowLeft,
   ChevronDown,
   Briefcase,
   RefreshCw,
   FileUp,
-  ChevronRight,
   Eye,
   Layout,
   ShieldCheck
@@ -390,7 +388,7 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
                        <X size={14} strokeWidth={4} />
                     </button>
 
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4 pointer-events-none">
+                    <div className="absolute inset-0 bg-linear-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4 pointer-events-none">
                        <p className="text-[8px] font-black uppercase text-white tracking-widest leading-none">
                          {new Date(p.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                        </p>
@@ -439,7 +437,7 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
 
       {/* 3. ARCHIVE OVERLAY (UPDATED WITH EXPANDABLE ROWS) */}
       {viewingHistory && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-20 bg-black/95 backdrop-blur-xl animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-100] flex items-center justify-center p-6 sm:p-20 bg-black/95 backdrop-blur-xl animate-in fade-in duration-300">
           <div className={`w-full max-w-5xl rounded-[4.5rem] border p-8 sm:p-14 shadow-2xl relative animate-in zoom-in-95 duration-300 overflow-hidden flex flex-col h-[85vh]
             ${theme === 'dark' ? 'bg-[#09090b] border-zinc-800' : 'bg-white border-zinc-200'}`}>
             
@@ -519,11 +517,11 @@ const SiteDiaryEngine: React.FC<SiteDiaryEngineProps> = ({ projectId: initialId 
                                  </p>
                               </div>
                               <div className="grid grid-cols-2 gap-6 h-fit">
-                                 <div className={`p-6 rounded-[2rem] border ${theme === 'dark' ? 'bg-zinc-900/60 border-zinc-800' : 'bg-white border-zinc-200 shadow-sm'}`}>
+                                 <div className={`p-6 rounded-4xl border ${theme === 'dark' ? 'bg-zinc-900/60 border-zinc-800' : 'bg-white border-zinc-200 shadow-sm'}`}>
                                     <p className="text-[9px] font-black uppercase text-zinc-500 mb-2 leading-none text-left">Workers</p>
                                     <p className="text-3xl font-black text-white text-left italic tracking-tighter leading-none">{rec.headcount}</p>
                                  </div>
-                                 <div className={`p-6 rounded-[2rem] border ${theme === 'dark' ? 'bg-zinc-900/60 border-zinc-800' : 'bg-white border-zinc-200 shadow-sm'}`}>
+                                 <div className={`p-6 rounded-4xl border ${theme === 'dark' ? 'bg-zinc-900/60 border-zinc-800' : 'bg-white border-zinc-200 shadow-sm'}`}>
                                     <p className="text-[9px] font-black uppercase text-zinc-500 mb-2 leading-none text-left">Status</p>
                                     <p className="text-[11px] font-black text-emerald-500 text-left uppercase tracking-widest leading-none">Secured</p>
                                  </div>
