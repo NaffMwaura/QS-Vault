@@ -205,6 +205,7 @@ export interface Measurement {
   sectionCode: string; 
   points: CanvasPoint[] | null; 
   timestamp: string;
+  synced_at?: string; // Tracked for continuous machine logic
 }
 
 export interface SyncQueueItem {
@@ -224,7 +225,7 @@ class QSPocketKnifeDB extends Dexie {
   projects!: Table<Project, string>;
   bill_items!: Table<BillItem, string>;
   measurements!: Table<Measurement, string>;
-  rates_library!: Table<RateItem, string>; // RESTORED: Missing rate table
+  rates_library!: Table<RateItem, string>;
   site_diary!: Table<SiteDiary, string>;
   site_logs!: Table<SiteLog, string>;
   site_photos!: Table<SitePhoto, string>;
@@ -242,7 +243,6 @@ class QSPocketKnifeDB extends Dexie {
   constructor() {
     super("QSPocketKnifeDB");
     
-    // Version 13: Full schema with all site execution nodes and stable rates
     this.version(13).stores({
       profiles: "id, username, role",
       projects: "id, user_id, updated_at",
@@ -283,6 +283,7 @@ export const syncEngine = {
     if (!payload) return {};
     const { synced_at, is_local, amount, retry_count, ...clean } = payload;
     
+    // Crucial: Aligning frontend sectionCode with Database section_code
     if (table === 'measurements' && clean.sectionCode !== undefined) {
       clean.section_code = clean.sectionCode;
       delete clean.sectionCode;
