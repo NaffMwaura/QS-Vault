@@ -7,29 +7,41 @@ import type {
   SmmParams,
 } from "../types/takeoff";
 
+/** --- THE UI ENGINE: TAKEOFF STATE CONTROLLER --- **/
 export const useTakeoffWorkspace = () => {
-  const [activeWorkspace, setActiveWorkspace] =
-    useState<ActiveWorkspace>("takeoff");
+  // Viewport & Document State
+  const [activeWorkspace, setActiveWorkspace] = useState<ActiveWorkspace>("takeoff");
   const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
-  const [scale, setScale] = useState(1);
-  const [scaleFactor, setScaleFactor] = useState(0.01);
+  
+  // Calibration & Scaling
+  const [scale, setScale] = useState(1); // Visual Zoom
+  const [scaleFactor, setScaleFactor] = useState(0.01); // Real-world ratio (e.g., 1:100)
   const [unit, setUnit] = useState<"m" | "mm">("m");
+
+  // Tooling & Measurement State
   const [activeSection, setActiveSection] = useState("Concrete Work");
   const [activeTool, setActiveTool] = useState<MeasurementTool>("area");
   const [isMeasuring, setIsMeasuring] = useState(false);
   const [isDeductionMode, setIsDeductionMode] = useState(false);
   const [currentPoints, setCurrentPoints] = useState<Point[]>([]);
+
+  // SMM-KE (Kenya Standard) Parameters
   const [smmParams, setSmmParams] = useState<SmmParams>({
     depth: 0.15,
-    height: 3,
+    height: 3.0,
     waste: 5,
   });
+
+  // Workspace Layout (Panel Controls)
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
 
   return {
+    // Navigation
     activeWorkspace,
     setActiveWorkspace,
+    
+    // PDF Logic
     pdfDoc,
     setPdfDoc,
     scale,
@@ -38,6 +50,8 @@ export const useTakeoffWorkspace = () => {
     setScaleFactor,
     unit,
     setUnit,
+    
+    // Takeoff Tools
     activeSection,
     setActiveSection,
     activeTool,
@@ -48,8 +62,12 @@ export const useTakeoffWorkspace = () => {
     setIsDeductionMode,
     currentPoints,
     setCurrentPoints,
+    
+    // Engineering Specs
     smmParams,
     setSmmParams,
+    
+    // Layout
     leftOpen,
     setLeftOpen,
     rightOpen,
