@@ -65,7 +65,7 @@ const HUDHeader: React.FC<HUDHeaderProps> = ({ activeView, setActiveView, onMenu
       We use a solid 'theme-panel' background and 'z-[60]' 
       to ensure it's physically separated from the scrolling content.
     */
-    <header className={`h-16 sm:h-20 border-b-2 flex items-center justify-between px-4 sm:px-10 z-[60] sticky top-0 transition-all duration-300
+    <header className={`h-16 sm:h-20 border-b-2 flex items-center justify-between px-4 sm:px-10 z-60] sticky top-0 transition-all duration-300
       ${theme === 'dark' 
         ? 'bg-[#09090b] border-zinc-800 shadow-[0_10px_40px_rgba(0,0,0,0.5)]' 
         : 'bg-white border-zinc-200 shadow-sm'}`}>
@@ -153,7 +153,7 @@ const HUDHeader: React.FC<HUDHeaderProps> = ({ activeView, setActiveView, onMenu
 
           {/* DROP-DOWN MENU: Solid Background Fix */}
           {showDropdown && (
-            <div className={`absolute top-full right-0 mt-4 w-64 sm:w-72 rounded-[2.5rem] border-2 shadow-2xl p-3 z-[100] animate-in fade-in zoom-in-95 duration-200
+            <div className={`absolute top-full right-0 mt-4 w-64 sm:w-72 rounded-[2.5rem] border-2 shadow-2xl p-3 z-100] animate-in fade-in zoom-in-95 duration-200
               ${theme === 'dark' ? 'bg-[#09090b] border-zinc-800 shadow-black' : 'bg-white border-zinc-200 shadow-zinc-200'}`}>
               
               <div className="px-6 py-6 mb-3 border-b-2 border-zinc-800/40 text-left">
