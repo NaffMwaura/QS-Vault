@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useState, useEffect, useMemo } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState, useMemo, useEffect } from "react";
 import type { PDFDocumentProxy } from "pdfjs-dist/types/src/display/api";
 import {
   ClipboardList,
@@ -12,41 +12,21 @@ import {
   Layers,
   Target,
   Database,
-  ShieldCheck,
-  MousePointer2,
-  Loader2
+  MousePointer2
 } from "lucide-react";
 
-/* ======================================================
-    OFFICE MODULE RESOLUTION (STABILIZED)
-   ====================================================== */
+// Direct Infrastructure Imports (Lighter & Faster)
+import { useAuth } from "../../../auth/AuthContext";
+import { db, syncEngine } from "../../../../lib/database/database";
 
-let useAuth: any = () => ({ theme: 'dark', user: null });
-let db: any = null;
-let syncEngine: any = null;
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../../auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-
-    const dbMod = await import("../../../../lib/database/database");
-    if (dbMod.db) db = dbMod.db;
-    if (dbMod.syncEngine) syncEngine = dbMod.syncEngine;
-  } catch (e) {
-    console.warn("Takeoff Engine: Infrastructure standby.");
-  }
-};
-
-resolveModules();
-
-/** --- TYPES --- **/
-
+// Child Components
 import BlueprintViewport from "../BlueprintViewport";
 import CalibrationNode from "../CalibrationNode";
 import TakeoffLedger from "../TakeoffLedger";
 import SMMTemplates from "../SMMTemplates";
 import SMMWorkSections from "../SMMWorkSections";
+
+// Master Types
 import type {
   Measurement,
   MeasurementTool,
@@ -55,7 +35,7 @@ import type {
 } from "../../types/takeoff";
 
 interface TakeoffWorkspaceProps {
-  projectId: string; // CRITICAL: Used to prevent data leakage
+  projectId: string; 
   projectName: string;
   pdfDoc: PDFDocumentProxy | null;
   setPdfDoc: React.Dispatch<React.SetStateAction<PDFDocumentProxy | null>>;
@@ -86,64 +66,62 @@ interface TakeoffWorkspaceProps {
   onDeleteMeasurement: (id: string) => void;
 }
 
-/** --- UI: WORKSPACE SUMMARY (Simplified Language) --- **/
-
-const WorkspaceSummaryCard = ({
-  activeSection,
-  activeTool,
-  measurementCount,
-  theme
-}: {
-  activeSection: string;
-  activeTool: MeasurementTool;
-  measurementCount: number;
-  theme: "light" | "dark";
-}) => (
-  <div className={`rounded-[2.5rem] border p-8 sm:p-10 shadow-2xl relative overflow-hidden transition-all duration-500 hover:border-amber-500/30
-    ${theme === 'dark' ? 'bg-zinc-950/40 border-zinc-800 shadow-black' : 'bg-white border-zinc-200 shadow-zinc-200/50'}`}>
-    <div className="absolute top-0 right-0 p-8 opacity-5">
-       <Ruler size={80} className="text-amber-500" />
-    </div>
+/** --- UI: STATUS SUMMARY CARD --- **/
+const WorkspaceSummaryCard = ({ activeSection, activeTool, theme }: any) => (
+  <div className={`rounded-[2.5rem] border p-8 sm:p-10 shadow-2xl relative overflow-hidden transition-all duration-500
+    ${theme === 'dark' ? 'bg-zinc-950/40 border-zinc-800 shadow-black' : 'bg-white border-zinc-200 shadow-sm'}`}>
+    <div className="absolute top-0 right-0 p-8 opacity-5"><Ruler size={80} className="text-amber-500" /></div>
     <div className="flex items-start gap-6 relative z-10">
       <div className="p-4 bg-amber-500/10 rounded-2xl border border-amber-500/20 text-amber-500 shadow-inner">
         <MousePointer2 size={24} strokeWidth={2.5} />
       </div>
       <div className="text-left space-y-2">
-        <p className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-500 italic leading-none">Ready for Takeoff</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 italic">Technical Takeoff Active</p>
         <p className={`text-base sm:text-xl font-bold leading-snug ${theme === 'dark' ? 'text-zinc-200' : 'text-zinc-800'}`}>
-          Click on the drawing to start measuring. Your work is automatically saved and sorted into the correct project vault.
+          Map out quantities on the blueprint. Your records are secured to the project vault automatically.
         </p>
       </div>
     </div>
     <div className="mt-8 flex flex-wrap gap-4 relative z-10">
-      <div className={`px-6 py-3 rounded-2xl border text-[10px] font-black uppercase tracking-widest flex items-center gap-3 transition-colors
+      <div className={`px-5 py-2.5 rounded-xl border text-[9px] font-black uppercase tracking-widest flex items-center gap-3
         ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-zinc-400' : 'bg-zinc-50 border-zinc-200 text-zinc-600'}`}>
-        <Layers size={14} className="text-amber-500" /> Current Section: <span className={`${theme === 'dark' ? 'text-white' : 'text-zinc-900'} italic ml-1`}>{activeSection}</span>
+        <Layers size={14} className="text-amber-500" /> {activeSection}
       </div>
-      <div className={`px-6 py-3 rounded-2xl border text-[10px] font-black uppercase tracking-widest flex items-center gap-3 transition-colors
+      <div className={`px-5 py-2.5 rounded-xl border text-[9px] font-black uppercase tracking-widest flex items-center gap-3
         ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-zinc-400' : 'bg-zinc-50 border-zinc-200 text-zinc-600'}`}>
-        <Target size={14} className="text-blue-500" /> Tool: <span className={`${theme === 'dark' ? 'text-white' : 'text-zinc-900'} italic ml-1`}>{activeTool}</span>
+        <Target size={14} className="text-blue-500" /> Tool: {activeTool}
       </div>
     </div>
   </div>
 );
 
-/** --- MAIN WORKSPACE ENGINE --- **/
-
+/** --- MAIN WORKSPACE COMPONENT --- **/
 const TakeoffWorkspace = (props: TakeoffWorkspaceProps) => {
   const { theme, user } = useAuth();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isPurging, setIsPurging] = useState(false);
   
-  // Instant Session Memory
+  // Local "Session Memory" for instant UI updates before DB fetch cycles
   const [sessionMeasurements, setSessionMeasurements] = useState<Measurement[]>([]);
 
-  // Filter props.measurements strictly by the active projectId to prevent data leakage
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSessionMeasurements([]);
+  }, [props.projectId]);
+
+  // Filter global measurements strictly by the current project to prevent data leakage
   const projectSpecificMeasurements = useMemo(() => {
     return props.measurements.filter(m => m.project_id === props.projectId);
   }, [props.measurements, props.projectId]);
 
-  const displayMeasurements = [...projectSpecificMeasurements, ...sessionMeasurements];
+  // Combine saved vault data with active session data, deduping by ID to prevent overlapping records
+  const displayMeasurements = useMemo(() => {
+    const seenIds = new Set(projectSpecificMeasurements.map((m) => m.id));
+    return [
+      ...projectSpecificMeasurements,
+      ...sessionMeasurements.filter((m) => !seenIds.has(m.id))
+    ];
+  }, [projectSpecificMeasurements, sessionMeasurements]);
 
   const triggerPurge = () => {
     setIsPurging(true);
@@ -151,16 +129,18 @@ const TakeoffWorkspace = (props: TakeoffWorkspaceProps) => {
     setTimeout(() => setIsPurging(false), 600);
   };
 
-  /** * DATA ENGINE: SECURE MEASUREMENT TO VAULT */
+  /** * ACTION: SECURE MEASUREMENT TO VAULT 
+   * This is the "Heart" of the machine. It calculates and saves.
+   */
   const handleRecordMeasurement = async () => {
-    if (props.currentPoints.length < 2 || !user || !db) {
+    if (props.currentPoints.length < 1 || !user || !db) {
       props.setCurrentPoints([]);
       return;
     }
 
     let baseValue = 0;
     
-    // 1. Geometry Calculation
+    // 1. GEOMETRY ENGINE
     if (props.activeTool === 'length') {
       for (let i = 1; i < props.currentPoints.length; i++) {
         const p1 = props.currentPoints[i - 1];
@@ -168,66 +148,71 @@ const TakeoffWorkspace = (props: TakeoffWorkspaceProps) => {
         baseValue += Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
       }
       baseValue = baseValue * props.scaleFactor;
-    } else if (props.activeTool === 'area') {
+    } else if (props.activeTool === 'area' && props.currentPoints.length > 2) {
       let area = 0;
       const pts = props.currentPoints;
       for (let i = 0; i < pts.length; i++) {
         const j = (i + 1) % pts.length;
         area += pts[i].x * pts[j].y - pts[j].x * pts[i].y;
       }
-      baseValue = Math.abs(area / 2);
-      baseValue = baseValue * (props.scaleFactor * props.scaleFactor);
+      baseValue = Math.abs(area / 2) * (props.scaleFactor * props.scaleFactor);
+    } else if (props.activeTool === 'count') {
+      baseValue = props.currentPoints.length;
     }
 
     let finalValue = baseValue;
-    let finalUnit = props.activeTool === 'area' ? 'm²' : 'm';
+    let finalUnit = props.activeTool === 'area' ? 'm²' : props.activeTool === 'count' ? 'nr' : 'm';
 
-    // 2. Apply SMM Rules (Kenya Standard)
-    if (props.activeTool === 'area' && props.activeSection.includes('Concrete')) {
+    // 2. SMM-KE (KENYA) ENGINEERING RULES
+    // Area of concrete * Depth = m3
+    if (props.activeTool === 'area' && props.activeSection.toLowerCase().includes('concrete')) {
           finalValue = baseValue * (props.smmParams?.depth || 0.150); 
           finalUnit = 'm³';
-    } else if (props.activeTool === 'length' && props.activeSection.includes('Walling')) {
+    } 
+    // Length of wall * Height = m2
+    else if (props.activeTool === 'length' && props.activeSection.toLowerCase().includes('walling')) {
           finalValue = baseValue * (props.smmParams?.height || 3.000); 
           finalUnit = 'm²';
     }
 
+    // Apply waste percentage
     if (props.smmParams?.waste) {
           finalValue = finalValue * (1 + (props.smmParams.waste / 100));
     }
     
-    if (props.smmParams?.mode === 'DEDUCTION' || props.isDeductionMode) {
+    // Handle Deductions (e.g., windows/doors)
+    if (props.isDeductionMode) {
           finalValue = -Math.abs(finalValue);
     }
 
-    // 3. Construct Secure Node Record
-    const newMeasurement = {
+    // 3. CONSTRUCT RECORD (Aligned with Master database.ts)
+    const newRecord: Measurement = {
         id: crypto.randomUUID(),
-        project_id: props.projectId, // LINKED TO PROJECT
-        user_id: user.id,            // LINKED TO OWNER
-        timestamp: new Date().toISOString(),
-        bill_item_id: "", 
+        project_id: props.projectId, 
+        bill_item_id: null,
+        label: `${props.activeSection} Node #${displayMeasurements.length + 1}`,
         type: props.activeTool,
-        points: props.currentPoints,
         value: finalValue,
         unit: finalUnit,
         sectionCode: props.activeSection,
-        label: `${props.activeSection} Node`
-    } as any; 
+        points: props.currentPoints,
+        timestamp: new Date().toISOString()
+    };
 
     try {
-        // Atomic local save
-        await db.measurements.add(newMeasurement);
+        // Step A: Immediate Local Vault Save
+        await db.measurements.add(newRecord);
         
-        // Queue for Cloud Sync
+        // Step B: Queue Cloud Bridge Sync
         if (syncEngine) {
-            await syncEngine.queueChange("measurements", newMeasurement.id, "INSERT", newMeasurement);
+            await syncEngine.queueChange("measurements", newRecord.id, "INSERT", newRecord);
         }
 
-        // Instant UI Update
-        setSessionMeasurements(prev => [...prev, newMeasurement]);
+        // Step C: Update Local UI Session
+        setSessionMeasurements(prev => [newRecord, ...prev]);
         props.setCurrentPoints([]);
     } catch (err) {
-        console.error("Vault Committal Failure:", err);
+        console.error("Vault Error: Failed to secure node.");
     }
   };
 
@@ -237,63 +222,49 @@ const TakeoffWorkspace = (props: TakeoffWorkspaceProps) => {
   };
 
   return (
-    <div className={`flex-1 flex flex-col overflow-y-auto overflow-x-hidden custom-scrollbar p-4 sm:p-12 space-y-12 sm:space-y-24 animate-in fade-in duration-700 pb-40 text-left transition-colors
+    <div className={`flex-1 flex flex-col overflow-y-auto overflow-x-hidden custom-scrollbar p-4 sm:p-10 space-y-12 pb-40 transition-colors
       ${theme === 'dark' ? 'bg-[#050505]' : 'bg-zinc-50'}`}>
       
       {!isExpanded && (
-        <div className="max-w-6xl mx-auto w-full animate-in slide-in-from-top-4">
+        <div className="max-w-6xl mx-auto w-full animate-in slide-in-from-top-4 duration-500">
           <WorkspaceSummaryCard 
             activeSection={props.activeSection} 
             activeTool={props.activeTool} 
-            measurementCount={displayMeasurements.length}
-            theme={theme as "light" | "dark"}
+            theme={theme}
           />
         </div>
       )}
 
       {/* STEP 01: THE DRAWING CANVAS */}
-      <div className={`${isExpanded ? `fixed inset-0 z-[200] p-4 sm:p-8 flex flex-col m-0 ${theme === 'dark' ? 'bg-[#050505]' : 'bg-zinc-100'}` : 'max-w-6xl mx-auto w-full space-y-10'} transition-all duration-500`}>
+      <div className={`${isExpanded ? `fixed inset-0 z-200] p-4 flex flex-col ${theme === 'dark' ? 'bg-black' : 'bg-zinc-100'}` : 'max-w-6xl mx-auto w-full space-y-8'} transition-all duration-500`}>
         
         {!isExpanded && (
-          <div className="flex items-center justify-between px-8 border-l-4 border-amber-500">
-             <div className="flex items-center gap-6">
-                <div className="w-10 h-10 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-[10px] font-black text-amber-500 shadow-lg">01</div>
-                <div className="text-left">
-                   <h4 className={`text-2xl font-black uppercase tracking-tighter leading-none italic ${theme === 'dark' ? 'text-white' : 'text-zinc-950'}`}>Blueprints</h4>
-                   <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 mt-2 italic">Interactive Site Drawing</p>
-                </div>
+          <div className="flex items-center justify-between px-6 border-l-4 border-amber-500">
+             <div className="text-left">
+                <h4 className={`text-2xl font-black uppercase tracking-tighter italic ${theme === 'dark' ? 'text-white' : 'text-zinc-950'}`}>01. Blueprint View</h4>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 mt-1 italic">Precision Canvas</p>
              </div>
-             <div className="flex items-center gap-4">
-                <button 
-                  onClick={triggerPurge} 
-                  className={`p-3.5 rounded-xl border transition-all active:scale-90 shadow-xl
-                    ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-rose-500' : 'bg-white border-zinc-200 text-zinc-400 hover:text-rose-500 shadow-sm'}`}
-                  title="Clear lines"
-                >
-                  <RefreshCw size={20} className={isPurging ? 'animate-spin' : ''} />
+             <div className="flex items-center gap-3">
+                <button onClick={triggerPurge} className={`p-3 rounded-xl border transition-all active:scale-90 ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-rose-500' : 'bg-white border-zinc-200 text-zinc-400'}`}>
+                  <RefreshCw size={18} className={isPurging ? 'animate-spin' : ''} />
                 </button>
-                <button 
-                  onClick={() => setIsExpanded(true)} 
-                  className={`p-3.5 rounded-xl border transition-all active:scale-90 shadow-xl
-                    ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-amber-500' : 'bg-white border-zinc-200 text-zinc-400 hover:text-amber-500 shadow-sm'}`}
-                  title="Fullscreen"
-                >
-                  <Maximize2 size={20} />
+                <button onClick={() => setIsExpanded(true)} className={`p-3 rounded-xl border transition-all active:scale-90 ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-amber-500' : 'bg-white border-zinc-200 text-zinc-400'}`}>
+                  <Maximize2 size={18} />
                 </button>
              </div>
           </div>
         )}
         
-        <div className={`relative overflow-hidden transition-all duration-500 shadow-2xl
-          ${isExpanded ? 'flex-1 rounded-[3rem] border-2' : 'h-[80vh] rounded-[4rem] border-2'}
-          ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800 shadow-black' : 'bg-white border-zinc-300 shadow-zinc-300'}`}>
+        <div className={`relative overflow-hidden transition-all duration-500
+          ${isExpanded ? 'flex-1 rounded-4xl border-2' : 'h-[75vh] rounded-[3.5rem] border-2'}
+          ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800' : 'bg-white border-zinc-200 shadow-xl'}`}>
           
           {isExpanded && (
               <button 
                 onClick={() => setIsExpanded(false)} 
-                className="absolute top-8 right-8 z-[210] px-8 py-5 bg-amber-500 text-black rounded-3xl shadow-2xl hover:bg-amber-400 active:scale-90 transition-all flex items-center gap-4 font-black uppercase text-xs tracking-widest italic shadow-amber-500/20"
+                className="absolute top-6 right-6 z-210] px-6 py-4 bg-amber-500 text-black rounded-2xl shadow-2xl hover:bg-amber-400 active:scale-90 transition-all flex items-center gap-3 font-black uppercase text-[10px] italic"
               >
-                 <Minimize2 size={24} strokeWidth={3} /> Back to Hub
+                 <Minimize2 size={20} strokeWidth={3} /> Exit Fullscreen
               </button>
           )}
 
@@ -302,20 +273,17 @@ const TakeoffWorkspace = (props: TakeoffWorkspaceProps) => {
             measurements={displayMeasurements} 
             pageNum={1} 
             onCompleteMeasurement={handleRecordMeasurement}
+            hideSavedMeasurements={true}
           />
         </div>
       </div>
 
-      {/* STEP 02 & 03: TOOL SETUP & CALIBRATION */}
+      {/* STEPS 02 & 03: CONTROLS */}
       {!isExpanded && (
-        <div className="max-w-6xl mx-auto w-full grid lg:grid-cols-2 gap-12 animate-in fade-in duration-500">
-           <div className="space-y-8">
-              <div className="flex items-center gap-6 px-8 border-l-4 border-zinc-700">
-                 <div className={`w-10 h-10 rounded-full border flex items-center justify-center text-[10px] font-black text-zinc-500 shadow-inner ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-200'}`}>02</div>
-                 <h4 className={`text-xl font-black uppercase tracking-widest italic ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-700'}`}>Choose Tool</h4>
-              </div>
-              <div className={`rounded-[3.5rem] border p-8 shadow-xl transition-colors duration-500
-                  ${theme === 'dark' ? 'bg-zinc-900/20 border-zinc-800 shadow-black' : 'bg-white border-zinc-200 shadow-zinc-200'}`}>
+        <div className="max-w-6xl mx-auto w-full grid lg:grid-cols-2 gap-10 animate-in fade-in duration-700">
+           <div className="space-y-6">
+              <h4 className={`text-lg font-black uppercase tracking-widest italic px-6 border-l-4 border-zinc-700 ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'}`}>02. Tooling</h4>
+              <div className={`rounded-[2.5rem] border p-8 shadow-lg ${theme === 'dark' ? 'bg-zinc-900/20 border-zinc-800' : 'bg-white border-zinc-200'}`}>
                   <SMMWorkSections
                     activeSection={props.activeSection}
                     setActiveSection={props.setActiveSection}
@@ -324,13 +292,9 @@ const TakeoffWorkspace = (props: TakeoffWorkspaceProps) => {
                   />
               </div>
            </div>
-           <div className="space-y-8">
-              <div className="flex items-center gap-6 px-8 border-l-4 border-zinc-700">
-                 <div className={`w-10 h-10 rounded-full border flex items-center justify-center text-[10px] font-black text-zinc-500 shadow-inner ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-200'}`}>03</div>
-                 <h4 className={`text-xl font-black uppercase tracking-widest italic ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-700'}`}>Set Scale</h4>
-              </div>
-              <div className={`rounded-[3.5rem] border p-10 flex items-center justify-center min-h-[350px] shadow-inner transition-colors duration-500
-                  ${theme === 'dark' ? 'bg-zinc-950/40 border-zinc-800 shadow-black' : 'bg-zinc-100 border-zinc-200 shadow-inner'}`}>
+           <div className="space-y-6">
+              <h4 className={`text-lg font-black uppercase tracking-widest italic px-6 border-l-4 border-zinc-700 ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'}`}>03. Calibration</h4>
+              <div className={`rounded-[2.5rem] border p-8 shadow-lg flex items-center justify-center min-h-300px] ${theme === 'dark' ? 'bg-zinc-900/20 border-zinc-800' : 'bg-white border-zinc-200'}`}>
                   <CalibrationNode
                     currentScale={props.scaleFactor}
                     onScaleChange={props.setScaleFactor}
@@ -342,33 +306,29 @@ const TakeoffWorkspace = (props: TakeoffWorkspaceProps) => {
         </div>
       )}
 
-      {/* STEP 04: THE PROJECT LEDGER */}
+      {/* STEP 04: THE LEDGER */}
       {!isExpanded && (
-        <div className="max-w-6xl mx-auto w-full space-y-10 animate-in fade-in duration-500">
-          <div className="flex items-center justify-between px-8 border-l-4 border-emerald-500">
-             <div className="flex items-center gap-6 text-left">
-                <div className="w-10 h-10 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-[10px] font-black text-emerald-500 shadow-lg">04</div>
-                <div>
-                  <h4 className={`text-2xl font-black uppercase tracking-tighter leading-none italic ${theme === 'dark' ? 'text-white' : 'text-zinc-950'}`}>Record List</h4>
-                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 mt-2 italic">Secured Quantities for {props.projectName}</p>
-                </div>
+        <div className="max-w-6xl mx-auto w-full space-y-8 animate-in fade-in duration-700">
+          <div className="flex items-center justify-between px-6 border-l-4 border-emerald-500">
+             <div className="text-left">
+                <h4 className={`text-2xl font-black uppercase tracking-tighter leading-none italic ${theme === 'dark' ? 'text-white' : 'text-zinc-950'}`}>04. Project Ledger</h4>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 mt-1 italic">Records for {props.projectName}</p>
              </div>
-             <ClipboardList size={28} className="text-zinc-700 opacity-30" />
+             <ClipboardList size={24} className="text-zinc-700 opacity-30" />
           </div>
           
-          <div className={`rounded-[4rem] border overflow-hidden shadow-2xl flex flex-col transition-colors duration-500
-              ${theme === 'dark' ? 'bg-zinc-950/20 border-zinc-800 shadow-black' : 'bg-white border-zinc-200 shadow-zinc-200'}`}>
-              <div className="flex-1">
-                <TakeoffLedger
-                  measurements={displayMeasurements}
-                  onDelete={handleLocalDelete}
-                  activeSection={props.activeSection}
-                />
-              </div>
-              <div className={`p-12 border-t transition-colors duration-500 ${theme === 'dark' ? 'bg-zinc-900/10 border-zinc-800/40' : 'bg-zinc-50 border-zinc-100 shadow-inner'}`}>
-                 <div className="flex items-center gap-5 mb-8 opacity-40 text-left">
-                    <Settings2 size={18} className="text-amber-500" />
-                    <h5 className={`text-[11px] font-black uppercase tracking-[0.4em] ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-900'}`}>Project Rules</h5>
+          <div className={`rounded-[3.5rem] border overflow-hidden shadow-2xl flex flex-col
+              ${theme === 'dark' ? 'bg-zinc-950/20 border-zinc-800' : 'bg-white border-zinc-200'}`}>
+              <TakeoffLedger
+                projectId={props.projectId}
+                measurements={displayMeasurements}
+                onDelete={handleLocalDelete}
+                activeSection={props.activeSection}
+              />
+              <div className={`p-10 border-t ${theme === 'dark' ? 'bg-zinc-900/10 border-zinc-800/40' : 'bg-zinc-50 border-zinc-100 shadow-inner'}`}>
+                 <div className="flex items-center gap-4 mb-6 opacity-30 text-left">
+                    <Settings2 size={16} className="text-amber-500" />
+                    <h5 className={`text-[10px] font-black uppercase tracking-[0.3em] ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-900'}`}>Engineering Specifications</h5>
                  </div>
                  <SMMTemplates
                    activeSection={props.activeSection}
@@ -381,13 +341,13 @@ const TakeoffWorkspace = (props: TakeoffWorkspaceProps) => {
         </div>
       )}
 
-      <footer className="pt-32 pb-24 text-center opacity-10 select-none flex flex-col items-center gap-10">
-        <div className="flex items-center justify-center gap-12 mb-4">
-           <div className={`h-px w-60 ${theme === 'dark' ? 'bg-zinc-800' : 'bg-zinc-300'}`} />
-           <Database size={40} className={theme === 'dark' ? 'text-zinc-600' : 'text-zinc-400'} />
-           <div className={`h-px w-60 ${theme === 'dark' ? 'bg-zinc-800' : 'bg-zinc-300'}`} />
+      <footer className="pt-24 pb-20 text-center opacity-10 select-none flex flex-col items-center gap-6">
+        <div className="flex items-center justify-center gap-8">
+           <div className={`h-px w-40 ${theme === 'dark' ? 'bg-zinc-800' : 'bg-zinc-300'}`} />
+           <Database size={24} className="text-zinc-500" />
+           <div className={`h-px w-40 ${theme === 'dark' ? 'bg-zinc-800' : 'bg-zinc-300'}`} />
         </div>
-        <p className={`text-[14px] font-black uppercase tracking-[2em] italic leading-none ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>PROJECT VAULT SECURED</p>
+        <p className="text-[12px] font-black uppercase tracking-[1.5em] italic">QS VAULT • OS V2.7</p>
       </footer>
 
       <style>{`
@@ -399,3 +359,4 @@ const TakeoffWorkspace = (props: TakeoffWorkspaceProps) => {
 };
 
 export default TakeoffWorkspace;
+

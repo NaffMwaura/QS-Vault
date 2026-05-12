@@ -1,5 +1,3 @@
-
-
 export type MeasurementTool = "length" | "area" | "count";
 
 export type ActiveWorkspace = "takeoff" | "reports";
@@ -16,25 +14,32 @@ export interface SmmParams {
   mode?: "ADDITION" | "DEDUCTION";
 }
 
+/** --- THE MASTER MEASUREMENT INTERFACE --- 
+ * Updated to match database.ts exactly:
+ * 1. label is now string | null
+ * 2. points is now CanvasPoint[] | null
+ */
 export interface Measurement {
   /** Unique secure identifier for the ledger */
   id: string;
   /** Links the measurement to a specific vault project */
   project_id: string;
-  /** Human-readable label (e.g., 'Concrete Slab') */
-  label: string;
+  /** Links to a specific BoQ item */
+  bill_item_id: string | null;
+  /** Human-readable label (Matched to database.ts) */
+  label: string | null;
   /** The tool used to capture the data */
-  type: MeasurementTool;
-  /** The final calculated quantity (incorporating Z-axis and waste) */
+  type: MeasurementTool | 'markup';
+  /** The final calculated quantity */
   value: number;
-  /** The SMM-KE unit of measure (m, m², m³, nr) */
+  /** The SMM-KE unit of measure */
   unit: string;
-  /** The specific trade code (e.g., SEC-F for Concrete) */
+  /** The specific trade code */
   sectionCode: string;
-  /** The raw X/Y coordinates from the PDF Blueprint */
-  points: Point[];
-  /** ISO String timestamp of when the record was secured */
+  /** The raw X/Y coordinates */
+  points: Point[] | null;
+  /** ISO String timestamp */
   timestamp: string;
+  /** Cloud synchronization marker */
+  synced_at?: string;
 }
-
-

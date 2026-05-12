@@ -2,49 +2,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
-  FileText, 
   FileSpreadsheet, 
-  Download, 
-  Eye, 
-  FileCheck, 
   Loader2, 
-  History, 
-  ShieldCheck, 
-  Lock,
-  Database,
+  ShieldCheck,
   ArrowLeft,
-  ChevronRight,
   Archive,
   Search,
   RefreshCw,
-  FolderOpen
+  FolderOpen,
+  ChevronRight
 } from 'lucide-react';
 
-/* ======================================================
-    OFFICE MODULE RESOLUTION (PRO-DEV STABILIZED)
-    Using dynamic resolution to prevent build failures.
-   ====================================================== */
-
-let useAuth: any = () => ({ theme: 'dark', user: null });
-let db: any = null;
-let BoQGenerator: any = () => null;
-
-const resolveModules = async () => {
-  try {
-    const authMod = await import("../../auth/AuthContext");
-    if (authMod.useAuth) useAuth = authMod.useAuth;
-
-    const dbMod = await import("../../../lib/database/database");
-    if (dbMod.db) db = dbMod.db;
-
-    const boqMod = await import("./BoQGenerator");
-    if (boqMod.default) BoQGenerator = boqMod.default;
-  } catch (e) {
-    console.warn("Vault Hub: Infrastructure nodes in standby.");
-  }
-};
-
-resolveModules();
+// Standard Infrastructure (Direct Imports for Reliability)
+import { useAuth } from "../../auth/AuthContext";
+import { db } from "../../../lib/database/database";
+import BoQGenerator from "./BoQGenerator";
+import type { Measurement } from "../../takeoff/types/takeoff";
 
 /** --- TYPES --- **/
 interface ReportItem {
@@ -64,249 +37,257 @@ const DocumentCard: React.FC<{
   onView: (report: ReportItem) => void;
   theme: 'light' | 'dark' 
 }> = ({ report, onView, theme }) => (
-  <div className={`p-8 rounded-[3.5rem] border-2 transition-all duration-500 group relative flex flex-col justify-between overflow-hidden shadow-2xl
-    ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800 hover:border-amber-500/30 shadow-black' : 'bg-white border-zinc-200 shadow-zinc-200/50 hover:border-amber-500/30'}`}>
-    
+  <div 
+    onClick={() => onView(report)}
+    className={`p-8 rounded-[3.5rem] border-2 transition-all duration-500 group relative flex flex-col justify-between overflow-hidden shadow-2xl cursor-pointer
+    ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800 hover:border-amber-500/30' : 'bg-white border-zinc-200 shadow-sm hover:border-amber-500/30'}`}
+  >
     <div className="mb-8 flex items-start justify-between gap-4">
-      <div className={`flex h-16 w-16 items-center justify-center rounded-2xl border-2 transition-all duration-500 shadow-inner
+      <div className={`flex h-16 w-16 items-center justify-center rounded-2xl border-2 transition-all duration-500
         ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800' : 'bg-zinc-50 border-zinc-100'}
         group-hover:bg-amber-500/10 group-hover:border-amber-500/20`}>
-        {report.type === 'XLS' ? (
-          <FileSpreadsheet className="text-zinc-600 group-hover:text-amber-500 transition-colors" size={32} />
-        ) : (
-          <FileText className="text-zinc-600 group-hover:text-amber-500 transition-colors" size={32} />
-        )}
+        <FileSpreadsheet className="text-zinc-600 group-hover:text-amber-500 transition-colors" size={32} />
       </div>
       <div className="text-right flex flex-col items-end gap-2">
         <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border-2
           ${report.measurementCount > 0 
             ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' 
             : 'bg-amber-500/10 text-amber-500 border-amber-500/20'}`}>
-          {report.measurementCount > 0 ? 'Data Secured' : 'No Records'}
+          {report.measurementCount > 0 ? `${report.measurementCount} Nodes Secured` : 'Empty Vault'}
         </span>
-        <p className="text-[8px] font-mono text-zinc-600 font-bold uppercase">v{report.version}</p>
+        <p className="text-[8px] font-mono text-zinc-600 font-bold uppercase">SEC-v2.5</p>
       </div>
     </div>
 
-    <div className="mb-10 text-left space-y-3">
-      <div className="flex items-center gap-2 opacity-60">
-        <Database size={12} className="text-amber-500" />
-        <p className="text-[10px] font-black uppercase text-zinc-500 tracking-widest italic leading-none">
-          Data from: {report.projectName}
-        </p>
-      </div>
-      <h3 className={`text-3xl font-black uppercase italic tracking-tighter leading-tight
-        ${theme === 'dark' ? 'text-white' : 'text-zinc-950'}`}>
-        {report.title}
+    <div className="mb-10 text-left space-y-2">
+      <p className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.4em] italic">Project Folder</p>
+      <h3 className={`text-3xl font-black uppercase italic tracking-tighter leading-tight ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
+        {report.projectName}
       </h3>
-      <div className="flex items-center gap-4 text-[10px] font-bold text-zinc-600 uppercase tracking-widest">
-        <span className={report.measurementCount > 0 ? 'text-emerald-500' : ''}>
-          {report.measurementCount} Measurements Found
-        </span>
-        <span className={`w-1 h-1 rounded-full ${theme === 'dark' ? 'bg-zinc-700' : 'bg-zinc-300'}`} />
-        <span>Updated {report.lastUpdated}</span>
-      </div>
+      <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">
+        Last Modification: {report.lastUpdated}
+      </p>
     </div>
 
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <button 
-        onClick={() => onView(report)}
-        className={`flex h-16 items-center justify-center gap-3 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all active:scale-95 border-2
-          ${theme === 'dark' ? 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-700 shadow-black' : 'bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-50'}`}>
-        <Eye size={18} strokeWidth={2.5} /> Review & Edit
-      </button>
-      <button 
-        onClick={() => onView(report)}
-        className={`flex h-16 items-center justify-center gap-3 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all shadow-xl active:scale-95 border-2 border-amber-400
-           bg-amber-500 text-black hover:bg-amber-400 shadow-amber-500/10`}>
-        <Download size={18} strokeWidth={2.5} /> Save as Excel
-      </button>
+    <div className="flex items-center justify-between pt-6 border-t border-zinc-800/40 opacity-40 group-hover:opacity-100 transition-opacity">
+       <span className="text-[10px] font-black uppercase tracking-widest">Open Archive</span>
+       <ChevronRight size={18} className="text-amber-500 group-hover:translate-x-2 transition-transform" />
     </div>
   </div>
 );
 
-/** --- MAIN COMPONENT: PROJECT FILE CABINET --- **/
+/** --- MAIN COMPONENT: THE ARCHIVE CABINET --- **/
 const ArtifactsVault: React.FC = () => {
   const { user, theme } = useAuth();
+  
+  // App State
   const [loading, setLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [reports, setReports] = useState<ReportItem[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  
+  // Drill-down State (Crucial for fixing the empty display)
   const [selectedReport, setSelectedReport] = useState<ReportItem | null>(null);
+  const [selectedMeasurements, setSelectedMeasurements] = useState<Measurement[]>([]);
+  const [isDrillingDown, setIsDrillingDown] = useState(false);
 
-  /** * 1. CABINET SYNCHRONIZATION */
-  const syncWithOfficeData = useCallback(async () => {
+  /** * 1. SCANNER: REFRESH ALL CABINET FOLDERS */
+  const scanVault = useCallback(async () => {
     if (!db || !user) {
-      setTimeout(() => setLoading(false), 1200);
+      setTimeout(() => setLoading(false), 1000);
       return;
     }
 
     try {
-      setIsRefreshing(true);
-      const activeProjects = await db.projects.where("user_id").equals(user.id).toArray();
+      setLoading(true);
+      // Fetch all projects owned by this user
+      const projects = await db.projects.where("user_id").equals(user.id).toArray();
       
-      const documentList: ReportItem[] = await Promise.all(activeProjects.map(async (project: any) => {
-        const mCount = await db.measurements.where("project_id").equals(project.id).count();
+      const documentList: ReportItem[] = await Promise.all(projects.map(async (p: any) => {
+        // Count how many measurements exist for this SPECIFIC project ID
+        const count = await db.measurements.where("project_id").equals(p.id).count();
         
         return {
-          id: project.id,
+          id: p.id,
           title: "Bill of Quantities",
-          projectName: project.name,
+          projectName: p.name,
           type: "XLS",
-          status: mCount > 0 ? "Certified" : "Draft",
-          lastUpdated: new Date(project.updated_at).toLocaleDateString(),
-          version: "1.2.0",
-          measurementCount: mCount
+          status: count > 0 ? "Certified" : "Draft",
+          lastUpdated: new Date(p.updated_at || p.created_at).toLocaleDateString(),
+          version: "1.0.0",
+          measurementCount: count
         };
       }));
 
       setReports(documentList.sort((a, b) => b.lastUpdated.localeCompare(a.lastUpdated)));
     } catch (err) {
-      console.error("Cabinet sync failed.", err);
+      console.error("Vault Scanner: Failure.");
     } finally {
       setLoading(false);
-      setIsRefreshing(false);
     }
   }, [user]);
 
   useEffect(() => {
-    syncWithOfficeData();
-  }, [syncWithOfficeData]);
+    scanVault();
+  }, [scanVault]);
+
+  /** * 2. DRILL DOWN: OPEN A SPECIFIC FOLDER
+   * This is where we fetch the actual measurement "papers" for the folder.
+   */
+  const handleOpenFolder = async (report: ReportItem) => {
+    if (!db) return;
+    
+    // CRITICAL: Immediately clear old measurements to prevent cross-project data bleed
+    setSelectedMeasurements([]);
+    setSelectedReport(report);
+    
+    try {
+      setIsDrillingDown(true);
+      
+      // FETCH: Get every node where project_id matches the folder clicked
+      const projectData = await db.measurements
+        .where("project_id")
+        .equals(report.id)
+        .toArray();
+        
+      setSelectedMeasurements(projectData as Measurement[]);
+    } catch (err) {
+      console.error("Folder Drill: Access Denied.");
+    } finally {
+      setIsDrillingDown(false);
+    }
+  };
+
+  const filteredReports = reports.filter(r => 
+    r.projectName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (loading) {
     return (
-      <div className="py-40 text-center opacity-20 flex flex-col items-center gap-6">
-        <Loader2 className="w-16 h-16 animate-spin text-amber-500" />
-        <p className="font-black uppercase text-[10px] tracking-[0.5em] italic">Accessing Project Records...</p>
+      <div className="py-40 flex flex-col items-center justify-center opacity-30">
+        <Loader2 className="w-12 h-12 animate-spin text-amber-500 mb-6" />
+        <p className="font-black uppercase text-[10px] tracking-[0.5em] italic">Unlocking Project Vault...</p>
       </div>
     );
   }
 
-  // --- DETAIL VIEW: THE SPECIFIC PROJECT SPREADSHEET ---
+  // --- DETAIL VIEW: INSIDE THE PROJECT FOLDER ---
   if (selectedReport) {
     return (
-      <div className="animate-in fade-in slide-in-from-right-4 duration-500">
-         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10 px-4 sm:px-0">
+      <div className="animate-in fade-in slide-in-from-right-4 duration-500 text-left">
+         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12">
            <button 
-             onClick={() => setSelectedReport(null)}
-             className={`flex items-center gap-3 px-8 py-5 rounded-2xl border-2 transition-all active:scale-95 shadow-xl font-black uppercase text-[10px] tracking-widest
-               ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white' : 'bg-white border-zinc-200 text-zinc-600 hover:text-zinc-900'}`}
+             onClick={() => { setSelectedReport(null); setSelectedMeasurements([]); }}
+             className={`flex items-center gap-4 px-8 py-5 rounded-2xl border-2 transition-all active:scale-95 shadow-xl font-black uppercase text-[10px] tracking-widest
+               ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white' : 'bg-white border-zinc-200 text-zinc-600'}`}
            >
-              <ArrowLeft size={18} strokeWidth={2.5} />
-              Return to Cabinet
+              <ArrowLeft size={18} strokeWidth={3} /> Return to File Cabinet
            </button>
-           <div className="flex items-center gap-4 text-left">
-              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500">
-                 <ShieldCheck size={20} />
+           
+           <div className="flex items-center gap-5">
+              <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500">
+                 <ShieldCheck size={24} />
               </div>
-              <div>
-                 <p className="text-[9px] font-black uppercase text-zinc-500 tracking-widest leading-none mb-1">Active Report Source</p>
-                 <p className={`text-sm font-bold uppercase tracking-tight ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>{selectedReport.projectName}</p>
+              <div className="text-left">
+                 <p className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.3em] leading-none mb-2 italic">Active Data Source</p>
+                 <h4 className={`text-2xl font-black uppercase italic tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
+                    {selectedReport.projectName}
+                 </h4>
               </div>
            </div>
          </div>
          
-         <div className={`rounded-[4rem] border-2 shadow-2xl p-4 sm:p-12 transition-all duration-500
-           ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800 shadow-black' : 'bg-white border-zinc-100'}`}>
-            <BoQGenerator projectId={selectedReport.id} projectName={selectedReport.projectName} />
+         <div className={`rounded-[4rem] border-2 shadow-2xl p-6 sm:p-14 transition-all duration-500
+           ${theme === 'dark' ? 'bg-zinc-950/40 border-zinc-800' : 'bg-white border-zinc-200'}`}>
+            {isDrillingDown ? (
+              <div className="py-32 flex flex-col items-center gap-6 opacity-30">
+                <Loader2 className="animate-spin text-amber-500 w-10 h-10" />
+                <p className="text-[11px] font-black uppercase tracking-widest italic">Reading Project Ledger...</p>
+              </div>
+            ) : (
+              <BoQGenerator 
+                projectId={selectedReport.id} 
+                projectName={selectedReport.projectName} 
+                measurements={selectedMeasurements} 
+              />
+            )}
          </div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 flex flex-col space-y-12 animate-in fade-in duration-700 p-4 sm:p-14 text-left">
+    <div className="flex-1 flex flex-col space-y-12 animate-in fade-in duration-700 text-left">
       
-      <header className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-10 text-left">
+      <header className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-10">
         <div className="space-y-4">
           <div className="flex items-center gap-4">
              <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-inner">
                 <Archive size={28} />
              </div>
-             <p className="text-[11px] font-black uppercase tracking-[0.5em] text-zinc-500 italic leading-none">Technical Reports Archive</p>
+             <p className="text-[11px] font-black uppercase tracking-[0.5em] text-zinc-500 italic">Technical Archive</p>
           </div>
-          <h2 className={`text-5xl sm:text-6xl font-black uppercase italic tracking-tighter leading-none
-            ${theme === 'dark' ? 'text-white' : 'text-zinc-950'}`}>
-            Project File Cabinet<span className="text-amber-500">.</span>
+          <h2 className={`text-5xl sm:text-6xl font-black uppercase italic tracking-tighter leading-none ${theme === 'dark' ? 'text-white' : 'text-zinc-950'}`}>
+            File Cabinet<span className="text-amber-500">.</span>
           </h2>
           <p className={`text-base font-medium max-w-2xl leading-relaxed ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-600'}`}>
-            Review and download professional documentation for your projects. These reports are generated instantly from the site measurements saved in your vault.
+            Access archived project nodes. Every folder here is automatically updated with the latest site measurements saved in your project vault.
           </p>
         </div>
         
         <div className="flex items-center gap-4 w-full lg:w-auto">
           <button 
-            onClick={syncWithOfficeData}
-            className={`p-6 rounded-2xl border-2 transition-all active:scale-95 ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-amber-500 shadow-black' : 'bg-white border-zinc-200 text-zinc-400 shadow-sm'}`}
-            title="Refresh Files"
+            onClick={scanVault}
+            className={`p-6 rounded-2xl border-2 transition-all active:scale-95 ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-amber-500' : 'bg-white border-zinc-200 text-zinc-400'}`}
           >
-            <RefreshCw size={24} className={isRefreshing ? 'animate-spin text-amber-500' : ''} />
+            <RefreshCw size={24} />
           </button>
-          <button className="flex-1 lg:flex-none px-12 py-7 bg-amber-500 text-black font-black uppercase text-xs tracking-widest rounded-3xl shadow-2xl hover:bg-amber-400 active:scale-95 transition-all flex items-center justify-center gap-4 italic border-2 border-amber-300">
-            <FileCheck size={24} strokeWidth={2.5} /> Prepare Final Project Report
-          </button>
+          <div className="relative flex-1 lg:flex-none">
+             <Search size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-600" />
+             <input 
+               value={searchQuery}
+               onChange={(e) => setSearchQuery(e.target.value)}
+               placeholder="Search Cabinet..." 
+               className={`w-full lg:w-80 pl-16 pr-8 py-6 rounded-3xl border-2 font-black uppercase text-[10px] tracking-widest outline-none transition-all
+                 ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800 text-white focus:border-amber-500' : 'bg-zinc-50 border-zinc-200'}`}
+             />
+          </div>
         </div>
       </header>
 
-      <div className={`p-6 rounded-[2.5rem] border-2 flex items-center gap-5 mx-2 sm:mx-0 shadow-inner
-        ${theme === 'dark' ? 'bg-zinc-950/40 border-zinc-800' : 'bg-zinc-50 border-zinc-100'}`}>
-         <Search size={20} className="text-zinc-700 ml-4" />
-         <input 
-           placeholder="Search project folders..." 
-           className="bg-transparent border-none outline-none flex-1 text-sm font-bold text-zinc-500 placeholder-zinc-700 uppercase tracking-widest"
-         />
-      </div>
-
-      {reports.length > 0 ? (
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 pb-20">
-          {reports.map((report) => (
+      {filteredReports.length > 0 ? (
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 pb-20">
+          {filteredReports.map((report) => (
             <DocumentCard 
               key={report.id} 
               report={report} 
-              onView={(r) => setSelectedReport(r)}
+              onView={handleOpenFolder}
               theme={theme as 'light' | 'dark'} 
             />
           ))}
         </div>
       ) : (
-        <div className={`p-20 sm:p-40 rounded-[4.5rem] border-2 border-dashed flex flex-col items-center justify-center gap-14 opacity-20
+        <div className={`p-24 sm:p-40 rounded-[4rem] border-2 border-dashed flex flex-col items-center justify-center gap-10 opacity-20
           ${theme === 'dark' ? 'border-zinc-800 bg-zinc-950/20' : 'border-zinc-200 bg-zinc-50'}`}>
-          <div className="p-14 rounded-[3rem] border-2 border-zinc-800 bg-zinc-900 shadow-black animate-pulse">
-            <FolderOpen size={120} className="text-zinc-800" strokeWidth={1} />
-          </div>
+          <FolderOpen size={100} strokeWidth={1} />
           <div className="text-center space-y-4">
-            <p className="text-3xl font-black uppercase tracking-[0.4em] italic leading-none">Cabinet is Empty</p>
-            <p className="text-sm font-bold uppercase tracking-widest max-w-sm mx-auto text-zinc-500">
-              Complete a site measurement to generate your first professional Bill of Quantities (BoQ) report.
+            <p className="text-2xl font-black uppercase tracking-[0.4em] italic">Archive Standby</p>
+            <p className="text-sm font-bold uppercase tracking-widest max-w-sm mx-auto">
+              Complete a site measurement in the Technical Workspace to populate this cabinet.
             </p>
           </div>
         </div>
       )}
 
-      <footer className={`flex flex-col sm:flex-row justify-between items-center gap-12 border-t-2 pt-16 pb-12
-        ${theme === 'dark' ? 'border-zinc-800/60 opacity-30' : 'border-zinc-200 opacity-60'}`}>
-        <div className="flex items-center gap-8 text-left">
-          <ShieldCheck size={40} className="text-emerald-500" strokeWidth={2.5} />
-          <div className="text-left space-y-1">
-            <p className={`text-sm font-black uppercase tracking-widest leading-none ${theme === 'dark' ? 'text-white' : 'text-zinc-950'}`}>Immutable Project Records</p>
-            <p className="text-[10px] font-mono uppercase text-zinc-500 tracking-tighter">Verified Node Architecture • SMM-KE COMPLIANT</p>
+      <footer className="pt-20 border-t border-zinc-800/40 flex flex-col sm:flex-row justify-between items-center gap-8 opacity-30 pb-10">
+        <div className="flex items-center gap-6">
+          <ShieldCheck size={32} className="text-emerald-500" />
+          <div className="text-left">
+            <p className="text-[10px] font-black uppercase tracking-widest leading-none mb-1">Security: AES-256 Encrypted</p>
+            <p className="text-[8px] font-mono uppercase tracking-tighter">DATA SOURCE: LOCAL VAULT • SMM-KE COMPLIANT</p>
           </div>
         </div>
-        <div className="flex items-center gap-14">
-          <div className="flex items-center gap-3">
-            <Lock size={18} className="text-zinc-700" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Encrypted Storage</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <RefreshCw size={18} className="text-amber-500" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Cloud Backup Active</span>
-          </div>
-        </div>
+        <p className="text-[10px] font-black uppercase tracking-[1em] italic text-zinc-700">QS VAULT OS</p>
       </footer>
-
-      <style>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: ${theme === 'dark' ? '#27272a' : '#d4d4d8'}; border-radius: 20px; }
-      `}</style>
     </div>
   );
 };

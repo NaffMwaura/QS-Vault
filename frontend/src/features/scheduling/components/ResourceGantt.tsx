@@ -14,17 +14,14 @@ import {
   TrendingUp,
   HardHat,
   ChevronRight,
-  AlertCircle,
   Briefcase,
   ChevronDown,
   RefreshCw,
-  Target,
   Trash2,
   Save,
   Eye,
   Layout
 } from "lucide-react";
-import Button from "../../../components/ui/Button";
 
 /* ======================================================
     OFFICE MODULE RESOLUTION (STABILIZED)
@@ -335,7 +332,7 @@ const ResourceGantt: React.FC<ResourceGanttProps> = ({ projectId: initialId }) =
       <div className={`rounded-[4rem] border backdrop-blur-3xl overflow-hidden transition-all duration-500 shadow-2xl
         ${theme === 'dark' ? 'bg-zinc-900/20 border-zinc-800 shadow-black' : 'bg-white border-zinc-200 shadow-zinc-200/50'}`}>
         
-        <div className="p-12 border-b border-zinc-800/40 flex flex-col md:flex-row justify-between items-center gap-8 bg-white/[0.01]">
+        <div className="p-12 border-b border-zinc-800/40 flex flex-col md:flex-row justify-between items-center gap-8 bg-white/1">
            <div className="text-left space-y-2">
               <h3 className={`text-4xl font-black uppercase italic tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-zinc-950'}`}>Milestone Tracker</h3>
               <p className="text-[11px] font-black uppercase tracking-[0.5em] text-zinc-500">Updating Stage Completion Nodes</p>
@@ -411,7 +408,7 @@ const ResourceGantt: React.FC<ResourceGanttProps> = ({ projectId: initialId }) =
                   <div className={`relative h-16 rounded-[2.5rem] overflow-hidden shadow-inner p-2 flex items-center border transition-all duration-500
                      ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800 group-hover:border-zinc-700' : 'bg-zinc-100 border-zinc-200'}`}>
                      <div 
-                        className={`h-full rounded-[2rem] transition-all duration-1000 ease-out relative shadow-2xl ${task.completion_percentage < 30 ? 'bg-rose-500/60' : 'bg-amber-500'}`}
+                        className={`h-full rounded-4xl transition-all duration-1000 ease-out relative shadow-2xl ${task.completion_percentage < 30 ? 'bg-rose-500/60' : 'bg-amber-500'}`}
                         style={{ width: `${task.completion_percentage}%` }}
                      >
                         <div className="absolute inset-0 bg-white/10 animate-pulse" />

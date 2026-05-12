@@ -11,17 +11,10 @@ import {
   Settings,
   Sun,
   X,
+  ChevronRight,
+  ShieldCheck
 } from 'lucide-react';
-import { useAuth } from "../../features/auth/AuthContext";
-
-export type DashboardView =
-  | 'projects'
-  | 'rates'
-  | 'settings'
-  | 'profile'
-  | 'diary'
-  | 'resources'
-  | 'collab';
+import { useAuth, type DashboardView } from "../../features/auth/AuthContext";
 
 interface SidebarCommandProps {
   activeView: DashboardView;
@@ -30,15 +23,7 @@ interface SidebarCommandProps {
   onClose?: () => void;
 }
 
-const navLinks = [
-  { id: 'projects' as DashboardView, label: 'Overview', icon: LayoutGrid },
-  { id: 'diary' as DashboardView, label: 'Daily Record', icon: ClipboardList },
-  { id: 'resources' as DashboardView, label: 'Schedule', icon: Calendar },
-  { id: 'collab' as DashboardView, label: 'Team Chat', icon: MessageSquare },
-  { id: 'rates' as DashboardView, label: 'Rates', icon: Database },
-  { id: 'settings' as DashboardView, label: 'Settings', icon: Settings },
-];
-
+/** --- SUB-COMPONENT: SIDEBAR_LINK --- **/
 const SidebarLink = ({
   icon: Icon,
   label,
@@ -53,19 +38,23 @@ const SidebarLink = ({
   <button
     type="button"
     onClick={onClick}
-    className={`theme-admin-control flex w-full items-center gap-4 px-5 py-3 border-2 text-left transition-all ${
-      active
-        ? 'bg-[var(--app-accent-strong)] text-[var(--app-primary-fg)] border-[var(--app-accent-strong)] shadow-lg shadow-[var(--app-shadow-card)]'
-        : 'text-[var(--app-meta)] border-transparent hover:text-[var(--app-heading)] hover:bg-[color-mix(in_srgb,var(--app-heading)_5%,transparent)]'
-    }`}
+    className={`flex w-full items-center justify-between px-6 py-4 rounded-2xl border-2 transition-all duration-300 group
+      ${active
+        ? 'bg-amber-500 text-black border-amber-400 shadow-xl shadow-amber-500/10 scale-[1.02]'
+        : 'bg-transparent border-transparent text-(--app-meta)] hover:bg-[color-mix(in_srgb,var(--app-heading)_5%,transparent)] hover:text-(--app-heading)'
+      }`}
   >
-    <Icon size={18} />
-    <span className="text-[0.72rem] font-black uppercase tracking-[0.14em] leading-none">
-      {label}
-    </span>
+    <div className="flex items-center gap-4">
+      <Icon size={18} className={`${active ? 'text-black' : 'group-hover:text-amber-500'} transition-colors`} />
+      <span className="text-[11px] font-black uppercase tracking-widest leading-none">
+        {label}
+      </span>
+    </div>
+    {active && <ChevronRight size={14} className="animate-in slide-in-from-left-2" />}
   </button>
 );
 
+/** --- SHARED SIDEBAR CONTENT --- **/
 const SidebarContent = ({
   activeView,
   setActiveView,
@@ -79,13 +68,17 @@ const SidebarContent = ({
 
   const getInitials = () => {
     const name = user?.user_metadata?.full_name || 'User';
-    return name
-      .split(' ')
-      .map((n: string) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
+    return name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
   };
+
+  const navLinks = [
+    { id: 'projects' as DashboardView, label: 'All Projects', icon: LayoutGrid },
+    { id: 'diary' as DashboardView, label: 'Daily Record', icon: ClipboardList },
+    { id: 'resources' as DashboardView, label: 'Work Schedule', icon: Calendar },
+    { id: 'collab' as DashboardView, label: 'Team Chat', icon: MessageSquare },
+    { id: 'rates' as DashboardView, label: 'Material Prices', icon: Database },
+    { id: 'settings' as DashboardView, label: 'Office Reports', icon: Settings },
+  ];
 
   const handleNavigate = (view: DashboardView) => {
     setActiveView(view);
@@ -93,61 +86,58 @@ const SidebarContent = ({
   };
 
   return (
-    <div className="flex h-full flex-col min-h-0 overflow-hidden">
-      <div className="flex h-[4.5rem] sm:min-h-20 shrink-0 items-center justify-between border-b border-[var(--app-border)] px-5 lg:px-6">
+    <div className="flex h-full flex-col overflow-hidden">
+      {/* 1. BRANDING AREA */}
+      <div className="flex h-20 shrink-0 items-center justify-between border-b border-(--app-border)] px-6">
         <button
           type="button"
           onClick={() => handleNavigate('projects')}
-          className="flex items-center gap-3 text-left"
+          className="flex items-center gap-3 transition-transform active:scale-95"
         >
-          <div className="rounded-2xl bg-amber-500 p-2.5 shadow-xl shadow-amber-500/20">
-            <HardHat size={22} className="text-black" />
+          <div className="rounded-xl bg-amber-500 p-2 shadow-lg">
+            <HardHat size={20} className="text-black" />
           </div>
-          <div>
-            <p className="theme-title text-lg font-black uppercase tracking-tight italic">
-              QS VAULT<span className="text-amber-500">.</span>
-            </p>
-            <p className="theme-subtle text-[10px] font-black uppercase tracking-[0.24em]">
-              Admin Workspace
-            </p>
+          <div className="text-left">
+            <p className="theme-heading text-lg tracking-tighter italic">QS APP<span className="text-amber-500">.</span></p>
           </div>
         </button>
 
         {onClose && (
-          <button
-            type="button"
-            onClick={onClose}
-            className="theme-surface-inset theme-muted theme-admin-icon-button-compact flex items-center justify-center border lg:hidden"
-          >
-            <X size={18} />
+          <button onClick={onClose} className="p-2 lg:hidden theme-icon">
+            <X size={20} />
           </button>
         )}
       </div>
 
-      <div className="px-5 py-5">
-        <div className="theme-surface-inset flex items-center gap-3 rounded-2xl border p-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-amber-500/20 bg-amber-500/10 font-black italic text-amber-500">
-            {getInitials()}
-          </div>
-          <div className="min-w-0 flex-1 text-left">
-            <p className="theme-title truncate text-sm font-black">
-              {user?.user_metadata?.full_name || 'Surveyor'}
-            </p>
-            <p className="theme-subtle truncate text-xs">
-              {user?.email || 'Verified operator'}
-            </p>
+      {/* 2. USER MINI-PROFILE */}
+      <div className="p-6">
+        <div className="theme-card flex items-center justify-between p-4 rounded-3xl border-2">
+          <div className="flex items-center gap-3 overflow-hidden">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-black font-black italic text-xs">
+              {getInitials()}
+            </div>
+            <div className="min-w-0 text-left">
+              <p className="theme-heading truncate text-[11px] uppercase tracking-tight">
+                {user?.user_metadata?.full_name?.split(' ')[0] || 'Surveyor'}
+              </p>
+              <div className="flex items-center gap-1.5 opacity-60">
+                <ShieldCheck size={10} className="text-emerald-500" />
+                <span className="text-[8px] font-black uppercase tracking-widest">Verified</span>
+              </div>
+            </div>
           </div>
           <button
             type="button"
             onClick={toggleTheme}
-            className="theme-button-secondary rounded-xl flex items-center justify-center p-3 border-2 hover:bg-[color-mix(in_srgb,var(--app-heading)_5%,transparent)]"
+            className="p-2 rounded-xl theme-button-secondary border-none hover:bg-amber-500/10 hover:text-amber-500 transition-colors"
           >
-            {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
           </button>
         </div>
       </div>
 
-      <nav className="flex-1 space-y-2 px-5 py-2 overflow-y-auto custom-scrollbar min-h-0">
+      {/* 3. NAVIGATION NODES */}
+      <nav className="flex-1 space-y-2 px-4 py-2 overflow-y-auto custom-scrollbar">
         {navLinks.map((link) => (
           <SidebarLink
             key={link.id}
@@ -159,22 +149,21 @@ const SidebarContent = ({
         ))}
       </nav>
 
-      <div className="shrink-0 px-5 pb-5 pt-3 mt-auto">
+      {/* 4. SYSTEM EXIT */}
+      <div className="p-6 border-t border-(--app-border)]">
         <button
           type="button"
           onClick={signOut}
-          className="px-5 py-3.5 flex w-full items-center font-black rounded-lg gap-4 text-left transition-all bg-[var(--app-error)] text-white border-2 border-[var(--app-error)] hover:opacity-90 shadow-lg shadow-[color-mix(in_srgb,var(--app-error)_30%,transparent)]"
+          className="flex w-full items-center justify-center gap-4 px-6 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all bg-rose-500 text-white shadow-xl shadow-rose-500/20 hover:bg-rose-600 active:scale-95 italic"
         >
-          <LogOut size={18} />
-          <span className="text-[0.72rem] font-black uppercase tracking-[0.14em] leading-none">
-            Log Out
-          </span>
+          <LogOut size={16} /> Log Out System
         </button>
       </div>
     </div>
   );
 };
 
+/** --- MAIN WRAPPER: ADAPTIVE FRAME --- **/
 const SidebarCommand: React.FC<SidebarCommandProps> = ({
   activeView,
   setActiveView,
@@ -183,19 +172,19 @@ const SidebarCommand: React.FC<SidebarCommandProps> = ({
 }) => {
   return (
     <>
-      <aside className="theme-surface-overlay sticky top-0 hidden h-screen w-72 shrink-0 border-r flex-col lg:flex">
+      {/* Desktop Persistent Drawer */}
+      <aside className="theme-panel sticky top-0 hidden h-screen w-72 shrink-0 border-r-2 flex-col lg:flex z-50">
         <SidebarContent activeView={activeView} setActiveView={setActiveView} />
       </aside>
 
+      {/* Mobile Modal Drawer */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden flex">
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            aria-label="Close navigation"
+        <div className="fixed inset-0 z-100] lg:hidden flex">
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-md animate-in fade-in duration-300" 
+            onClick={onClose} 
           />
-          <aside className="theme-surface-overlay relative z-10 flex h-full w-[88vw] max-w-sm flex-col border-r">
+          <aside className="theme-panel relative z-10 flex h-full w-[85vw] max-w-[320px] flex-col border-r-2 animate-in slide-in-from-left duration-500 shadow-2xl">
             <SidebarContent
               activeView={activeView}
               setActiveView={setActiveView}

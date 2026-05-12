@@ -39,18 +39,18 @@ const MeasurementEntry: React.FC<{
   item: Measurement; 
   onDeleteRequest: (id: string) => void;
 }> = ({ item, onDeleteRequest }) => (
-  <div className={`p-6 rounded-sm transition-all duration-300 group hover:scale-[1.01] relative theme-card hover:border-[var(--app-accent-strong)] shadow-lg`}>
+  <div className={`p-6 rounded-sm transition-all duration-300 group hover:scale-[1.01] relative theme-card hover:border-(--app-accent-strong)] shadow-lg`}>
     
     <div className="flex justify-between items-start mb-5">
       <div className="flex items-center gap-4 text-left">
-        <div className={`p-3 rounded-sm theme-card text-[var(--app-meta)] group-hover:text-[var(--app-primary-fg)] group-hover:border-[var(--app-accent-strong)] group-hover:bg-[var(--app-accent-strong)]`}>
+        <div className={`p-3 rounded-sm theme-card text-(--app-meta)] group-hover:text-(--app-primary-fg)] group-hover:border-(--app-accent-strong) group-hover:bg-(--app-accent-strong)]`}>
           {item.type === 'length' ? <Ruler size={16} /> : item.type === 'area' ? <Maximize2 size={16} /> : <CheckSquare size={16} />}
         </div>
         <div className="text-left">
-          <p className="text-[9px] font-black uppercase text-[var(--app-meta)] tracking-widest leading-none mb-1.5">
+          <p className="text-[9px] font-black uppercase text-(--app-meta)] tracking-widest leading-none mb-1.5">
             {item.sectionCode} • {item.type}
           </p>
-          <h5 className={`text-sm font-black uppercase truncate max-w-45 leading-none tracking-tight text-[var(--app-heading)]`}>
+          <h5 className={`text-sm font-black uppercase truncate max-w-45 leading-none tracking-tight text-(--app-heading)]`}>
             {item.label || 'Site Record'}
           </h5>
         </div>
@@ -59,28 +59,28 @@ const MeasurementEntry: React.FC<{
       <div className="relative group/tooltip">
         <button 
           onClick={() => onDeleteRequest(item.id)}
-          className="p-2.5 text-[var(--app-meta)] hover:text-[var(--app-error)] transition-colors active:scale-90"
+          className="p-2.5 text-(--app-meta)] hover:text-(--app-error)] transition-colors active:scale-90"
           title="Delete Record"
         >
           <Trash2 size={16} />
         </button>
-        <div className="absolute bottom-full right-0 mb-2 px-2 py-1 bg-[var(--app-error)] text-white text-[8px] font-black uppercase tracking-widest rounded opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+        <div className="absolute bottom-full right-0 mb-2 px-2 py-1 bg-(--app-error)] text-white text-[8px] font-black uppercase tracking-widest rounded opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
            Delete Record
-           <div className="absolute top-full right-3 border-4 border-transparent border-t-[var(--app-error)]" />
+           <div className="absolute top-full right-3 border-4 border-transparent border-t-(--app-error)]" />
         </div>
       </div>
     </div>
 
-    <div className={`pt-5 border-t flex justify-between items-end border-[var(--app-border)]`}>
+    <div className={`pt-5 border-t flex justify-between items-end border-(--app-border)]`}>
       <div className="text-left">
-        <p className="text-[8px] font-black uppercase text-[var(--app-meta)] mb-2 leading-none tracking-widest">Measured Quantity</p>
+        <p className="text-[8px] font-black uppercase text-(--app-meta)] mb-2 leading-none tracking-widest">Measured Quantity</p>
         <p className="text-3xl font-black tracking-tighter leading-none italic theme-accent">
           {item.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          <span className="text-[10px] ml-1.5 opacity-40 not-italic uppercase font-bold text-[var(--app-heading)]">{item.unit}</span>
+          <span className="text-[10px] ml-1.5 opacity-40 not-italic uppercase font-bold text-(--app-heading)]">{item.unit}</span>
         </p>
       </div>
       <div className="flex flex-col items-end">
-        <span className="text-[7px] font-mono text-[var(--app-meta)] uppercase tracking-widest leading-none">
+        <span className="text-[7px] font-mono text-(--app-meta)] uppercase tracking-widest leading-none">
           REF: {item.id.slice(0, 8)}
         </span>
       </div>
@@ -127,16 +127,16 @@ const GeometricRegistry: React.FC<GeometricRegistryProps> = ({
       
       <div className="flex justify-between items-end shrink-0">
         <div className="text-left space-y-1">
-          <h3 className={`text-2xl font-black italic tracking-tighter uppercase leading-none text-[var(--app-heading)]`}>
-            Takeoff Ledger<span className="text-[var(--app-accent-strong)]">.</span>
+          <h3 className={`text-2xl font-black italic tracking-tighter uppercase leading-none text-(--app-heading)]`}>
+            Takeoff Ledger<span className="text-(--app-accent-strong)]">.</span>
           </h3>
-          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--app-meta)]">
+          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-(--app-meta)]">
             Recorded Measurements
           </p>
         </div>
         <div className={`px-4 py-2 rounded-sm flex items-center gap-3 theme-card`}>
-          <Hash size={12} className="text-[var(--app-accent-strong)]" />
-          <span className="text-[10px] font-black text-[var(--app-meta)] uppercase">
+          <Hash size={12} className="text-(--app-accent-strong)]" />
+          <span className="text-[10px] font-black text-(--app-meta)] uppercase">
             {filteredMeasurements.length} Items
           </span>
         </div>
@@ -152,25 +152,25 @@ const GeometricRegistry: React.FC<GeometricRegistryProps> = ({
             />
           ))
         ) : (
-          <div className="py-24 text-center space-y-8 opacity-20 border-2 border-dashed border-[var(--app-border)] rounded-sm">
-            <Database size={64} className="mx-auto text-[var(--app-icon)] animate-pulse" />
-            <p className="font-black uppercase text-xs tracking-[0.4em] text-[var(--app-heading)]">Ledger Node Empty</p>
+          <div className="py-24 text-center space-y-8 opacity-20 border-2 border-dashed border-(--app-border)] rounded-sm">
+            <Database size={64} className="mx-auto text-(--app-icon)] animate-pulse" />
+            <p className="font-black uppercase text-xs tracking-[0.4em] text-(--app-heading)]">Ledger Node Empty</p>
           </div>
         )}
       </div>
 
       <div className={`p-6 rounded-sm shrink-0 text-left theme-card`}>
         <div className="flex items-center gap-3 mb-3">
-          <AlertCircle size={16} className="text-[var(--app-accent-strong)] opacity-60" />
-          <p className="text-[10px] font-black uppercase tracking-widest text-[var(--app-meta)]">
+          <AlertCircle size={16} className="text-(--app-accent-strong)] opacity-60" />
+          <p className="text-[10px] font-black uppercase tracking-widest text-(--app-meta)]">
             Vault Integrity Active
           </p>
         </div>
         <div className="flex items-center justify-between gap-4">
-           <p className={`text-[11px] font-bold leading-none text-[var(--app-meta)]`}>
-             Section: <span className="text-[var(--app-accent-strong)] italic uppercase">{activeSection}</span>
+           <p className={`text-[11px] font-bold leading-none text-[--app-meta)]`}>
+             Section: <span className="text-(--app-accent-strong)] italic uppercase">{activeSection}</span>
            </p>
-           <CheckCircle2 size={14} className="text-[var(--app-success)] opacity-40" />
+           <CheckCircle2 size={14} className="text-(--app-success)] opacity-40" />
         </div>
       </div>
     </aside>

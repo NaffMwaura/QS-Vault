@@ -35,18 +35,18 @@ import { supabase } from "../../lib/database/database";
 const FeatureItem = ({ icon: Icon, title, description }: any) => (
   <div className="flex items-start gap-5 group">
     <div
-      className={`p-3 theme-card transition-all duration-500 group-hover:scale-110 text-[var(--app-accent-strong)]`}
+      className={`p-3 theme-card transition-all duration-500 group-hover:scale-110 text-(--app-accent-strong)`}
     >
       <Icon size={20} />
     </div>
     <div className="text-left">
       <h4
-        className={`text-xs font-bold uppercase tracking-widest text-[var(--app-heading)]`}
+        className={`text-xs font-bold uppercase tracking-widest text-(--app-heading)]`}
       >
         {title}
       </h4>
       <p
-        className={`text-[11px] font-medium leading-relaxed mt-1 text-[var(--app-meta)]`}
+        className={`text-[11px] font-medium leading-relaxed mt-1 text-(--app-meta)]`}
       >
         {description}
       </p>
@@ -242,7 +242,7 @@ const LoginPage: React.FC = () => {
     >
       {/* 1. LEFT SECTION: BRANDING & INFO */}
       <div
-        className={`relative flex-1 p-8 lg:p-16 flex flex-col justify-between border-r transition-all duration-500 bg-[var(--app-bg)] border-[var(--app-border)]
+        className={`relative flex-1 p-8 lg:p-16 flex flex-col justify-between border-r transition-all duration-500 bg-(--app-bg)] border-(--app-border)
         ${mobileView === "branding" ? "flex fixed inset-0 z-50" : "hidden lg:flex"}`}
       >
         <div className="absolute top-[-5%] left-[-5%] w-[50%] h-[50%] rounded-full bg-amber-500/5 blur-[120px] animate-pulse pointer-events-none" />
@@ -250,7 +250,7 @@ const LoginPage: React.FC = () => {
         <div className="relative z-10 flex justify-between items-center">
           <button
             onClick={() => navigate("/")}
-            className={`flex items-center gap-3 transition-all font-bold uppercase text-xs tracking-widest group text-[var(--app-meta)] hover:text-[var(--app-accent-strong)]`}
+            className={`flex items-center gap-3 transition-all font-bold uppercase text-xs tracking-widest group text-(--app-meta) hover:text-(--app-accent-strong)`}
           >
             <ArrowLeft
               size={16}
@@ -269,7 +269,7 @@ const LoginPage: React.FC = () => {
             </div>
             <button
               onClick={() => setMobileView("form")}
-              className={`lg:hidden p-3 rounded-2xl bg-[var(--app-surface)] text-[var(--app-meta)] border border-[var(--app-border)]`}
+              className={`lg:hidden p-3 rounded-2xl bg-(--app-surface) text-(--app-meta) border border-(--app-border)`}
             >
               <ChevronRight size={18} />
             </button>
@@ -283,17 +283,17 @@ const LoginPage: React.FC = () => {
                 <HardHat size={32} className="text-black" />
               </div>
               <h1
-                className={`text-3xl font-black uppercase tracking-tighter italic text-[var(--app-heading)]`}
+                className={`text-3xl font-black uppercase tracking-tighter italic text-(--app-heading)`}
               >
                 QS VAULT<span className="text-amber-500">.</span>
               </h1>
             </div>
 
             <h2
-              className={`text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter leading-tight italic text-[var(--app-heading)]`}
+              className={`text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter leading-tight italic text-(--app-heading)`}
             >
               Site Mastery <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-amber-200">
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-amber-500 to-amber-200">
                 Starts Here.
               </span>
             </h2>
@@ -319,19 +319,19 @@ const LoginPage: React.FC = () => {
         </div>
 
         <div
-          className={`relative z-10 flex items-center justify-between border-t pt-10 border-[var(--app-border)]`}
+          className={`relative z-10 flex items-center justify-between border-t pt-10 border-(--app-border)`}
         >
           <div className="flex items-center gap-4">
-            <Ruler size={16} className={"text-[var(--app-meta)]"} />
+            <Ruler size={16} className={"text-(--app-meta)"} />
             <p
-              className={`text-[10px] font-bold uppercase tracking-[0.5em] text-[var(--app-meta)]`}
+              className={`text-[10px] font-bold uppercase tracking-[0.5em] text-(--app-meta)`}
             >
               PRO VERSION 2.5
             </p>
           </div>
           <button
             onClick={toggleTheme}
-            className={`p-3 rounded-xl border transition-colors theme-card hover:text-[var(--app-accent-strong)] text-[var(--app-meta)]`}
+            className={`p-3 rounded-xl border transition-colors theme-card hover:text-(--app-accent-strong) text-(--app-meta)`}
           >
             {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
           </button>
@@ -340,7 +340,7 @@ const LoginPage: React.FC = () => {
 
       {/* 2. RIGHT SECTION: LOGIN/SIGNUP FORM */}
       <div
-        className={`flex-1 p-8 lg:p-16 flex items-center justify-center relative overflow-y-auto custom-scrollbar bg-[var(--app-bg)]
+        className={`flex-1 p-8 lg:p-16 flex items-center justify-center relative overflow-y-auto custom-scrollbar bg-(--app-bg)
         ${mobileView === "form" ? "flex" : "hidden lg:flex"}`}
       >
         <div
@@ -356,11 +356,11 @@ const LoginPage: React.FC = () => {
             <div className="flex justify-between items-start mb-10">
               <div className="text-left space-y-2">
                 <h3
-                  className={`text-2xl font-black uppercase tracking-tighter italic text-[var(--app-heading)]`}
+                  className={`text-2xl font-black uppercase tracking-tighter italic text-(--app-heading)`}
                 >
                   {isRegistering ? "Register" : "Login"}
                 </h3>
-                <p className="text-xs font-bold text-[var(--app-meta)] uppercase tracking-widest">
+                <p className="text-xs font-bold text-(--app-meta) uppercase tracking-widest">
                   {isRegistering
                     ? "Initialize your workspace node"
                     : "Access your project records"}
@@ -368,7 +368,7 @@ const LoginPage: React.FC = () => {
               </div>
               <button
                 onClick={() => setMobileView("branding")}
-                className={`lg:hidden p-3 rounded-2xl bg-[var(--app-surface)] text-[var(--app-meta)] border border-[var(--app-border)]`}
+                className={`lg:hidden p-3 rounded-2xl bg-(--app-surface) text-(--app-meta) border border-(--app-border)`}
               >
                 <Info size={24} />
               </button>
@@ -394,14 +394,14 @@ const LoginPage: React.FC = () => {
               {isRegistering && (
                 <div className="space-y-3 text-left">
                   <label
-                    className={`text-xs font-bold uppercase tracking-widest ml-5 text-[var(--app-meta)]`}
+                    className={`text-xs font-bold uppercase tracking-widest ml-5 text-(--app-meta)`}
                   >
                     Username
                   </label>
                   <div className="relative group">
                     <User
                       size={20}
-                      className="absolute left-7 top-1/2 -translate-y-1/2 text-[var(--app-meta)] group-focus-within:text-[var(--app-accent-strong)] transition-colors"
+                      className="absolute left-7 top-1/2 -translate-y-1/2 text-(--app-meta) group-focus-within:text-(--app-accent-strong) transition-colors"
                     />
                     <input
                       required
@@ -409,7 +409,7 @@ const LoginPage: React.FC = () => {
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       placeholder="Enter username"
-                      className={`w-full pl-16 pr-8 py-5 rounded-md text-lg font-medium border transition-all shadow-inner theme-input outline-none focus:border-[var(--app-accent-strong)]`}
+                      className={`w-full pl-16 pr-8 py-5 rounded-md text-lg font-medium border transition-all shadow-inner theme-input outline-none focus:border-(--app-accent-strong)`}
                     />
                   </div>
                 </div>
@@ -417,14 +417,14 @@ const LoginPage: React.FC = () => {
 
               <div className="space-y-3 text-left">
                 <label
-                  className={`text-xs font-bold uppercase tracking-widest ml-5 text-[var(--app-meta)]`}
+                  className={`text-xs font-bold uppercase tracking-widest ml-5 text-(--app-meta)`}
                 >
                   Email Address
                 </label>
                 <div className="relative group">
                   <Mail
                     size={20}
-                    className="absolute left-7 top-1/2 -translate-y-1/2 text-[var(--app-meta)] group-focus-within:text-[var(--app-accent-strong)] transition-colors"
+                    className="absolute left-7 top-1/2 -translate-y-1/2 text-(--app-meta) group-focus-within:text-(--app-accent-strong) transition-colors"
                   />
                   <input
                     required
@@ -432,21 +432,21 @@ const LoginPage: React.FC = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="name@vault.com"
-                    className={`w-full pl-16 pr-8 py-5 rounded-md text-base font-medium border transition-all shadow-inner theme-input outline-none focus:border-[var(--app-accent-strong)]`}
+                    className={`w-full pl-16 pr-8 py-5 rounded-md text-base font-medium border transition-all shadow-inner theme-input outline-none focus:border-(--app-accent-strong)`}
                   />
                 </div>
               </div>
 
               <div className="space-y-3 text-left">
                 <label
-                  className={`text-xs font-bold uppercase tracking-widest ml-5 text-[var(--app-meta)]`}
+                  className={`text-xs font-bold uppercase tracking-widest ml-5 text-(--app-meta)`}
                 >
                   Password
                 </label>
                 <div className="relative group">
                   <Lock
                     size={20}
-                    className="absolute left-7 top-1/2 -translate-y-1/2 text-[var(--app-meta)] group-focus-within:text-[var(--app-accent-strong)] transition-colors"
+                    className="absolute left-7 top-1/2 -translate-y-1/2 text-(--app-meta) group-focus-within:text-(--app-accent-strong) transition-colors"
                   />
                   <input
                     required
@@ -454,12 +454,12 @@ const LoginPage: React.FC = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className={`w-full pl-16 pr-20 py-5 rounded-md text-base font-medium border transition-all shadow-inner theme-input outline-none focus:border-[var(--app-accent-strong)]`}
+                    className={`w-full pl-16 pr-20 py-5 rounded-md text-base font-medium border transition-all shadow-inner theme-input outline-none focus:border-(--app-accent-strong)`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-7 top-1/2 -translate-y-1/2 text-[var(--app-meta)] hover:text-[var(--app-accent-strong)] transition-colors"
+                    className="absolute right-7 top-1/2 -translate-y-1/2 text-(--app-meta) hover:text-(--app-accent-strong) transition-colors"
                   >
                     {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
                   </button>
@@ -469,7 +469,7 @@ const LoginPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-5 bg-[var(--app-accent-strong)] text-[var(--app-primary-fg)] rounded-md font-black uppercase text-sm tracking-[0.2em] shadow-2xl hover:opacity-90 active:scale-[0.97] transition-all flex items-center justify-center gap-4 italic"
+                className="w-full py-5 bg-(--app-accent-strong)] text-(--app-primary-fg)] rounded-md font-black uppercase text-sm tracking-[0.2em] shadow-2xl hover:opacity-90 active:scale-[0.97] transition-all flex items-center justify-center gap-4 italic"
               >
                 {loading ? (
                   <Loader2 className="animate-spin" size={20} />
@@ -487,19 +487,19 @@ const LoginPage: React.FC = () => {
                   setIsRegistering(!isRegistering);
                   setAuthStatus({ message: null, type: "success" });
                 }}
-                className={`text-[11px] font-black uppercase tracking-widest transition-colors block mx-auto underline underline-offset-4 text-[var(--app-meta)] hover:text-[var(--app-accent-strong)]`}
+                className={`text-[11px] font-black uppercase tracking-widest transition-colors block mx-auto underline underline-offset-4 text-(--app-meta) hover:text-(--app-accent-strong)`}
               >
                 {isRegistering ? "Back to Login" : "Create Account"}
               </button>
 
               <div className="flex items-center gap-6 opacity-20">
-                <div className={`h-px flex-1 bg-[var(--app-border)]`} />
+                <div className={`h-px flex-1 bg-(--app-border)]`} />
                 <span
-                  className={`text-[10px] font-black uppercase tracking-widest text-[var(--app-heading)]`}
+                  className={`text-[10px] font-black uppercase tracking-widest text-(--app-heading)`}
                 >
                   Or continue with
                 </span>
-                <div className={`h-px flex-1 bg-[var(--app-border)]`} />
+                <div className={`h-px flex-1 bg-(--app-border)]`} />
               </div>
 
               <button

@@ -1,5 +1,5 @@
-import React, { lazy, Suspense } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import React, { lazy, Suspense, useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { QueryClientProvider } from "@tanstack/react-query";
 
@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from "./features/auth/AuthContext";
 import { queryClient } from "./lib/queryClient";
 import { useOnlineStatus } from "./hooks/useOnlineStatus";
 import { useSync } from "./hooks/useSync";
+import { db } from "./lib/database/database";
 
 // Layout
 import AppShell from "./components/layout/AppShell";
@@ -44,6 +45,46 @@ const RouteFallback = () => (
     </div>
   </div>
 );
+
+const ProjectRoute = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [projectName, setProjectName] = useState("Technical Workspace");
+
+  useEffect(() => {
+    if (!id) return;
+
+    let isMounted = true;
+    const loadProjectName = async () => {
+      try {
+        const project = await db.projects.get(id);
+        if (isMounted && project?.name) {
+          setProjectName(project.name);
+        }
+      } catch (err) {
+        console.error("ProjectRoute: failed to load project name", err);
+      }
+    };
+
+    loadProjectName();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
+
+  if (!id) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return (
+    <ProjectTakeoffPage
+      projectId={id}
+      projectName={projectName}
+      onBack={() => navigate('/dashboard')}
+    />
+  );
+};
 
 /**
  * RootComponent manages the top-level routing logic.
@@ -88,16 +129,7 @@ const RootComponent = () => {
           <Route path="/admin-dashboard" element={<AppShell><AdminDashboardPage /></AppShell>} />
           
           {/* 2. TECHNICAL WORKSPACE (NO SIDEBAR - FULLSCREEN) */}
-          <Route path="/projects/:id" element={
-            <ProjectTakeoffPage 
-              projectId="current-active-project" 
-              projectName="Technical Workspace" 
-              onBack={() => {
-                // Forced navigation handshake to ensure we exit the technical engine cleanly
-                navigate('/dashboard');
-              }} 
-            />
-          } />
+          <Route path="/projects/:id" element={<ProjectRoute />} />
           
           <Route path="/" element={<Navigate to={defaultProtectedRoute} replace />} />
           <Route path="/login" element={<Navigate to={defaultProtectedRoute} replace />} />
