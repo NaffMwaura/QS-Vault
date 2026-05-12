@@ -4,19 +4,11 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   ZoomIn, 
   ZoomOut, 
-  MousePointer2, 
-  Play, 
-  Upload,
-  FileSearch,
-  Loader2,
-  BadgeCheck,
+  MousePointer2,   Upload,
+  FileSearch,  BadgeCheck,
   Ruler,
   Hand,
   CheckCircle2,
-  ClipboardList,
-  Maximize2,
-  Minimize2,
-  RefreshCw,
   Target,
   Layers
 } from 'lucide-react';
@@ -43,6 +35,8 @@ interface BlueprintViewportProps {
   currentPoints: Point[];
   setCurrentPoints: React.Dispatch<React.SetStateAction<Point[]>>;
   measurements: Measurement[];
+  projectId: string;
+  hideSavedMeasurements?: boolean;
   activeSection: string;
   scaleFactor: number;
   unit: "m" | "mm";
@@ -52,6 +46,8 @@ interface BlueprintViewportProps {
 }
 
 const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
+  projectId,
+  hideSavedMeasurements = false,
   pdfDoc,
   setPdfDoc,
   pageNum,
@@ -70,6 +66,7 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
   onCanvasDoubleClick,
   onCompleteMeasurement
 }) => {
+  const filteredMeasurements = measurements.filter((measurement) => measurement.project_id === projectId);
   const [isRendering, setIsRendering] = useState(false);
   
   // Navigation State
@@ -212,7 +209,7 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
 
       {/* QUICK FINISH BUTTON */}
       {isMeasuring && currentPoints.length > 0 && activeTool !== 'count' && (
-        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-[60] animate-in slide-in-from-top-4">
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-60 animate-in slide-in-from-top-4">
            <button 
              onClick={(e) => {
                e.preventDefault(); e.stopPropagation(); 
@@ -228,7 +225,7 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
 
       {/* DRAWING CONTEXT WIDGET */}
       <div className="absolute top-6 right-6 z-40 hidden md:block w-72">
-        <div className="bg-zinc-900/80 border-2 border-zinc-800 rounded-[2rem] p-6 shadow-2xl backdrop-blur-xl text-left">
+        <div className="bg-zinc-900/80 border-2 border-zinc-800 rounded-4xl p-6 shadow-2xl backdrop-blur-xl text-left">
           <div className="flex items-center gap-3 mb-4">
             <Ruler size={16} className="text-amber-500" />
             <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500">Current Settings</p>
@@ -298,7 +295,7 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
                 {currentPoints.length > 0 && (
                   <polyline points={currentPoints.map(p => `${p.x},${p.y}`).join(' ')} fill={activeTool === 'area' ? 'rgba(245,158,11,0.2)' : 'none'} stroke="#f59e0b" strokeWidth="3" strokeDasharray="8,4" strokeLinecap="round" />
                 )}
-                {measurements.map(m => (
+                {!hideSavedMeasurements && filteredMeasurements.map(m => (
                   <polyline key={m.id} points={(m.points ?? []).map((p: any) => `${p.x},${p.y}`).join(' ')} fill={m.type === 'area' ? 'rgba(16,185,129,0.08)' : 'none'} stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="opacity-60" />
                 ))}
                 {currentPoints.map((p, i) => (
@@ -345,4 +342,4 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
   );
 };
 
-export default BlueprintViewport;
+export default BlueprintViewport; 
