@@ -2,10 +2,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  ZoomIn, 
-  ZoomOut, 
-  MousePointer2,   Upload,
-  FileSearch,  BadgeCheck,
+  ZoomIn,
+  ZoomOut,
+  MousePointer2, Upload,
+  FileSearch, BadgeCheck,
   Ruler,
   Hand,
   CheckCircle2,
@@ -68,11 +68,11 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
 }) => {
   const filteredMeasurements = measurements.filter((measurement) => measurement.project_id === projectId);
   const [isRendering, setIsRendering] = useState(false);
-  
+
   // Navigation State
   const [isDragging, setIsDragging] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const renderTaskRef = useRef<RenderTask | null>(null);
@@ -85,7 +85,7 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging || isMeasuring || !scrollContainerRef.current) return;
-    e.preventDefault(); 
+    e.preventDefault();
     scrollContainerRef.current.scrollLeft -= e.movementX;
     scrollContainerRef.current.scrollTop -= e.movementY;
   };
@@ -95,7 +95,7 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
   /** * 2. RENDERING ENGINE (Fixed for Stability) */
   const renderPage = useCallback(async (pdf: PDFDocumentProxy, pNum: number, zoom: number) => {
     if (!canvasRef.current || !pdf) return;
-    
+
     try {
       setIsRendering(true);
       // Cancel previous task to prevent memory leaks or "blank screen" crashes
@@ -167,59 +167,59 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
       setPdfDoc(pdf);
     } catch (err) {
       setIsRendering(false);
-    } 
+    }
   };
 
   return (
     <section className="flex-1 relative overflow-hidden flex flex-col items-center justify-center w-full h-full transition-colors duration-500 bg-zinc-950/20">
-      
+
       {/* TOOLBAR HUD */}
       <div className="absolute top-4 left-4 sm:top-6 sm:left-6 flex flex-col gap-2 z-40 p-2 rounded-2xl border-2 border-zinc-800 bg-zinc-900/80 shadow-2xl backdrop-blur-xl">
         <button onClick={() => setScale(s => Math.min(s + 0.25, 5))} className="p-3 transition-all active:scale-90 rounded-xl hover:text-amber-500 text-zinc-400" title="Zoom In">
-          <ZoomIn size={20}/>
+          <ZoomIn size={20} />
         </button>
         <button onClick={() => setScale(s => Math.max(s - 0.25, 0.25))} className="p-3 transition-all active:scale-90 rounded-xl hover:text-amber-500 text-zinc-400" title="Zoom Out">
-          <ZoomOut size={20}/>
+          <ZoomOut size={20} />
         </button>
 
         <div className="h-px mx-2 my-1 border-t border-zinc-800" />
-        
-        <button 
-          onClick={() => setIsMeasuring(false)} 
+
+        <button
+          onClick={() => setIsMeasuring(false)}
           disabled={!pdfDoc}
           className={`p-3 rounded-xl transition-all active:scale-90 
             ${!isMeasuring ? 'bg-amber-500 text-black' : 'text-zinc-400 hover:bg-zinc-800'} 
             ${!pdfDoc ? 'opacity-20 cursor-not-allowed' : ''}`}
           title="Pan (Hand Tool)"
         >
-          <Hand size={20}/>
+          <Hand size={20} />
         </button>
 
-        <button 
-          onClick={() => { setIsMeasuring(true); setCurrentPoints([]); }} 
+        <button
+          onClick={() => { setIsMeasuring(true); setCurrentPoints([]); }}
           disabled={!pdfDoc}
           className={`p-3 rounded-xl transition-all active:scale-90
             ${isMeasuring ? 'bg-amber-500 text-black' : 'text-zinc-400 hover:bg-zinc-800'} 
             ${!pdfDoc ? 'opacity-20 cursor-not-allowed' : ''}`}
           title="Measure"
         >
-          <MousePointer2 size={20}/>
+          <MousePointer2 size={20} />
         </button>
       </div>
 
       {/* QUICK FINISH BUTTON */}
       {isMeasuring && currentPoints.length > 0 && activeTool !== 'count' && (
         <div className="absolute top-6 left-1/2 -translate-x-1/2 z-60 animate-in slide-in-from-top-4">
-           <button 
-             onClick={(e) => {
-               e.preventDefault(); e.stopPropagation(); 
-               if (onCompleteMeasurement) onCompleteMeasurement();
-               else setCurrentPoints([]); 
-             }}
-             className="px-8 py-4 bg-emerald-500 text-black rounded-full font-black uppercase tracking-widest text-xs shadow-2xl hover:bg-emerald-400 active:scale-95 transition-all flex items-center gap-3 border-2 border-emerald-300"
-           >
-              <CheckCircle2 size={18} strokeWidth={3} /> Save {activeTool}
-           </button>
+          <button
+            onClick={(e) => {
+              e.preventDefault(); e.stopPropagation();
+              if (onCompleteMeasurement) onCompleteMeasurement();
+              else setCurrentPoints([]);
+            }}
+            className="px-8 py-4 bg-emerald-500 text-black rounded-full font-black uppercase tracking-widest text-xs shadow-2xl hover:bg-emerald-400 active:scale-95 transition-all flex items-center gap-3 border-2 border-emerald-300"
+          >
+            <CheckCircle2 size={18} strokeWidth={3} /> Save {activeTool}
+          </button>
         </div>
       )}
 
@@ -245,7 +245,7 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
       </div>
 
       {/* MEASUREMENT SPACE */}
-      <div 
+      <div
         ref={scrollContainerRef}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
@@ -280,17 +280,17 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
         ) : (
           <div className="inline-flex items-start justify-start p-20">
             <div className="relative shadow-[0_0_100px_rgba(0,0,0,0.8)] border-4 border-zinc-800">
-              <canvas 
-                ref={canvasRef} 
-                onClick={isMeasuring ? onCanvasClick : undefined} 
-                onDoubleClick={isMeasuring ? (e) => { 
-                    e.stopPropagation(); 
-                    if (onCanvasDoubleClick) onCanvasDoubleClick(e); 
-                    if (onCompleteMeasurement) onCompleteMeasurement();
+              <canvas
+                ref={canvasRef}
+                onClick={isMeasuring ? onCanvasClick : undefined}
+                onDoubleClick={isMeasuring ? (e) => {
+                  e.stopPropagation();
+                  if (onCanvasDoubleClick) onCanvasDoubleClick(e);
+                  if (onCompleteMeasurement) onCompleteMeasurement();
                 } : undefined}
-                className={`transition-opacity duration-500 bg-white ${isRendering ? 'opacity-30' : 'opacity-100'}`} 
+                className={`transition-opacity duration-500 bg-white ${isRendering ? 'opacity-30' : 'opacity-100'}`}
               />
-              
+
               <svg className="absolute inset-0 w-full h-full pointer-events-none z-10" viewBox={`0 0 ${canvasRef.current?.width || 0} ${canvasRef.current?.height || 0}`}>
                 {currentPoints.length > 0 && (
                   <polyline points={currentPoints.map(p => `${p.x},${p.y}`).join(' ')} fill={activeTool === 'area' ? 'rgba(245,158,11,0.2)' : 'none'} stroke="#f59e0b" strokeWidth="3" strokeDasharray="8,4" strokeLinecap="round" />
@@ -306,7 +306,7 @@ const BlueprintViewport: React.FC<BlueprintViewportProps> = ({
           </div>
         )}
       </div>
-      
+
       {/* STATUS INDICATORS */}
       <div className="absolute bottom-6 left-6 z-40 pointer-events-none">
         <div className="bg-zinc-900/80 border-2 border-zinc-800 px-6 py-4 rounded-2xl flex items-center gap-4 shadow-2xl backdrop-blur-xl">
