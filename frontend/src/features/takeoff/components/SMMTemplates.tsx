@@ -58,7 +58,7 @@ const SMMTemplates: React.FC<SMMTemplatesProps> = ({
   return (
     <div className={`p-8 sm:p-10 rounded-[3rem] border-2 transition-all duration-500 shadow-2xl backdrop-blur-xl
       ${theme === 'dark' ? 'bg-zinc-950/40 border-zinc-800 shadow-black' : 'bg-white border-zinc-200'}`}>
-      
+
       <div className="space-y-10">
         {/* HEADER: SECTION IDENTITY */}
         <div className="flex justify-between items-center border-b-2 border-zinc-800/40 pb-8">
@@ -76,7 +76,7 @@ const SMMTemplates: React.FC<SMMTemplatesProps> = ({
         </div>
 
         {/* ACTIVE TRADE CHIP */}
-        <div className={`p-6 rounded-[2rem] border-2 flex items-center gap-5 shadow-lg
+        <div className={`p-6 rounded-4xl border-2 flex items-center gap-5 shadow-lg
           ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800' : 'bg-zinc-50 border-zinc-100'}`}>
           <div className="p-3 rounded-xl bg-amber-500 text-black shadow-lg">
             {category === "Concrete" ? <Box size={20} /> : category === "Walling" ? <Layers size={20} /> : <Activity size={20} />}
@@ -154,10 +154,10 @@ const SMMTemplates: React.FC<SMMTemplatesProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <button
               onClick={() => setIsDeductionMode(false)}
-              className={`flex items-center justify-between p-6 rounded-[2rem] border-2 transition-all active:scale-95
+              className={`flex items-center justify-between p-6 rounded-4xl border-2 transition-all active:scale-95
                 ${!isDeductionMode
-                    ? "bg-emerald-500 border-emerald-600 text-black shadow-[0_10px_30px_rgba(16,185,129,0.2)]"
-                    : "bg-zinc-950/20 border-zinc-800 text-zinc-600"}`}
+                  ? "bg-emerald-500 border-emerald-600 text-black shadow-[0_10px_30px_rgba(16,185,129,0.2)]"
+                  : "bg-zinc-950/20 border-zinc-800 text-zinc-600"}`}
             >
               <div className="flex items-center gap-4">
                 <PlusCircle size={20} strokeWidth={3} />
@@ -168,10 +168,10 @@ const SMMTemplates: React.FC<SMMTemplatesProps> = ({
 
             <button
               onClick={() => setIsDeductionMode(true)}
-              className={`flex items-center justify-between p-6 rounded-[2rem] border-2 transition-all active:scale-95
+              className={`flex items-center justify-between p-6 rounded-4xl border-2 transition-all active:scale-95
                 ${isDeductionMode
-                    ? "bg-rose-500 border-rose-600 text-white shadow-[0_10px_30px_rgba(244,63,94,0.2)]"
-                    : "bg-zinc-950/20 border-zinc-800 text-zinc-600"}`}
+                  ? "bg-rose-500 border-rose-600 text-white shadow-[0_10px_30px_rgba(244,63,94,0.2)]"
+                  : "bg-zinc-950/20 border-zinc-800 text-zinc-600"}`}
             >
               <div className="flex items-center gap-4">
                 <MinusCircle size={20} strokeWidth={3} />
@@ -183,13 +183,13 @@ const SMMTemplates: React.FC<SMMTemplatesProps> = ({
         </div>
 
         {/* LOGIC TRACE FOOTER */}
-        <div className={`p-6 rounded-[2rem] border-2 flex items-start gap-4 transition-all
+        <div className={`p-6 rounded-4xl border-2 flex items-start gap-4 transition-all
           ${theme === 'dark' ? 'bg-zinc-950/60 border-zinc-800' : 'bg-zinc-50 border-zinc-100 shadow-inner'}`}>
           <Info size={16} className="text-amber-500 shrink-0 mt-1" />
           <div className="text-left">
             <p className="text-[9px] font-black uppercase tracking-widest leading-none text-zinc-500 mb-2">Audit Compliance</p>
             <p className={`text-[10px] font-bold uppercase leading-relaxed tracking-tight ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-700'}`}>
-              Values are processed using <span className="text-amber-500 italic">SMM-KE V.1</span> logic. 
+              Values are processed using <span className="text-amber-500 italic">SMM-KE V.1</span> logic.
               Measurements are converted to <span className="text-amber-500 italic">Project Base Units</span> for reporting.
             </p>
           </div>
